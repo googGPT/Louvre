@@ -4,7 +4,7 @@ Louvre a pour objectif de constituer une bibliothèque de connaissances techniqu
 
 ## État actuel
 
-L'étape 1 initialise uniquement la structure documentaire et le catalogue de cinq ouvrages. Aucune extraction ni analyse des livres n'a été réalisée. Les informations bibliographiques du catalogue proviennent de la demande utilisateur et n'ont pas été vérifiées dans les ouvrages.
+L'étape 1 a initialisé la structure documentaire et le catalogue de cinq ouvrages. L'étape 2 intègre cinq cartographies documentaires fournies par l'utilisateur, totalisant 70 chapitres. Aucune extraction approfondie ni validation de code issu des livres n'a été réalisée. Les informations bibliographiques du catalogue proviennent de la demande utilisateur et n'ont pas été vérifiées dans les ouvrages.
 
 Les cinq PDF ont été fournis dans une autre conversation ChatGPT. Leur accès dans cette conversation ou cet environnement n'est pas établi. Leur présence ailleurs ne permet pas de prétendre les avoir consultés ici.
 
@@ -12,6 +12,7 @@ Les cinq PDF ont été fournis dans une autre conversation ChatGPT. Leur accès 
 
 - [AGENTS.md](AGENTS.md) définit les règles de travail de Codex.
 - [technical-library/SOURCES.md](technical-library/SOURCES.md) répertorie les ouvrages, leur accessibilité et leur état d'analyse.
+- [technical-library/source-maps/README.md](technical-library/source-maps/README.md) présente les cartographies importées et les limites de leur vérification.
 - [technical-library/KNOWLEDGE-TEMPLATE.md](technical-library/KNOWLEDGE-TEMPLATE.md) fournit le modèle des futures fiches techniques.
 
 Chaque future fiche devra relier ses affirmations à une source et à une référence vérifiée, distinguer les faits, les interprétations et les recommandations, puis documenter les limites, la compatibilité et la validation de la technique. Les PDF et les longs extraits protégés ne doivent pas être publiés dans le dépôt.
