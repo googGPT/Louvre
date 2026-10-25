@@ -64,4 +64,3 @@ Ouvrir `technical-library/examples/type-patterns.ts`, section `TS15-004`. Vérif
 - Confirmer les attributions, repères et pages sur le PDF original accessible de manière autorisée ; aucune page n'a été ouverte ici.
 - Reproduire la commande statique documentée avec une version identifiée de TypeScript ; aucune compilation n'a été exécutée ici.
 - Tester les cas limites au runtime et la compatibilité avec les versions du futur projet avant utilisation en production.
-
