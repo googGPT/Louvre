@@ -10,6 +10,12 @@ Les cinq PDF ont été fournis dans une autre conversation ChatGPT. Leur accès 
 
 La couverture reste limitée à cinq concepts du chapitre 15, sans couverture exhaustive de ce chapitre. Les 69 autres chapitres restent uniquement indexés. Aucun autre chapitre ni autre ouvrage n'a été extrait dans ce pilote. Voir le [pilote et ses cinq fiches](README-PILOT.md).
 
+## Consultation avec Codex
+
+Le Skill [louvre-technical-reference](.agents/skills/louvre-technical-reference/SKILL.md) est fourni au format Agent Skills du dépôt. Dans un client Codex qui découvre ces Skills, invoquer `$louvre-technical-reference` avec le problème à résoudre, ou laisser le client sélectionner le Skill selon sa description. Si le client ne le découvre pas, demander explicitement de lire ce fichier puis de suivre son protocole.
+
+Le Skill lit d'abord [INDEX.md](technical-library/INDEX.md), puis uniquement les fiches pertinentes. Il distingue les références des ouvrages, les adaptations Louvre et les conseils externes, vérifie l'applicabilité au projet et signale les connaissances absentes. Il ne constitue ni un moteur RAG ni une validation des PDF. L'activation automatique dépend du client et n'a pas été testée ici ; voir l'[évaluation](technical-library/validation/skill-retrieval-evaluation.md).
+
 ## Organisation et fonctionnement
 
 - [AGENTS.md](AGENTS.md) définit les règles de travail de Codex.

@@ -24,3 +24,7 @@ Ces règles s'appliquent à l'ensemble du dépôt et à toutes les futures fiche
 - Ne pas effectuer d'actions destructrices sans autorisation explicite ; cela inclut notamment la suppression de branches ou l'écrasement de travaux existants.
 - Utiliser le checkout existant : chaque tâche cloud dispose déjà d'un environnement isolé. Ne créer aucun worktree sans demande explicite.
 - Respecter le périmètre de la mission autorisée. Travailler sur la branche dédiée, ne pas réutiliser `codex/capstonehub-mvp` et ne rien fusionner dans `main` sans instruction explicite.
+
+## Consultation des connaissances
+
+Pour une demande technique susceptible de bénéficier de Louvre, utiliser le Skill [louvre-technical-reference](.agents/skills/louvre-technical-reference/SKILL.md) : lire d'abord l'[index](technical-library/INDEX.md), puis uniquement les fiches pertinentes. Ne pas charger toute la bibliothèque à chaque tâche. Signaler les domaines non couverts et préserver la distinction entre validations source rapportées et contrôles effectivement exécutés.
