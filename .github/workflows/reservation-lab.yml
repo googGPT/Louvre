@@ -1,0 +1,35 @@
+name: Louvre reservation engineering lab
+on:
+  pull_request:
+    paths:
+      - 'labs/reservation-lab/**'
+      - '.github/workflows/reservation-lab.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'labs/reservation-lab/**'
+      - '.github/workflows/reservation-lab.yml'
+permissions:
+  contents: read
+jobs:
+  reservation-lab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: labs/reservation-lab
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Run domain tests
+        run: npm run test:domain
+      - name: Verify Next.js production build
+        run: npm run build
+      - name: Smoke-test Next.js HTTP routes and page
+        run: npm run test:smoke
