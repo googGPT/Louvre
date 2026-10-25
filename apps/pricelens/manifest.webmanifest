@@ -1,0 +1,18 @@
+{
+  "name": "PriceLens",
+  "short_name": "PriceLens",
+  "description": "Comparer plusieurs vendeurs pour un même produit",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "theme_color": "#101827",
+  "background_color": "#0b111d",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
