@@ -1,105 +1,27 @@
-# Catalogue des sources
+# Louvre — Catalogue des cinq ouvrages
 
-> **Statut courant (lot 3C1, 25 octobre 2026) :** 15 fiches documentées, dont 10 nouvelles issues des cinq ouvrages. Les remarques des sections historiques sur l'absence d'analyse correspondent aux étapes précédentes ; la cartographie des 70 chapitres ne constitue toujours pas une lecture exhaustive. La consultation PDF des nouvelles fiches et la compilation TypeScript sont attribuées au livrable ChatGPT, et non à une exécution dans Codex.
+**État au 25 octobre 2026 : 25 fiches sur 21 chapitres distincts partiellement étudiés ; 70 chapitres cartographiés.**
 
-Les titres, auteurs et années ci-dessous sont transcrits de la demande utilisateur ; ils ne sont pas vérifiés dans les ouvrages. Les domaines techniques sont des classements provisoires déduits des titres, sans analyse du contenu. Les éditeurs n'étaient pas renseignés à l'étape 1 ; les cartographies désormais fournies en indiquent, sans vérification indépendante sur les ouvrages.
+| Catalogue | Cartographie | Ouvrage | Auteur(s) | Éditeur, année | Chapitres | Fiches actuelles | Chapitres partiellement couverts |
+|---|---|---|---|---|---:|---:|---:|
+| `SRC-001` | `TS-2026` | Total TypeScript: The Essentials | Matt Pocock et Taylor Bell | No Starch Press, 2026 | 16 | 9 | 5 |
+| `SRC-002` | `FULL-2024` | The Complete Developer | Martin Krause | No Starch Press, 2024 | 16 | 4 | 4 |
+| `SRC-003` | `NEXT-2026` | Ultimate Next.js for Modern Web Applications | Shubham Jain | Orange Education, 2026 | 14 | 4 | 4 |
+| `SRC-004` | `VUE-2024` | Building Real-World Web Applications with Vue.js 3 | Joran Quinten | Packt, 2024 | 10 | 4 | 4 |
+| `SRC-005` | `GHA-2023` | Learning GitHub Actions | Brent Laster | O'Reilly Media, 2023 | 14 | 4 | 4 |
 
-Les cinq PDF sont signalés comme ayant été fournis dans une conversation ChatGPT distincte. Leur accessibilité ici n'est pas établie ; aucun PDF n'a été consulté dans cet environnement Codex. L'étape 3A intègre un pilote provenant de l'environnement source ChatGPT, sans revérification du PDF ici.
+## Cartographies conservées
 
-## Cartographies intégrées — étape 2
+- [Total TypeScript](source-maps/total-typescript.md)
+- [The Complete Developer](source-maps/complete-developer.md)
+- [Ultimate Next.js](source-maps/ultimate-nextjs.md)
+- [Vue.js 3](source-maps/vuejs-3-real-world.md)
+- [Learning GitHub Actions](source-maps/github-actions.md)
 
-Les cinq cartographies et leur [README](source-maps/README.md) sont importés depuis `Louvre_ETAPE2_source_maps.zip`, fourni par l'utilisateur. Leurs 70 entrées de chapitres ont été comptées ; la concordance des pages avec les PDF et les empreintes SHA-256 fournies n'a pas été vérifiée sur les originaux. Une cartographie documentaire ne constitue pas une extraction approfondie de connaissances.
+## Règles de provenance
 
-Les identifiants `SRC-001` à `SRC-005` restent les identifiants du catalogue. Les identifiants propres au livrable sont conservés et reliés ci-dessous, sans les remplacer.
+Les cinq PDF originaux restent privés et ne sont pas publiés sur GitHub. Le catalogue et les fiches indiquent leurs sources et les pages PDF physiques (base 1). Leur présence n'implique pas une lecture intégrale ni une validation des exemples en production.
 
-## SRC-001
+Les exemples et adaptations sont originaux à Louvre ; ils ne doivent pas être attribués aux auteurs. Les données bibliographiques et les noms des chapitres peuvent être vérifiés dans les cartographies ; les compatibilités actuelles demandent une vérification indépendante.
 
-- **Titre :** Total TypeScript: The Essentials
-- **Auteurs :** Matt Pocock et Taylor Bell
-- **Année :** 2026 — fournie par l'utilisateur, à vérifier
-- **Éditeur :** No Starch Press — indiqué dans la cartographie fournie, à vérifier sur le PDF
-- **Domaine technique :** TypeScript — classement provisoire d'après le titre
-- **Statut d'accès au PDF :** signalé dans une autre conversation ; accès ici non établi
-- **État de l'analyse :** cartographie intégrée (16 chapitres) ; cinq fiches pilotes du chapitre 15 intégrées depuis ChatGPT, sans couverture exhaustive du chapitre
-- **Observations :** titre, auteurs, année et édition à vérifier sur le document accessible ; aucune page relevée directement dans le PDF ni citation extraite ici ; pages de début fournies dans la cartographie liée.
-- **Cartographie :** [`TS-2026`](source-maps/total-typescript.md) — correspondance avec `SRC-001` ; références aux pages PDF importées, non revérifiées ici.
-
-### Pilote TS-2026 — chapitre 15
-
-Cinq fiches disponibles :
-
-- [TS15-001-generic-types](concepts/language-and-types/TS15-001-generic-types.md)
-- [TS15-002-template-literals](concepts/language-and-types/TS15-002-template-literals.md)
-- [TS15-003-conditional-types](concepts/language-and-types/TS15-003-conditional-types.md)
-- [TS15-004-mapped-types](concepts/language-and-types/TS15-004-mapped-types.md)
-- [TS15-005-result-errors](concepts/language-and-types/TS15-005-result-errors.md)
-
-[Exemple original](examples/type-patterns.ts) ; [rapport de validation et distinction des environnements](validation/TS15-static-typecheck.md).
-
-Pages PDF déclarées par le lot source : 362–387, avec plages précises par fiche. Empreinte fournie identique à la cartographie `TS-2026`, non recalculée ici. Lecture PDF et compilation TypeScript 5.8.3 rapportées de l'environnement source ChatGPT ; ni consultation du PDF ni compilation reproduite dans Codex. Les quinze autres chapitres de cet ouvrage et les quatre autres ouvrages restent uniquement cartographiés.
-
-## SRC-002
-
-- **Titre :** The Complete Developer
-- **Auteur :** Martin Krause
-- **Année :** 2024 — fournie par l'utilisateur, à vérifier
-- **Éditeur :** No Starch Press — indiqué dans la cartographie fournie, à vérifier sur le PDF
-- **Domaine technique :** développement logiciel — classement provisoire d'après le titre ; périmètre à confirmer
-- **Statut d'accès au PDF :** signalé dans une autre conversation ; accès ici non établi
-- **État de l'analyse :** cartographie intégrée (16 chapitres) ; extraction approfondie non commencée
-- **Observations :** titre, auteur, année et édition à vérifier sur le document accessible ; aucune page relevée directement dans le PDF ni citation extraite ici ; pages de début fournies dans la cartographie liée.
-- **Cartographie :** [`FULL-2024`](source-maps/complete-developer.md) — correspondance avec `SRC-002` ; références aux pages PDF importées, non revérifiées ici.
-
-## SRC-003
-
-- **Titre :** Ultimate Next.js for Modern Web Applications
-- **Auteur :** Shubham Jain
-- **Année :** 2026 — fournie par l'utilisateur, à vérifier
-- **Éditeur :** Orange Education — indiqué dans la cartographie fournie, à vérifier sur le PDF
-- **Domaine technique :** Next.js et applications Web — classement provisoire d'après le titre
-- **Statut d'accès au PDF :** signalé dans une autre conversation ; accès ici non établi
-- **État de l'analyse :** cartographie intégrée (14 chapitres) ; extraction approfondie non commencée
-- **Observations :** titre, auteur, année, édition et versions logicielles abordées à vérifier ; aucune page relevée directement dans le PDF ni citation extraite ici ; pages de début fournies dans la cartographie liée.
-- **Cartographie :** [`NEXT-2026`](source-maps/ultimate-nextjs.md) — correspondance avec `SRC-003` ; références aux pages PDF importées, non revérifiées ici.
-
-## SRC-004
-
-- **Titre :** Building Real-World Web Applications with Vue.js 3
-- **Auteur :** Joran Quinten
-- **Année :** 2024 — fournie par l'utilisateur, à vérifier
-- **Éditeur :** Packt Publishing — indiqué dans la cartographie fournie, à vérifier sur le PDF
-- **Domaine technique :** Vue.js 3 et applications Web — classement provisoire d'après le titre
-- **Statut d'accès au PDF :** signalé dans une autre conversation ; accès ici non établi
-- **État de l'analyse :** cartographie intégrée (10 chapitres) ; extraction approfondie non commencée
-- **Observations :** titre, auteur, année, édition et versions précises abordées à vérifier ; aucune page relevée directement dans le PDF ni citation extraite ici ; pages de début fournies dans la cartographie liée.
-- **Cartographie :** [`VUE-2024`](source-maps/vuejs-3-real-world.md) — correspondance avec `SRC-004` ; références aux pages PDF importées, non revérifiées ici.
-
-## SRC-005
-
-- **Titre :** Learning GitHub Actions
-- **Auteur :** Brent Laster
-- **Année :** 2023 — fournie par l'utilisateur, à vérifier
-- **Éditeur :** O’Reilly Media — indiqué dans la cartographie fournie, à vérifier sur le PDF
-- **Domaine technique :** GitHub Actions et automatisation — classement provisoire d'après le titre
-- **Statut d'accès au PDF :** signalé dans une autre conversation ; accès ici non établi
-- **État de l'analyse :** cartographie intégrée (14 chapitres) ; extraction approfondie non commencée
-- **Observations :** titre, auteur, année et édition à vérifier ; compatibilité des pratiques avec les versions actuelles à contrôler lors d'une analyse future ; aucune page relevée directement dans le PDF ni citation extraite ici ; pages de début fournies dans la cartographie liée.
-- **Cartographie :** [`GHA-2023`](source-maps/github-actions.md) — correspondance avec `SRC-005` ; références aux pages PDF importées, non revérifiées ici.
-
-
-## Lot 3C1 — Références nouvelles
-
-| Fiche | Source et chapitre | Chemin | Pages PDF référencées |
-|---|---|---|---|
-| `TS05-001` | `TS-2026 chap. 5` | [Fiche](concepts/language-and-types/TS05-001-discriminated-unions.md) | 127–133 |
-| `TS10-001` | `TS-2026 chap. 10` | [Fiche](concepts/language-and-types/TS10-001-derive-types.md) | 228–233 ; 242–244 |
-| `FULL06-001` | `FULL-2024 chap. 6` | [Fiche](concepts/backend-and-apis/FULL06-001-rest-versus-graphql.md) | 124–125 ; 131–138 |
-| `FULL08-001` | `FULL-2024 chap. 8` | [Fiche](concepts/testing/FULL08-001-tdd-and-test-doubles.md) | 160–169 ; 169–174 |
-| `NEXT03-001` | `NEXT-2026 chap. 3` | [Fiche](concepts/frontend/NEXT03-001-rendering-strategies.md) | 72–77 ; 83–95 |
-| `NEXT06-001` | `NEXT-2026 chap. 6` | [Fiche](concepts/frontend/NEXT06-001-data-fetching-tradeoffs.md) | 160–173 ; 175–185 |
-| `VUE05-001` | `VUE-2024 chap. 5` | [Fiche](concepts/frontend/VUE05-001-pinia-state.md) | 133–144 |
-| `VUE08-001` | `VUE-2024 chap. 8` | [Fiche](concepts/frontend/VUE08-001-realtime-quiz-events.md) | 229–231 ; 234–240 |
-| `GHA07-001` | `GHA-2023 chap. 7` | [Fiche](concepts/devops/GHA07-001-artifacts-versus-cache.md) | 144–158 |
-| `GHA09-001` | `GHA-2023 chap. 9` | [Fiche](concepts/security/GHA09-001-permissions-and-untrusted-input.md) | 210–211 ; 213–220 |
-
-Les dix fiches du lot 3C1 complètent les cinq fiches TS15 ; leurs exemples ne sont pas nécessairement exécutés. Les éventuelles mentions « analyse non commencée » ci-dessus décrivent l'état antérieur à ce lot.
+[Voir toutes les fiches](INDEX.md), le [rapport de validation initial](validation/TS15-static-typecheck.md), le [lot 3C1](validation/batch-3c1-source-and-static-checks.md) et le [lot 3C2](validation/batch-3c2-verified-source-notes.md).
