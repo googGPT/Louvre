@@ -2,13 +2,14 @@
 
 Louvre transforme cinq ouvrages de développement logiciel en références structurées : fiches de conception, compromis, exemples originaux, limites et provenance documentaire.
 
-## État au 25 octobre 2026
+## État au 25 octobre 2026 — 25 fiches
 
-- **15 fiches techniques** : cinq fiches pilotes de *Total TypeScript*, plus dix fiches réparties sur les cinq livres.
-- **70 chapitres cartographiés**, dont **11 ont au moins une fiche** ; il ne s'agit pas d'une analyse exhaustive de ces chapitres.
-- Les cinq PDF restent **privés et absents du dépôt public** ; les références de pages sont documentées dans les fiches.
-- Les résultats TypeScript et lectures de PDF des lots proviennent de l'environnement ChatGPT source, sauf mention contraire ; ne pas les présenter comme exécutés par Codex.
-- Le Skill peut ne pas apparaître dans certains catalogues Codex. Le repli fonctionnel est la consultation directe de l'index et des fiches.
+- **25 fiches techniques :** les 15 anciennes et 10 nouvelles (lot 3C2).
+- **70 chapitres indexés**, dont **21 avec au moins une fiche** ; analyse non exhaustive.
+- **5 livres représentés**, avec types, backend, authentification, performance, applications Vue et GitHub Actions.
+- **Contrôle documentaire automatique :** [script de validation](scripts/validate_library.py) et [workflow GitHub Actions](.github/workflows/knowledge-integrity.yml). La CI doit être observée après publication.
+- Les PDF originaux ne sont pas publiés ; les tests applicatifs des nouveaux exemples ne sont pas exécutés.
+- Si le Skill n'est pas reconnu par Codex, utiliser directement AGENTS.md et INDEX.md.
 
 ## Utiliser Louvre dans Codex
 
@@ -30,3 +31,5 @@ Le Skill facultatif est disponible dans [.agents/skills/louvre-technical-referen
 ## Règles
 
 Aucun contenu substantiel d'ouvrage sous droit d'auteur n'est reproduit. Toute proposition issue d'une fiche doit distinguer les principes attribués à l'auteur de l'adaptation Louvre et de la documentation officielle plus récente. **Ne pas inventer** pages, tests, versions ou conclusions. Aucun changement de stack ne doit être imposé à un projet existant.
+
+- [Rapport du lot 3C2](technical-library/validation/batch-3c2-verified-source-notes.md)

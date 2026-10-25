@@ -1,5 +1,8 @@
 # Catalogue des sources
 
+> **Statut actuel — 25 octobre 2026 : 25 fiches issues de 21 chapitres partiellement couverts.** Les paragraphes historiques sur la non-consultation des PDF concernent les environnements Codex utilisés pendant les premières intégrations. Pour le lot 3C2, les pages et empreintes ont été vérifiées sur les fichiers originaux disponibles dans l'environnement source ChatGPT.
+
+
 > **Statut courant (lot 3C1, 25 octobre 2026) :** 15 fiches documentées, dont 10 nouvelles issues des cinq ouvrages. Les remarques des sections historiques sur l'absence d'analyse correspondent aux étapes précédentes ; la cartographie des 70 chapitres ne constitue toujours pas une lecture exhaustive. La consultation PDF des nouvelles fiches et la compilation TypeScript sont attribuées au livrable ChatGPT, et non à une exécution dans Codex.
 
 Les titres, auteurs et années ci-dessous sont transcrits de la demande utilisateur ; ils ne sont pas vérifiés dans les ouvrages. Les domaines techniques sont des classements provisoires déduits des titres, sans analyse du contenu. Les éditeurs n'étaient pas renseignés à l'étape 1 ; les cartographies désormais fournies en indiquent, sans vérification indépendante sur les ouvrages.
@@ -103,3 +106,21 @@ Pages PDF déclarées par le lot source : 362–387, avec plages précises par f
 | `GHA09-001` | `GHA-2023 chap. 9` | [Fiche](concepts/security/GHA09-001-permissions-and-untrusted-input.md) | 210–211 ; 213–220 |
 
 Les dix fiches du lot 3C1 complètent les cinq fiches TS15 ; leurs exemples ne sont pas nécessairement exécutés. Les éventuelles mentions « analyse non commencée » ci-dessus décrivent l'état antérieur à ce lot.
+
+
+## Lot 3C2 — Dix fiches supplémentaires
+
+| Identifiant | Source | Chapitre | Pages PDF | Fiche |
+|---|---|---:|---|---|
+| `TS14-001` | `SRC-001` | 14 | 337–346  | [Lire](concepts/language-and-types/TS14-001-strict-compiler-config.md) |
+| `TS16-001` | `SRC-001` | 16 | 396–400  | [Lire](concepts/language-and-types/TS16-001-runtime-type-guards.md) |
+| `FULL07-001` | `SRC-002` | 7 | 145–153  | [Lire](concepts/backend-and-apis/FULL07-001-mongoose-schema-boundary.md) |
+| `FULL09-001` | `SRC-002` | 9 | 187–201  | [Lire](concepts/security/FULL09-001-oauth-delegation-flow.md) |
+| `NEXT05-001` | `SRC-003` | 5 | 127–141  | [Lire](concepts/security/NEXT05-001-authorization-server-checks.md) |
+| `NEXT09-001` | `SRC-003` | 9 | 230–242  | [Lire](concepts/frontend/NEXT09-001-image-and-cache-performance.md) |
+| `VUE03-001` | `SRC-004` | 3 | 52–65  | [Lire](concepts/frontend/VUE03-001-async-api-and-geolocation.md) |
+| `VUE07-001` | `SRC-004` | 7 | 186–202  | [Lire](concepts/frontend/VUE07-001-multiplatform-quasar-supabase.md) |
+| `GHA04-001` | `SRC-005` | 4 | 59–75  | [Lire](concepts/devops/GHA04-001-workflow-trigger-design.md) |
+| `GHA08-001` | `SRC-005` | 8 | 169–180  | [Lire](concepts/devops/GHA08-001-concurrency-groups.md) |
+
+La validation structurelle automatique ne remplace pas la relecture technique ni les tests des applications développées ensuite.

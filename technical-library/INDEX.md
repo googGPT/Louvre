@@ -1,12 +1,17 @@
 # Index de consultation Louvre
 
-Lire cet index avant de sélectionner une fiche. Rechercher un problème ou un mot-clé, puis ouvrir uniquement les fiches utiles. Les chemins ci-dessous sont exacts depuis la racine du dépôt ; les liens sont relatifs à cet index.
+Trouver un concept par son problème ou ses mots-clés, puis consulter uniquement les fiches pertinentes.
 
-## Couverture et validation communes
+## Couverture vérifiée au 25 octobre 2026
 
-Cinq fiches uniquement, issues de *Total TypeScript: The Essentials*, Matt Pocock avec Taylor Bell, No Starch Press (2026), catalogue `SRC-001`, cartographie `TS-2026`, chapitre 15, *Designing Your Types*. Les 70 chapitres sont cartographiés, sans être tous analysés ; les 69 autres chapitres restent uniquement indexés. Le chapitre 15 n'est pas couvert exhaustivement.
+- **25 fiches techniques distinctes**, réparties sur les cinq ouvrages.
+- **70 chapitres cartographiés** ; **21 possèdent au moins une fiche**, sans couverture exhaustive.
+- **49 chapitres restent uniquement cartographiés**.
+- Les nouvelles pages référencées proviennent d'une lecture ciblée des cinq PDF privés dans l'environnement ChatGPT ; Codex n'a pas lu les PDF.
+- Les démonstrations applicatives doivent être testées dans les projets réels avant usage.
+- Les contrôles documentaires automatisés utilisent [ce script](../scripts/validate_library.py) et [ce rapport](validation/batch-3c2-verified-source-notes.md). Ils ne certifient pas le code produit.
 
-Pour chacune des cinq fiches : consultation du PDF et succès statique sous TypeScript 5.8.3 / Node.js 22.16.0 **rapportés par l'environnement source ChatGPT**. Ni PDF consulté ni compilation reproduite dans Codex lors de l'intégration. Aucun test runtime ou d'intégration applicative ; autres versions non validées. Les pages sont les pages physiques PDF, base 1, documentées dans les fiches et non revérifiées ici. Voir le [rapport](validation/TS15-static-typecheck.md) et l'[exemple original](examples/type-patterns.ts) si nécessaire.
+## Fiches issues des étapes précédentes (15)
 
 ## TS15-001 — Types génériques, valeurs par défaut et contraintes
 
@@ -57,12 +62,6 @@ Pour chacune des cinq fiches : consultation du PDF et succès statique sous Type
 - **Pages PDF documentées :** 375–379.
 - **Validation :** contrôle statique source ChatGPT uniquement, selon le statut commun ci-dessus ; non reproduit dans Codex.
 - **Limites propres :** Ne remplace pas try/catch ; entrées externes et exceptions inattendues à traiter.
-
-## Connaissances absentes
-
-Aucune fiche approfondie GitHub Actions (`GHA-2023`), Vue.js (`VUE-2024`), Next.js (`NEXT-2026`) ou *The Complete Developer* (`FULL-2024`). Leurs cartographies sont des inventaires, pas des preuves d'une technique ni des extractions. Aucun concept hors des cinq entrées n'est couvert par une fiche à ce jour.
-
-Si aucune entrée ne convient, signaler cette absence. Une recommandation externe reste possible selon la demande, en étant explicitement séparée des connaissances Louvre et sans citation inventée. Une citation textuelle exacte non disponible ne peut pas être reconstituée depuis une synthèse.
 
 ## Extension 3C1 — Dix concepts additionnels issus des cinq livres
 
@@ -137,3 +136,89 @@ La bibliothèque dispose maintenant de **15 fiches distinctes** couvrant partiel
 - **Fiche :** [GHA09-001](concepts/security/GHA09-001-permissions-and-untrusted-input.md).
 - **Mots-clés :** GitHub Actions, permissions, GITHUB_TOKEN, least privilege, injection, pull request, workflow security.
 - **Statut :** synthèse documentaire du lot 3C1 ; aucune validation applicative implicite.
+
+## Fiches supplémentaires — lot 3C2 (10)
+
+### TS14-001 — Configurer strict et les contrôles d’index
+
+- **Problème :** Une application compile, mais laisse passer des valeurs nulles ou des accès hors limites à un tableau.
+- **Mots-clés :** tsconfig, strict, noUncheckedIndexedAccess, undefined, target.
+- **Fiche :** [TS14-001](concepts/language-and-types/TS14-001-strict-compiler-config.md) (`technical-library/concepts/language-and-types/TS14-001-strict-compiler-config.md`).
+- **Référence :** `SRC-001` / `TS-2026`, chapitre 14 — Configuring TypeScript., pages PDF 337–346 .
+- **Statut :** synthèse originale référencée ; intégration applicative non testée.
+
+### TS16-001 — Prédicats et assertions de types honnêtes
+
+- **Problème :** Une donnée inconnue reçue d’un service est artificiellement déclarée conforme à un type sans validation.
+- **Mots-clés :** type predicate, type guard, assertion, unknown, runtime validation.
+- **Fiche :** [TS16-001](concepts/language-and-types/TS16-001-runtime-type-guards.md) (`technical-library/concepts/language-and-types/TS16-001-runtime-type-guards.md`).
+- **Référence :** `SRC-001` / `TS-2026`, chapitre 16 — Building Powerful Shared Utilities., pages PDF 396–400 .
+- **Statut :** synthèse originale référencée ; intégration applicative non testée.
+
+### FULL07-001 — Frontière de données MongoDB et Mongoose
+
+- **Problème :** La logique métier dépend directement des détails de persistance et confond document absent, erreur technique et erreur de validation.
+- **Mots-clés :** Mongoose, MongoDB, schema, model, CRUD, repository.
+- **Fiche :** [FULL07-001](concepts/backend-and-apis/FULL07-001-mongoose-schema-boundary.md) (`technical-library/concepts/backend-and-apis/FULL07-001-mongoose-schema-boundary.md`).
+- **Référence :** `SRC-002` / `FULL-2024`, chapitre 7 — MongoDB and Mongoose., pages PDF 145–153 .
+- **Statut :** synthèse originale référencée ; intégration applicative non testée.
+
+### FULL09-001 — Comprendre OAuth, jetons et retour serveur
+
+- **Problème :** Une application délègue l’accès à un fournisseur, mais confond autorisation déléguée, identité et privilèges internes.
+- **Mots-clés :** OAuth, authorization, callback, JWT, claims, identity.
+- **Fiche :** [FULL09-001](concepts/security/FULL09-001-oauth-delegation-flow.md) (`technical-library/concepts/security/FULL09-001-oauth-delegation-flow.md`).
+- **Référence :** `SRC-002` / `FULL-2024`, chapitre 9 — Authorization with OAuth., pages PDF 187–201 .
+- **Statut :** synthèse originale référencée ; intégration applicative non testée.
+
+### NEXT05-001 — Séparer connexion et contrôle d’accès Next.js
+
+- **Problème :** Un utilisateur authentifié tente d’accéder aux documents d’un autre compte via une route serveur.
+- **Mots-clés :** Next.js, authentication, authorization, RBAC, session, IDOR.
+- **Fiche :** [NEXT05-001](concepts/security/NEXT05-001-authorization-server-checks.md) (`technical-library/concepts/security/NEXT05-001-authorization-server-checks.md`).
+- **Référence :** `SRC-003` / `NEXT-2026`, chapitre 5 — Authentication and Authorization., pages PDF 127–141 .
+- **Statut :** synthèse originale référencée ; intégration applicative non testée.
+
+### NEXT09-001 — Optimiser images, cache et métriques
+
+- **Problème :** Une interface Next.js devient lente malgré des composants corrects.
+- **Mots-clés :** Next.js, Lighthouse, image optimization, lazy loading, ISR, cache.
+- **Fiche :** [NEXT09-001](concepts/frontend/NEXT09-001-image-and-cache-performance.md) (`technical-library/concepts/frontend/NEXT09-001-image-and-cache-performance.md`).
+- **Référence :** `SRC-003` / `NEXT-2026`, chapitre 9 — Performance Optimization in Next.js., pages PDF 230–242 .
+- **Statut :** synthèse originale référencée ; intégration applicative non testée.
+
+### VUE03-001 — API asynchrones et géolocalisation dans Vue
+
+- **Problème :** Une interface météo reste bloquée ou affiche de mauvaises données quand la localisation est refusée ou le réseau échoue.
+- **Mots-clés :** Vue, geolocation, fetch, weather, reactive, asynchronous, permission.
+- **Fiche :** [VUE03-001](concepts/frontend/VUE03-001-async-api-and-geolocation.md) (`technical-library/concepts/frontend/VUE03-001-async-api-and-geolocation.md`).
+- **Référence :** `SRC-004` / `VUE-2024`, chapitre 3 — Building a Local Weather App., pages PDF 52–65 .
+- **Statut :** synthèse originale référencée ; intégration applicative non testée.
+
+### VUE07-001 — Partager la logique Vue entre Web et desktop
+
+- **Problème :** Une application de suivi de dépenses doit servir plusieurs plateformes sans dupliquer toute sa logique.
+- **Mots-clés :** Vue, Quasar, Electron, Supabase, multiplatform, expense.
+- **Fiche :** [VUE07-001](concepts/frontend/VUE07-001-multiplatform-quasar-supabase.md) (`technical-library/concepts/frontend/VUE07-001-multiplatform-quasar-supabase.md`).
+- **Référence :** `SRC-004` / `VUE-2024`, chapitre 7 — Building a Multiplatform Expense Tracker Using Quasar., pages PDF 186–202 .
+- **Statut :** synthèse originale référencée ; intégration applicative non testée.
+
+### GHA04-001 — Définir des workflows CI déclenchés au bon événement
+
+- **Problème :** Une vérification automatique ne s’exécute pas au bon moment, ou ne s’exécute qu’à la demande.
+- **Mots-clés :** GitHub Actions, workflows, triggers, pull_request, workflow_dispatch, CI.
+- **Fiche :** [GHA04-001](concepts/devops/GHA04-001-workflow-trigger-design.md) (`technical-library/concepts/devops/GHA04-001-workflow-trigger-design.md`).
+- **Référence :** `SRC-005` / `GHA-2023`, chapitre 4 — Working with Workflows., pages PDF 59–75 .
+- **Statut :** synthèse originale référencée ; intégration applicative non testée.
+
+### GHA08-001 — Éviter les exécutions concurrentes inutiles
+
+- **Problème :** Plusieurs pushes sur la même branche lancent des builds coûteux dont certains résultats deviennent obsolètes.
+- **Mots-clés :** GitHub Actions, concurrency, cancel-in-progress, paths, filters.
+- **Fiche :** [GHA08-001](concepts/devops/GHA08-001-concurrency-groups.md) (`technical-library/concepts/devops/GHA08-001-concurrency-groups.md`).
+- **Référence :** `SRC-005` / `GHA-2023`, chapitre 8 — Managing Workflow Execution., pages PDF 169–180 .
+- **Statut :** synthèse originale référencée ; intégration applicative non testée.
+
+## Limites de couverture
+
+Les autres chapitres figurent uniquement dans les [cartographies](source-maps/README.md). L'absence de fiche pertinente doit être signalée, sans inventer de conseil attribué aux auteurs.
