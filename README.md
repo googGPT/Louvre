@@ -2,14 +2,14 @@
 
 Louvre transforme cinq ouvrages de développement logiciel en références structurées : fiches de conception, compromis, exemples originaux, limites et provenance documentaire.
 
-## État au 25 octobre 2026 — 25 fiches
+## État au 25 octobre 2026 — 35 fiches
 
-- **25 fiches techniques :** les 15 anciennes et 10 nouvelles (lot 3C2).
-- **70 chapitres indexés**, dont **21 avec au moins une fiche** ; analyse non exhaustive.
-- **5 livres représentés**, avec types, backend, authentification, performance, applications Vue et GitHub Actions.
-- **Contrôle documentaire automatique :** [script de validation](scripts/validate_library.py) et [workflow GitHub Actions](.github/workflows/knowledge-integrity.yml). La CI doit être observée après publication.
-- Les PDF originaux ne sont pas publiés ; les tests applicatifs des nouveaux exemples ne sont pas exécutés.
-- Si le Skill n'est pas reconnu par Codex, utiliser directement AGENTS.md et INDEX.md.
+- **35 fiches techniques** couvrant partiellement **31 chapitres** sur 70 ; les 39 autres chapitres sont seulement cartographiés.
+- **5 ouvrages** représentés avec thèmes : TypeScript, backend, Docker, Next.js, Vue/Nuxt et GitHub Actions.
+- **Exemples TypeScript du lot 3C3 :** compilation stricte sous TypeScript 5.8.3 et 11 scénarios d'exécution sous Node.js 22.16.0 rapportés par l'environnement ChatGPT, sans prétendre une exécution Codex.
+- **Contrôles structuraux GitHub Actions :** identifiants, chemins, références locales et absence de livres PDF dans ce dépôt public ; toujours vérifier le statut de la CI sur la dernière révision de la Pull Request.
+- Aucun exemple Next.js/Nuxt/Docker du lot 3C3 n'a été exécuté dans une application réelle.
+- Si le Skill est absent des catalogues Codex, consulter directement `AGENTS.md` puis l'index.
 
 ## Utiliser Louvre dans Codex
 
@@ -33,3 +33,6 @@ Le Skill facultatif est disponible dans [.agents/skills/louvre-technical-referen
 Aucun contenu substantiel d'ouvrage sous droit d'auteur n'est reproduit. Toute proposition issue d'une fiche doit distinguer les principes attribués à l'auteur de l'adaptation Louvre et de la documentation officielle plus récente. **Ne pas inventer** pages, tests, versions ou conclusions. Aucun changement de stack ne doit être imposé à un projet existant.
 
 - [Rapport du lot 3C2](technical-library/validation/batch-3c2-verified-source-notes.md)
+
+- [Rapport du lot 3C3](technical-library/validation/batch-3c3-source-audit.md)
+- [Exemples typés et exécutés du lot 3C3](technical-library/examples/validated-contracts-3c3.ts)

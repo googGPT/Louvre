@@ -4,9 +4,9 @@ Trouver un concept par son problème ou ses mots-clés, puis consulter uniquemen
 
 ## Couverture vérifiée au 25 octobre 2026
 
-- **25 fiches techniques distinctes**, réparties sur les cinq ouvrages.
-- **70 chapitres cartographiés** ; **21 possèdent au moins une fiche**, sans couverture exhaustive.
-- **49 chapitres restent uniquement cartographiés**.
+- **35 fiches techniques distinctes**, réparties sur les cinq ouvrages.
+- **70 chapitres cartographiés** ; **31 possèdent au moins une fiche**, sans couverture exhaustive.
+- **39 chapitres restent uniquement cartographiés**.
 - Les nouvelles pages référencées proviennent d'une lecture ciblée des cinq PDF privés dans l'environnement ChatGPT ; Codex n'a pas lu les PDF.
 - Les démonstrations applicatives doivent être testées dans les projets réels avant usage.
 - Les contrôles documentaires automatisés utilisent [ce script](../scripts/validate_library.py) et [ce rapport](validation/batch-3c2-verified-source-notes.md). Ils ne certifient pas le code produit.
@@ -222,3 +222,87 @@ La bibliothèque dispose maintenant de **15 fiches distinctes** couvrant partiel
 ## Limites de couverture
 
 Les autres chapitres figurent uniquement dans les [cartographies](source-maps/README.md). L'absence de fiche pertinente doit être signalée, sans inventer de conseil attribué aux auteurs.
+
+## Lot 3C3 — Dix autres chapitres analysés partiellement
+
+Les dix fiches supplémentaires traitent TypeScript, Docker, routage/tests Next.js, visualisation/CMS Vue et runners/diagnostic GitHub Actions. [Audit des sources](validation/batch-3c3-source-audit.md) ; [exemples TypeScript réellement vérifiés](examples/validated-contracts-3c3.ts).
+
+### TS06-001 — Mettre à jour un objet sans dupliquer les contrats
+
+- **Problème :** Construire une entrée de mise à jour sans recopier chaque propriété du modèle.
+- **Mots-clés :** Partial, Omit, Pick, API patch, DTO, champs modifiables.
+- **Fiche :** [TS06-001](concepts/language-and-types/TS06-001-object-update-types.md).
+- **Source :** `SRC-001` / `TS-2026`, chapitre 6 — *Objects*, pages physiques PDF 159–167.
+- **Statut :** pages du PDF vérifiées dans ChatGPT ; exemple non validé en production.
+
+### TS11-001 — Préférer satisfies aux assertions de type injustifiées
+
+- **Problème :** Vérifier qu’une configuration respecte un contrat tout en conservant les types précis inférés.
+- **Mots-clés :** satisfies, as, inférence, sécurité des types, assertions.
+- **Fiche :** [TS11-001](concepts/language-and-types/TS11-001-satisfies-versus-assertions.md).
+- **Source :** `SRC-001` / `TS-2026`, chapitre 11 — *Annotations and Assertions*, pages physiques PDF 255–260.
+- **Statut :** pages du PDF vérifiées dans ChatGPT ; exemple non validé en production.
+
+### FULL10-001 — Construire des environnements reproductibles avec Docker
+
+- **Problème :** Éviter qu’une application fonctionne sur une machine mais pas sur une autre.
+- **Mots-clés :** Docker, Dockerfile, Compose, reproductibilité, isolation, services.
+- **Fiche :** [FULL10-001](concepts/architecture-and-devops/FULL10-001-docker-repeatable-environments.md).
+- **Source :** `SRC-002` / `FULL-2024`, chapitre 10 — *Containerization with Docker*, pages physiques PDF 203–211.
+- **Statut :** pages du PDF vérifiées dans ChatGPT ; exemple non validé en production.
+
+### FULL16-001 — Faire tourner les tests UI dans un service Docker dédié
+
+- **Problème :** Reproduire localement les tests d’interface avec un environnement de dépendances stable.
+- **Mots-clés :** Jest, snapshot tests, Docker Compose, mocks, CI, états de session.
+- **Fiche :** [FULL16-001](concepts/testing/FULL16-001-dockerized-ui-testing.md).
+- **Source :** `SRC-002` / `FULL-2024`, chapitre 16 — *Running Automated Tests in Docker*, pages physiques PDF 283–287.
+- **Statut :** pages du PDF vérifiées dans ChatGPT ; exemple non validé en production.
+
+### NEXT02-001 — Organiser les routes statiques, dynamiques et catch-all
+
+- **Problème :** Créer des URL lisibles et prévoir les segments dynamiques sans maintenir un routeur manuel.
+- **Mots-clés :** Next.js, App Router, Pages Router, slug, catch-all, routing.
+- **Fiche :** [NEXT02-001](concepts/frontend/NEXT02-001-file-based-routing.md).
+- **Source :** `SRC-003` / `NEXT-2026`, chapitre 2 — *Next.js File-Based Routing*, pages physiques PDF 43–67.
+- **Statut :** pages du PDF vérifiées dans ChatGPT ; exemple non validé en production.
+
+### NEXT10-001 — Tester composants et routes API avec des scénarios réalistes
+
+- **Problème :** Vérifier une interface web et son API sans confondre test isolé et test de bout en bout.
+- **Mots-clés :** Jest, React Testing Library, API tests, mocks, unit, integration.
+- **Fiche :** [NEXT10-001](concepts/testing/NEXT10-001-test-ui-and-api.md).
+- **Source :** `SRC-003` / `NEXT-2026`, chapitre 10 — *Unit Testing and Integration Testing*, pages physiques PDF 248–263.
+- **Statut :** pages du PDF vérifiées dans ChatGPT ; exemple non validé en production.
+
+### VUE06-001 — Transformer des données persistées en graphiques Vue
+
+- **Problème :** Produire des visualisations cohérentes à partir de données collectées par une application.
+- **Mots-clés :** Vue 3, Chart.js, vue-chartjs, graphiques, agrégation, Pinia.
+- **Fiche :** [VUE06-001](concepts/frontend/VUE06-001-chart-data-contract.md).
+- **Source :** `SRC-004` / `VUE-2024`, chapitre 6 — *Creating a Fitness Tracker with Data Visualization*, pages physiques PDF 171–182.
+- **Statut :** pages du PDF vérifiées dans ChatGPT ; exemple non validé en production.
+
+### VUE10-001 — Séparer le contenu éditorial du rendu Nuxt
+
+- **Problème :** Permettre à un éditeur de modifier les contenus sans redéployer le code à chaque phrase.
+- **Mots-clés :** Nuxt, Storyblok, headless CMS, contenu typé, SEO, SSG, déploiement.
+- **Fiche :** [VUE10-001](concepts/frontend/VUE10-001-nuxt-headless-cms.md).
+- **Source :** `SRC-004` / `VUE-2024`, chapitre 10 — *Creating a Portfolio with Nuxt.js and Storyblok*, pages physiques PDF 272–296.
+- **Statut :** pages du PDF vérifiées dans ChatGPT ; exemple non validé en production.
+
+### GHA05-001 — Choisir un runner GitHub hébergé ou autogéré selon le risque
+
+- **Problème :** Décider où exécuter les workflows sans exposer les machines ou les identifiants.
+- **Mots-clés :** GitHub Actions, runners, labels, self-hosted, isolation, public PR.
+- **Fiche :** [GHA05-001](concepts/devops/GHA05-001-hosted-vs-self-hosted-runners.md).
+- **Source :** `SRC-005` / `GHA-2023`, chapitre 5 — *Runners*, pages physiques PDF 89–109.
+- **Statut :** pages du PDF vérifiées dans ChatGPT ; exemple non validé en production.
+
+### GHA10-001 — Diagnostiquer un workflow sans divulguer de secrets
+
+- **Problème :** Trouver pourquoi un pipeline échoue sans relancer à l’aveugle et sans exposer de secrets.
+- **Mots-clés :** GitHub Actions, diagnostics, logs, badges, re-run, debug, artefacts.
+- **Fiche :** [GHA10-001](concepts/devops/GHA10-001-workflow-diagnostics.md).
+- **Source :** `SRC-005` / `GHA-2023`, chapitre 10 — *Monitoring, Logging, and Debugging*, pages physiques PDF 245–268.
+- **Statut :** pages du PDF vérifiées dans ChatGPT ; exemple non validé en production.

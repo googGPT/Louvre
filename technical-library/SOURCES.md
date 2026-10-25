@@ -1,5 +1,7 @@
 # Catalogue des sources
 
+> **Statut actuel au 25 octobre 2026 (lot 3C3) :** 35 fiches décrivent des concepts de **31 chapitres**, sans couvrir intégralement les ouvrages. Les chiffres de 15 ou 25 dans les sections plus anciennes sont historiques. Les exemples TypeScript du lot 3C3 ont passé compilation stricte et scénarios Node 22 ; les autres applications ne sont pas testées.
+
 > **Statut actuel — 25 octobre 2026 : 25 fiches issues de 21 chapitres partiellement couverts.** Les paragraphes historiques sur la non-consultation des PDF concernent les environnements Codex utilisés pendant les premières intégrations. Pour le lot 3C2, les pages et empreintes ont été vérifiées sur les fichiers originaux disponibles dans l'environnement source ChatGPT.
 
 
@@ -124,3 +126,21 @@ Les dix fiches du lot 3C1 complètent les cinq fiches TS15 ; leurs exemples ne s
 | `GHA08-001` | `SRC-005` | 8 | 169–180  | [Lire](concepts/devops/GHA08-001-concurrency-groups.md) |
 
 La validation structurelle automatique ne remplace pas la relecture technique ni les tests des applications développées ensuite.
+
+
+## Lot 3C3 — Dix autres chapitres représentés
+
+| ID | Ouvrage | Chapitre | Pages PDF | Fiche |
+|---|---|---:|---|---|
+| `TS06-001` | `SRC-001` | 6 | 159–167 | [Lire](concepts/language-and-types/TS06-001-object-update-types.md) |
+| `TS11-001` | `SRC-001` | 11 | 255–260 | [Lire](concepts/language-and-types/TS11-001-satisfies-versus-assertions.md) |
+| `FULL10-001` | `SRC-002` | 10 | 203–211 | [Lire](concepts/architecture-and-devops/FULL10-001-docker-repeatable-environments.md) |
+| `FULL16-001` | `SRC-002` | 16 | 283–287 | [Lire](concepts/testing/FULL16-001-dockerized-ui-testing.md) |
+| `NEXT02-001` | `SRC-003` | 2 | 43–67 | [Lire](concepts/frontend/NEXT02-001-file-based-routing.md) |
+| `NEXT10-001` | `SRC-003` | 10 | 248–263 | [Lire](concepts/testing/NEXT10-001-test-ui-and-api.md) |
+| `VUE06-001` | `SRC-004` | 6 | 171–182 | [Lire](concepts/frontend/VUE06-001-chart-data-contract.md) |
+| `VUE10-001` | `SRC-004` | 10 | 272–296 | [Lire](concepts/frontend/VUE10-001-nuxt-headless-cms.md) |
+| `GHA05-001` | `SRC-005` | 5 | 89–109 | [Lire](concepts/devops/GHA05-001-hosted-vs-self-hosted-runners.md) |
+| `GHA10-001` | `SRC-005` | 10 | 245–268 | [Lire](concepts/devops/GHA10-001-workflow-diagnostics.md) |
+
+[Audit de provenance du lot 3C3](validation/batch-3c3-source-audit.md). L'ensemble représente une couverture partielle, et non un audit complet des 31 chapitres.
