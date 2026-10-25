@@ -4,9 +4,9 @@ Trouver un concept par son problème ou ses mots-clés, puis consulter uniquemen
 
 ## Couverture vérifiée au 25 octobre 2026
 
-- **45 fiches techniques distinctes**, réparties sur les cinq ouvrages.
-- **70 chapitres cartographiés** ; **41 possèdent au moins une fiche**, sans couverture exhaustive.
-- **29 chapitres restent uniquement cartographiés**.
+- **56 fiches techniques distinctes**, réparties sur les cinq ouvrages.
+- **70 chapitres cartographiés** ; **51 possèdent au moins une fiche**, sans couverture exhaustive.
+- **19 chapitres restent uniquement cartographiés**.
 - Les nouvelles pages référencées proviennent d'une lecture ciblée des cinq PDF privés dans l'environnement ChatGPT ; Codex n'a pas lu les PDF.
 - Les démonstrations applicatives doivent être testées dans les projets réels avant usage.
 - Les contrôles documentaires automatisés utilisent [ce script](../scripts/validate_library.py) et [ce rapport](validation/batch-3c2-verified-source-notes.md). Ils ne certifient pas le code produit.
@@ -390,3 +390,95 @@ Les fiches suivantes ajoutent une couverture initiale de dix chapitres auparavan
 - **Fiche :** [GHA11-001](concepts/devops/GHA11-001-local-composite-actions.md).
 - **Livre :** `SRC-005` / `GHA-2023`, chapitre 11 — *Creating Custom actions* ; pages PDF inspectées : 281, 282, 283, 285, 286, 289, 310, 312, 313..
 - **Limite :** lecture ciblée seulement, pas analyse exhaustive du chapitre ni application validée.
+
+## Lot 3C5 — Onze nouvelles fiches et parcours transversal
+
+Ces fiches portent la bibliothèque à 56 entrées sur 51 chapitres partiellement analysés. Les références PDF ont été vérifiées dans l'environnement source privé. Le [guide de conception d'une réservation](playbooks/reservation-system-cross-book.md) montre un usage inter-ouvrages. [Rapport d'audit](validation/batch-3c5-source-audit.md) et [exemple TypeScript testé](examples/reservation-contracts-3c5.ts).
+
+### FULL11-001 — Orchestration des services de développement avec Docker Compose
+
+- **Problème :** Le frontend, l’API et MongoDB fonctionnent chacun sur la machine du développeur mais se connectent mal entre eux ou perdent leurs données.
+- **Mots-clés :** Docker Compose, volumes, services, MongoDB, base de développement, variables environnement.
+- **Fiche :** [FULL11-001](concepts/architecture-and-devops/FULL11-001-compose-service-topology.md).
+- **Catalogue / cartographie :** `SRC-002` / `FULL-2024`, chapitre 11 — *Setting Up the Docker Environment*, pages PDF 216–223 (numérotation à partir de 1, non identique à la pagination imprimée)..
+- **Statut :** lecture ciblée, pas analyse intégrale du chapitre ; exemples à valider en conditions réelles.
+
+### GHA12-001 — Workflows réutilisables et contrats entre dépôts
+
+- **Problème :** Plusieurs dépôts doivent exécuter le même contrôle de qualité, mais copier-coller le YAML partout empêche les mises à jour cohérentes.
+- **Mots-clés :** GitHub Actions, workflow_call, workflow_dispatch, workflow_run, inputs, secrets, outputs.
+- **Fiche :** [GHA12-001](concepts/devops/GHA12-001-reusable-workflows.md).
+- **Catalogue / cartographie :** `SRC-005` / `GHA-2023`, chapitre 12 — *Advanced Workflows*, pages PDF 322–329 (numérotation à partir de 1, non identique à la pagination imprimée)..
+- **Statut :** lecture ciblée, pas analyse intégrale du chapitre ; exemples à valider en conditions réelles.
+
+### GHA13-001 — Matrices de jobs, exclusions et pression sur les runners
+
+- **Problème :** Tester plusieurs versions d’un runtime et plusieurs systèmes d’exploitation sans dupliquer chaque job ni saturer la capacité des runners.
+- **Mots-clés :** GitHub Actions, strategy matrix, include, exclude, fail-fast, max-parallel.
+- **Fiche :** [GHA13-001](concepts/devops/GHA13-001-job-matrix-design.md).
+- **Catalogue / cartographie :** `SRC-005` / `GHA-2023`, chapitre 13 — *Advanced Workflow Techniques*, pages PDF 344–352 (numérotation à partir de 1, non identique à la pagination imprimée)..
+- **Statut :** lecture ciblée, pas analyse intégrale du chapitre ; exemples à valider en conditions réelles.
+
+### NEXT08-001 — Choisir état local, partagé ou issu du serveur
+
+- **Problème :** Un projet Next.js mélange données serveur, état d’interface et panier global, créant duplications et comportements incohérents après actualisation.
+- **Mots-clés :** useState, useReducer, Context API, Redux Toolkit, SSR, hydratation, Pages Router.
+- **Fiche :** [NEXT08-001](concepts/frontend/NEXT08-001-client-vs-server-state.md).
+- **Catalogue / cartographie :** `SRC-003` / `NEXT-2026`, chapitre 8 — *State Management in Next.js*, pages PDF 212–226 (numérotation à partir de 1, non identique à la pagination imprimée)..
+- **Statut :** lecture ciblée, pas analyse intégrale du chapitre ; exemples à valider en conditions réelles.
+
+### NEXT12-001 — Réécritures de routes, locales et limites du runtime Edge
+
+- **Problème :** Un site multilingue veut rediriger les utilisateurs et filtrer certaines routes, sans confondre routage et sécurité métier.
+- **Mots-clés :** Next.js, middleware, rewrite, locale, edge runtime, matcher, internationalisation.
+- **Fiche :** [NEXT12-001](concepts/frontend/NEXT12-001-middleware-locales-edge.md).
+- **Catalogue / cartographie :** `SRC-003` / `NEXT-2026`, chapitre 12 — *Advanced Features in Next.js*, pages PDF 287–290, 295–304 (numérotation à partir de 1, non identique à la pagination imprimée)..
+- **Statut :** lecture ciblée, pas analyse intégrale du chapitre ; exemples à valider en conditions réelles.
+
+### VUE01-001 — Structure d’une application Vue et outillage de développement
+
+- **Problème :** Une équipe débute une application Vue et confond point de montage, composants SFC, dossiers sources et ressources publiques.
+- **Mots-clés :** Vue 3, Vite, TypeScript, IDE, DevTools, SFC, main.ts, App.vue.
+- **Fiche :** [VUE01-001](concepts/frontend/VUE01-001-vue-project-structure.md).
+- **Catalogue / cartographie :** `SRC-004` / `VUE-2024`, chapitre 1 — *Introduction to Vue.js*, pages PDF 26–33 (numérotation à partir de 1, non identique à la pagination imprimée)..
+- **Statut :** lecture ciblée, pas analyse intégrale du chapitre ; exemples à valider en conditions réelles.
+
+### VUE02-001 — Réactivité Vue, liste dérivée et stockage local
+
+- **Problème :** Une liste de tâches doit réagir aux changements de l’utilisateur, afficher un ordre dérivé et conserver une copie locale après rechargement.
+- **Mots-clés :** Vue 3, ref, computed, watch, onMounted, localStorage, tri.
+- **Fiche :** [VUE02-001](concepts/frontend/VUE02-001-vue-reactivity-localstorage.md).
+- **Catalogue / cartographie :** `SRC-004` / `VUE-2024`, chapitre 2 — *Creating a Todo List App*, pages PDF 40–47 (numérotation à partir de 1, non identique à la pagination imprimée)..
+- **Statut :** lecture ciblée, pas analyse intégrale du chapitre ; exemples à valider en conditions réelles.
+
+### VUE05-002 — Composants Vuetify et dialogue de recherche découplé
+
+- **Problème :** Une interface calendrier doit ouvrir un dialogue de recherche, choisir un élément puis mettre à jour la journée sélectionnée sans rendre les composants interdépendants.
+- **Mots-clés :** Vue 3, Vuetify, defineEmits, v-dialog, debounce, recherche, props.
+- **Fiche :** [VUE05-002](concepts/frontend/VUE05-002-vuetify-dialog-events.md).
+- **Catalogue / cartographie :** `SRC-004` / `VUE-2024`, chapitre 5 — *Building a Recipe App with Vuetify*, pages PDF 117–128 (numérotation à partir de 1, non identique à la pagination imprimée)..
+- **Statut :** lecture ciblée, pas analyse intégrale du chapitre ; exemples à valider en conditions réelles.
+
+### TS12-001 — Contrats de callbacks et unions de fonctions
+
+- **Problème :** Une bibliothèque d’événements reçoit des callbacks avec un nombre variable de paramètres ; une union de signatures peut casser l’inférence du callback.
+- **Mots-clés :** TypeScript, fonction callback, assignabilité, paramètres ignorés, union de fonctions.
+- **Fiche :** [TS12-001](concepts/language-and-types/TS12-001-callback-assignability.md).
+- **Catalogue / cartographie :** `SRC-001` / `TS-2026`, chapitre 12 — *The Weird Parts*, pages PDF 295–298 (numérotation à partir de 1, non identique à la pagination imprimée)..
+- **Statut :** lecture ciblée, pas analyse intégrale du chapitre ; exemples à valider en conditions réelles.
+
+### TS13-001 — Fichiers de déclaration et frontière TypeScript–JavaScript
+
+- **Problème :** Une API JavaScript ancienne ou un module tiers est utilisable à l’exécution, mais ne fournit pas de contrat de types fiable.
+- **Mots-clés :** TypeScript, d.ts, declare module, global, moduleDetection, interfaces.
+- **Fiche :** [TS13-001](concepts/language-and-types/TS13-001-declaration-files.md).
+- **Catalogue / cartographie :** `SRC-001` / `TS-2026`, chapitre 13 — *Modules, Scripts, and Declaration Files*, pages PDF 316–324 (numérotation à partir de 1, non identique à la pagination imprimée)..
+- **Statut :** lecture ciblée, pas analyse intégrale du chapitre ; exemples à valider en conditions réelles.
+
+### FULL15-001 — Session OAuth et autorisation effective des mutations GraphQL
+
+- **Problème :** Un utilisateur est connecté à l’interface, mais une mutation GraphQL reste accessible si elle n’effectue pas son contrôle d’autorisation côté serveur.
+- **Mots-clés :** OAuth, Auth.js, session, GraphQL, resolver, authGuard, autorisation, wishlist.
+- **Fiche :** [FULL15-001](concepts/security/FULL15-001-oauth-session-graphql-guard.md).
+- **Catalogue / cartographie :** `SRC-002` / `FULL-2024`, chapitre 15 — *Adding OAuth*, pages PDF 262–265, 277–281 (numérotation à partir de 1, non identique à la pagination imprimée)..
+- **Statut :** lecture ciblée, pas analyse intégrale du chapitre ; exemples à valider en conditions réelles.

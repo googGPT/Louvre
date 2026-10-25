@@ -1,5 +1,7 @@
 # Catalogue des sources
 
+> **État courant — lot 3C5 : 56 fiches correspondant à 51 chapitres possédant une analyse partielle sur 70.** Les chiffres plus anciens du présent document sont conservés à des fins d'historique. Le nouveau lot comprend 11 fiches, dont une seconde analyse du chapitre Vue 5.
+
 > **Statut actuel (25 octobre 2026 — lot 3C4) :** 45 fiches distinctes, 41 chapitres partiellement couverts sur les 70 chapitres répertoriés. Les statistiques antérieures figurant dans les sections historiques correspondent à l'état des anciens lots et ne doivent pas être interprétées comme l'état courant. Les nouveaux PDF ont été lus de manière ciblée dans l'environnement source ChatGPT, sans publier les livres.
 
 > **Statut actuel au 25 octobre 2026 (lot 3C3) :** 35 fiches décrivent des concepts de **31 chapitres**, sans couvrir intégralement les ouvrages. Les chiffres de 15 ou 25 dans les sections plus anciennes sont historiques. Les exemples TypeScript du lot 3C3 ont passé compilation stricte et scénarios Node 22 ; les autres applications ne sont pas testées.
@@ -164,3 +166,22 @@ La validation structurelle automatique ne remplace pas la relecture technique ni
 | `GHA11-001` | `SRC-005` | 11 | 281, 282, 283, 285, 286, 289, 310, 312, 313. | [Consulter](concepts/devops/GHA11-001-local-composite-actions.md) |
 
 [Rapport 3C4](validation/batch-3c4-source-and-typechecks.md). Les notes reproduisent uniquement des synthèses originales, avec limites et adaptations. Une fiche ne signifie pas chapitre lu intégralement.
+
+
+## Lot 3C5 — 11 nouvelles fiches issues de 10 chapitres auparavant non étudiés (plus une nouvelle fiche du chapitre Vue 5)
+
+| Fiche | Catalogue | Chapitre | Pages physiques PDF | Chemin |
+|---|---|---:|---|---|
+| `FULL11-001` | `SRC-002` | 11 | 216–223 (numérotation à partir de 1, non identique à la pagination imprimée). | [fiche](concepts/architecture-and-devops/FULL11-001-compose-service-topology.md) |
+| `GHA12-001` | `SRC-005` | 12 | 322–329 (numérotation à partir de 1, non identique à la pagination imprimée). | [fiche](concepts/devops/GHA12-001-reusable-workflows.md) |
+| `GHA13-001` | `SRC-005` | 13 | 344–352 (numérotation à partir de 1, non identique à la pagination imprimée). | [fiche](concepts/devops/GHA13-001-job-matrix-design.md) |
+| `NEXT08-001` | `SRC-003` | 8 | 212–226 (numérotation à partir de 1, non identique à la pagination imprimée). | [fiche](concepts/frontend/NEXT08-001-client-vs-server-state.md) |
+| `NEXT12-001` | `SRC-003` | 12 | 287–290, 295–304 (numérotation à partir de 1, non identique à la pagination imprimée). | [fiche](concepts/frontend/NEXT12-001-middleware-locales-edge.md) |
+| `VUE01-001` | `SRC-004` | 1 | 26–33 (numérotation à partir de 1, non identique à la pagination imprimée). | [fiche](concepts/frontend/VUE01-001-vue-project-structure.md) |
+| `VUE02-001` | `SRC-004` | 2 | 40–47 (numérotation à partir de 1, non identique à la pagination imprimée). | [fiche](concepts/frontend/VUE02-001-vue-reactivity-localstorage.md) |
+| `VUE05-002` | `SRC-004` | 5 | 117–128 (numérotation à partir de 1, non identique à la pagination imprimée). | [fiche](concepts/frontend/VUE05-002-vuetify-dialog-events.md) |
+| `TS12-001` | `SRC-001` | 12 | 295–298 (numérotation à partir de 1, non identique à la pagination imprimée). | [fiche](concepts/language-and-types/TS12-001-callback-assignability.md) |
+| `TS13-001` | `SRC-001` | 13 | 316–324 (numérotation à partir de 1, non identique à la pagination imprimée). | [fiche](concepts/language-and-types/TS13-001-declaration-files.md) |
+| `FULL15-001` | `SRC-002` | 15 | 262–265, 277–281 (numérotation à partir de 1, non identique à la pagination imprimée). | [fiche](concepts/security/FULL15-001-oauth-session-graphql-guard.md) |
+
+Consulter [l'audit des sources](validation/batch-3c5-source-audit.md) et le [parcours inter-ouvrages pour les réservations](playbooks/reservation-system-cross-book.md). Aucun PDF privé n'est publié.
