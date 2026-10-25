@@ -2,7 +2,7 @@
 
 Les titres, auteurs et années ci-dessous sont transcrits de la demande utilisateur ; ils ne sont pas vérifiés dans les ouvrages. Les domaines techniques sont des classements provisoires déduits des titres, sans analyse du contenu. Les éditeurs n'étaient pas renseignés à l'étape 1 ; les cartographies désormais fournies en indiquent, sans vérification indépendante sur les ouvrages.
 
-Les cinq PDF sont signalés comme ayant été fournis dans une conversation ChatGPT distincte. Leur accessibilité ici n'est pas établie ; aucun ouvrage n'a été consulté ou analysé à cette étape.
+Les cinq PDF sont signalés comme ayant été fournis dans une conversation ChatGPT distincte. Leur accessibilité ici n'est pas établie ; aucun PDF n'a été consulté dans cet environnement Codex. L'étape 3A intègre un pilote provenant de l'environnement source ChatGPT, sans revérification du PDF ici.
 
 ## Cartographies intégrées — étape 2
 
@@ -18,9 +18,23 @@ Les identifiants `SRC-001` à `SRC-005` restent les identifiants du catalogue. L
 - **Éditeur :** No Starch Press — indiqué dans la cartographie fournie, à vérifier sur le PDF
 - **Domaine technique :** TypeScript — classement provisoire d'après le titre
 - **Statut d'accès au PDF :** signalé dans une autre conversation ; accès ici non établi
-- **État de l'analyse :** cartographie intégrée (16 chapitres) ; extraction approfondie non commencée
+- **État de l'analyse :** cartographie intégrée (16 chapitres) ; cinq fiches pilotes du chapitre 15 intégrées depuis ChatGPT, sans couverture exhaustive du chapitre
 - **Observations :** titre, auteurs, année et édition à vérifier sur le document accessible ; aucune page relevée directement dans le PDF ni citation extraite ici ; pages de début fournies dans la cartographie liée.
 - **Cartographie :** [`TS-2026`](source-maps/total-typescript.md) — correspondance avec `SRC-001` ; références aux pages PDF importées, non revérifiées ici.
+
+### Pilote TS-2026 — chapitre 15
+
+Cinq fiches disponibles :
+
+- [TS15-001-generic-types](concepts/language-and-types/TS15-001-generic-types.md)
+- [TS15-002-template-literals](concepts/language-and-types/TS15-002-template-literals.md)
+- [TS15-003-conditional-types](concepts/language-and-types/TS15-003-conditional-types.md)
+- [TS15-004-mapped-types](concepts/language-and-types/TS15-004-mapped-types.md)
+- [TS15-005-result-errors](concepts/language-and-types/TS15-005-result-errors.md)
+
+[Exemple original](examples/type-patterns.ts) ; [rapport de validation et distinction des environnements](validation/TS15-static-typecheck.md).
+
+Pages PDF déclarées par le lot source : 362–387, avec plages précises par fiche. Empreinte fournie identique à la cartographie `TS-2026`, non recalculée ici. Lecture PDF et compilation TypeScript 5.8.3 rapportées de l'environnement source ChatGPT ; ni consultation du PDF ni compilation reproduite dans Codex. Les quinze autres chapitres de cet ouvrage et les quatre autres ouvrages restent uniquement cartographiés.
 
 ## SRC-002
 

@@ -4,9 +4,11 @@ Louvre a pour objectif de constituer une bibliothèque de connaissances techniqu
 
 ## État actuel
 
-L'étape 1 a initialisé la structure documentaire et le catalogue de cinq ouvrages. L'étape 2 intègre cinq cartographies documentaires fournies par l'utilisateur, totalisant 70 chapitres. Aucune extraction approfondie ni validation de code issu des livres n'a été réalisée. Les informations bibliographiques du catalogue proviennent de la demande utilisateur et n'ont pas été vérifiées dans les ouvrages.
+L'étape 1 a initialisé la structure documentaire et le catalogue de cinq ouvrages. L'étape 2 intègre cinq cartographies documentaires fournies par l'utilisateur, totalisant 70 chapitres. L'étape 3A ajoute cinq fiches pilotes issues de `TS-2026` (`SRC-001`), chapitre 15, avec un exemple TypeScript et un rapport de validation. La consultation du PDF et le succès statique sous TypeScript 5.8.3 sont rapportés par l'environnement source ChatGPT ; ils n'ont pas été reproduits dans Codex, où le PDF et `tsc` ne sont pas disponibles. Les informations bibliographiques du catalogue proviennent de la demande utilisateur et n'ont pas été vérifiées dans les ouvrages.
 
 Les cinq PDF ont été fournis dans une autre conversation ChatGPT. Leur accès dans cette conversation ou cet environnement n'est pas établi. Leur présence ailleurs ne permet pas de prétendre les avoir consultés ici.
+
+La couverture reste limitée à cinq concepts du chapitre 15, sans couverture exhaustive de ce chapitre. Les 69 autres chapitres restent uniquement indexés. Aucun autre chapitre ni autre ouvrage n'a été extrait dans ce pilote. Voir le [pilote et ses cinq fiches](README-PILOT.md).
 
 ## Organisation et fonctionnement
 
@@ -17,7 +19,7 @@ Les cinq PDF ont été fournis dans une autre conversation ChatGPT. Leur accès 
 
 Chaque future fiche devra relier ses affirmations à une source et à une référence vérifiée, distinguer les faits, les interprétations et les recommandations, puis documenter les limites, la compatibilité et la validation de la technique. Les PDF et les longs extraits protégés ne doivent pas être publiés dans le dépôt.
 
-## Futures étapes — non exécutées
+## Travaux restant à réaliser — hors du pilote
 
 1. Établir l'accès effectif aux ouvrages et vérifier leurs métadonnées bibliographiques.
 2. Sur instruction explicite, analyser les contenus accessibles et rédiger des fiches à partir du modèle, avec références exactes.

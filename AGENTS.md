@@ -23,4 +23,4 @@ Ces règles s'appliquent à l'ensemble du dépôt et à toutes les futures fiche
 - Ne jamais publier les PDF dans ce dépôt ni reproduire de longs extraits protégés. Privilégier les synthèses originales et les références précises.
 - Ne pas effectuer d'actions destructrices sans autorisation explicite ; cela inclut notamment la suppression de branches ou l'écrasement de travaux existants.
 - Utiliser le checkout existant : chaque tâche cloud dispose déjà d'un environnement isolé. Ne créer aucun worktree sans demande explicite.
-- Pour l'étape 1, créer uniquement les quatre documents demandés. Ne commencer aucune extraction ou analyse des ouvrages, ne pas réutiliser `codex/capstonehub-mvp` et ne rien fusionner dans `main`.
+- Respecter le périmètre de la mission autorisée. Travailler sur la branche dédiée, ne pas réutiliser `codex/capstonehub-mvp` et ne rien fusionner dans `main` sans instruction explicite.
