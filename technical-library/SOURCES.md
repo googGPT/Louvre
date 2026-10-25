@@ -1,5 +1,7 @@
 # Catalogue des sources
 
+> **Statut courant (lot 3C1, 25 octobre 2026) :** 15 fiches documentées, dont 10 nouvelles issues des cinq ouvrages. Les remarques des sections historiques sur l'absence d'analyse correspondent aux étapes précédentes ; la cartographie des 70 chapitres ne constitue toujours pas une lecture exhaustive. La consultation PDF des nouvelles fiches et la compilation TypeScript sont attribuées au livrable ChatGPT, et non à une exécution dans Codex.
+
 Les titres, auteurs et années ci-dessous sont transcrits de la demande utilisateur ; ils ne sont pas vérifiés dans les ouvrages. Les domaines techniques sont des classements provisoires déduits des titres, sans analyse du contenu. Les éditeurs n'étaient pas renseignés à l'étape 1 ; les cartographies désormais fournies en indiquent, sans vérification indépendante sur les ouvrages.
 
 Les cinq PDF sont signalés comme ayant été fournis dans une conversation ChatGPT distincte. Leur accessibilité ici n'est pas établie ; aucun PDF n'a été consulté dans cet environnement Codex. L'étape 3A intègre un pilote provenant de l'environnement source ChatGPT, sans revérification du PDF ici.
@@ -83,3 +85,21 @@ Pages PDF déclarées par le lot source : 362–387, avec plages précises par f
 - **État de l'analyse :** cartographie intégrée (14 chapitres) ; extraction approfondie non commencée
 - **Observations :** titre, auteur, année et édition à vérifier ; compatibilité des pratiques avec les versions actuelles à contrôler lors d'une analyse future ; aucune page relevée directement dans le PDF ni citation extraite ici ; pages de début fournies dans la cartographie liée.
 - **Cartographie :** [`GHA-2023`](source-maps/github-actions.md) — correspondance avec `SRC-005` ; références aux pages PDF importées, non revérifiées ici.
+
+
+## Lot 3C1 — Références nouvelles
+
+| Fiche | Source et chapitre | Chemin | Pages PDF référencées |
+|---|---|---|---|
+| `TS05-001` | `TS-2026 chap. 5` | [Fiche](concepts/language-and-types/TS05-001-discriminated-unions.md) | 127–133 |
+| `TS10-001` | `TS-2026 chap. 10` | [Fiche](concepts/language-and-types/TS10-001-derive-types.md) | 228–233 ; 242–244 |
+| `FULL06-001` | `FULL-2024 chap. 6` | [Fiche](concepts/backend-and-apis/FULL06-001-rest-versus-graphql.md) | 124–125 ; 131–138 |
+| `FULL08-001` | `FULL-2024 chap. 8` | [Fiche](concepts/testing/FULL08-001-tdd-and-test-doubles.md) | 160–169 ; 169–174 |
+| `NEXT03-001` | `NEXT-2026 chap. 3` | [Fiche](concepts/frontend/NEXT03-001-rendering-strategies.md) | 72–77 ; 83–95 |
+| `NEXT06-001` | `NEXT-2026 chap. 6` | [Fiche](concepts/frontend/NEXT06-001-data-fetching-tradeoffs.md) | 160–173 ; 175–185 |
+| `VUE05-001` | `VUE-2024 chap. 5` | [Fiche](concepts/frontend/VUE05-001-pinia-state.md) | 133–144 |
+| `VUE08-001` | `VUE-2024 chap. 8` | [Fiche](concepts/frontend/VUE08-001-realtime-quiz-events.md) | 229–231 ; 234–240 |
+| `GHA07-001` | `GHA-2023 chap. 7` | [Fiche](concepts/devops/GHA07-001-artifacts-versus-cache.md) | 144–158 |
+| `GHA09-001` | `GHA-2023 chap. 9` | [Fiche](concepts/security/GHA09-001-permissions-and-untrusted-input.md) | 210–211 ; 213–220 |
+
+Les dix fiches du lot 3C1 complètent les cinq fiches TS15 ; leurs exemples ne sont pas nécessairement exécutés. Les éventuelles mentions « analyse non commencée » ci-dessus décrivent l'état antérieur à ce lot.
