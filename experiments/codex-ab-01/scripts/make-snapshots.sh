@@ -13,6 +13,11 @@ mkdir -p "$A" "$B"
 git -C "$ROOT" cat-file -e "$BASE_SHA^{commit}"
 git -C "$ROOT" archive "$BASE_SHA" labs/reservation-lab | tar -xf - -C "$A"
 git -C "$ROOT" archive "$BASE_SHA" labs/reservation-lab technical-library AGENTS.md .agents | tar -xf - -C "$B"
+# Remove existing narrative references from BOTH arms to prevent a priori Louvre
+# hints leaking through the application README/audit. Do not alter source code.
+for dir in "$A" "$B"; do
+  rm -f "$dir/labs/reservation-lab/README.md" "$dir/labs/reservation-lab/LOUVRE-AUDIT-02.md"
+done
 cp "$ROOT/experiments/codex-ab-01/TASK.md" "$A/TASK.md"
 cp "$ROOT/experiments/codex-ab-01/TASK.md" "$B/TASK.md"
 
