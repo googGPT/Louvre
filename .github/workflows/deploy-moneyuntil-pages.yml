@@ -63,3 +63,20 @@ jobs:
       - name: Publish MoneyUntil
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Verify public MoneyUntil is accessible
+        run: |
+          set -euo pipefail
+          SITE="https://googgpt.github.io/Louvre/apps/moneyuntil/"
+          for attempt in $(seq 1 24); do
+            if curl --fail --location --silent --show-error --max-time 12 "$SITE" -o /tmp/moneyuntil-live.html \
+              && grep -q 'id="daily-amount"' /tmp/moneyuntil-live.html \
+              && grep -q '<title>MoneyUntil' /tmp/moneyuntil-live.html; then
+              echo "PUBLIC_SMOKE_PASS $SITE"
+              exit 0
+            fi
+            echo "Deployment not yet accessible; check $attempt/24"
+            sleep 5
+          done
+          echo "PUBLIC_SMOKE_FAIL $SITE" >&2
+          exit 1
