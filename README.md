@@ -2,13 +2,14 @@
 
 Louvre transforme cinq ouvrages de développement logiciel en références structurées : fiches de conception, compromis, exemples originaux, limites et provenance documentaire.
 
-## État au 25 octobre 2026
+## État au 25 octobre 2026 — 75 fiches ; 70/70 chapitres avec une première fiche
 
-- **15 fiches techniques** : cinq fiches pilotes de *Total TypeScript*, plus dix fiches réparties sur les cinq livres.
-- **70 chapitres cartographiés**, dont **11 ont au moins une fiche** ; il ne s'agit pas d'une analyse exhaustive de ces chapitres.
-- Les cinq PDF restent **privés et absents du dépôt public** ; les références de pages sont documentées dans les fiches.
-- Les résultats TypeScript et lectures de PDF des lots proviennent de l'environnement ChatGPT source, sauf mention contraire ; ne pas les présenter comme exécutés par Codex.
-- Le Skill peut ne pas apparaître dans certains catalogues Codex. Le repli fonctionnel est la consultation directe de l'index et des fiches.
+- **75 fiches techniques** issues des cinq ouvrages ; **chacun des 70 chapitres possède au moins une analyse ciblée**. Les livres ne sont pas étudiés intégralement.
+- **Nouvelle étape 3C6 :** 19 premières fiches pour les chapitres auparavant uniquement cartographiés ; [rapport de provenance](technical-library/validation/batch-3c6-70-chapter-audit.md).
+- **Contrôles structurels automatiques :** `scripts/validate_library.py` (liens, identifiants, absence de PDF) et `scripts/verify_chapter_coverage.py` (présence d'au moins une fiche pour chacun des 70 chapitres). La réussite doit être observée sur GitHub Actions pour le dernier commit.
+- **Exemples exécutables :** les scripts et tests TypeScript des lots 3C3 à 3C5 sont contrôlés en CI, sans prouver que des applications Next.js, Vue ou Docker complètes fonctionnent.
+- **Provenance :** chaque nouvelle fiche documente le SHA-256 du PDF privé, les pages réellement ouvertes, les adaptations Louvre et les limites. Les PDF ne sont pas publiés.
+- **Utilisation dans Codex :** lire `AGENTS.md`, puis `technical-library/INDEX.md`, et seulement les fiches pertinentes ; ne pas confondre présence d'une fiche et compétence validée par un test d'intégration.
 
 ## Utiliser Louvre dans Codex
 
@@ -30,3 +31,15 @@ Le Skill facultatif est disponible dans [.agents/skills/louvre-technical-referen
 ## Règles
 
 Aucun contenu substantiel d'ouvrage sous droit d'auteur n'est reproduit. Toute proposition issue d'une fiche doit distinguer les principes attribués à l'auteur de l'adaptation Louvre et de la documentation officielle plus récente. **Ne pas inventer** pages, tests, versions ou conclusions. Aucun changement de stack ne doit être imposé à un projet existant.
+
+- [Rapport du lot 3C2](technical-library/validation/batch-3c2-verified-source-notes.md)
+
+- [Rapport du lot 3C3](technical-library/validation/batch-3c3-source-audit.md)
+- [Exemples typés et exécutés du lot 3C3](technical-library/examples/validated-contracts-3c3.ts)
+
+- [Audit du lot 3C4](technical-library/validation/batch-3c4-source-and-typechecks.md)
+- [Fonctions TypeScript testables 3C4](technical-library/examples/validated-contracts-3c4.ts) et [leurs cas de test](technical-library/examples/validated-contracts-3c4.test.ts)
+
+- [Rapport lot 3C5](technical-library/validation/batch-3c5-source-audit.md)
+
+- [Rapport de couverture initiale 70/70](technical-library/validation/batch-3c6-70-chapter-audit.md)

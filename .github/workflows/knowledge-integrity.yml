@@ -1,0 +1,33 @@
+name: Louvre knowledge integrity
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  docs-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Validate local knowledge links and IDs
+        run: python3 scripts/validate_library.py
+      - name: Verify all 70 book chapters have at least one fiche
+        run: python3 scripts/verify_chapter_coverage.py
+      - name: Prepare Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate TypeScript examples 3C3, 3C4 and 3C5
+        run: |
+          npm install --no-save --no-package-lock --ignore-scripts typescript@5.8.3
+          mkdir -p /tmp/louvre-ts-types
+          ./node_modules/.bin/tsc --strict --target ES2022 --module commonjs --outDir /tmp/louvre-ts-types technical-library/examples/validated-contracts-3c3.ts technical-library/examples/validated-contracts-3c4.ts technical-library/examples/validated-contracts-3c4.test.ts technical-library/examples/reservation-contracts-3c5.ts technical-library/examples/reservation-contracts-3c5.test.ts
+          node /tmp/louvre-ts-types/validated-contracts-3c3.js
+          node /tmp/louvre-ts-types/validated-contracts-3c4.test.js
+          node /tmp/louvre-ts-types/reservation-contracts-3c5.test.js
