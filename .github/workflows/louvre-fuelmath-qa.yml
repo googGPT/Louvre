@@ -1,0 +1,29 @@
+name: QA Louvre App XX — FuelMath
+on:
+  pull_request:
+    paths:
+      - 'apps/fuelmath/**'
+      - '.github/workflows/louvre-fuelmath-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Static security and schemas
+        run: |
+          node --check apps/fuelmath/core.js
+          node --check apps/fuelmath/app.js
+          node --check apps/fuelmath/sw.js
+          node -e "JSON.parse(require('fs').readFileSync('apps/fuelmath/manifest.webmanifest','utf8'))"
+      - name: Run independent business tests
+        run: node --test apps/fuelmath/tests/core.test.cjs
+      - name: Chromium browser integration tests
+        run: |
+          python -m pip install --disable-pip-version-check 'playwright>=1.45,<2'
+          python apps/fuelmath/tests/browser.test.py
