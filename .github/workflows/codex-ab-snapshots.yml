@@ -1,0 +1,52 @@
+name: Louvre Codex AB isolated snapshots
+on:
+  pull_request:
+    paths:
+      - 'experiments/codex-ab-01/**'
+      - '.github/workflows/codex-ab-snapshots.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'experiments/codex-ab-01/**'
+      - '.github/workflows/codex-ab-snapshots.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  produce-snapshots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout full history for frozen source commit
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check shell and JavaScript syntax
+        run: |
+          bash -n experiments/codex-ab-01/scripts/make-snapshots.sh
+          bash -n experiments/codex-ab-01/scripts/evaluate-candidate.sh
+          node --check experiments/codex-ab-01/evaluator/recovery.acceptance.test.mjs
+      - name: Create isolated A/B snapshots
+        run: bash experiments/codex-ab-01/scripts/make-snapshots.sh
+      - name: Upload no-library snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: louvre-codex-ab-01-arm-a
+          path: experiments/codex-ab-01/dist/arm-a-without-louvre.tar.gz
+          retention-days: 30
+          if-no-files-found: error
+      - name: Upload Louvre snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: louvre-codex-ab-01-arm-b
+          path: experiments/codex-ab-01/dist/arm-b-with-louvre.tar.gz
+          retention-days: 30
+          if-no-files-found: error
+      - name: Upload application checksums
+        uses: actions/upload-artifact@v4
+        with:
+          name: louvre-codex-ab-01-manifests
+          path: experiments/codex-ab-01/dist/app-sha256-*.txt
+          retention-days: 30
+          if-no-files-found: error
