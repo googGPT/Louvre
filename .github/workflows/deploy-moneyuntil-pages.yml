@@ -1,14 +1,16 @@
-name: Deploy MoneyUntil to GitHub Pages
+name: Deploy Louvre web apps to GitHub Pages
 
 on:
   pull_request:
     paths:
       - 'apps/moneyuntil/**'
+      - 'apps/receiptrescue/**'
       - '.github/workflows/deploy-moneyuntil-pages.yml'
   push:
     branches: [main]
     paths:
       - 'apps/moneyuntil/**'
+      - 'apps/receiptrescue/**'
       - '.github/workflows/deploy-moneyuntil-pages.yml'
   workflow_dispatch:
 
@@ -33,6 +35,18 @@ jobs:
         run: |
           node --version
           node --test apps/moneyuntil/tests/moneyuntil.test.mjs
+
+      - name: Test ReceiptRescue business rules
+        run: |
+          node --check apps/receiptrescue/core.js
+          node --check apps/receiptrescue/app.js
+          node --test apps/receiptrescue/tests/receiptrescue.test.mjs
+
+      - name: Install free browser test harness
+        run: python -m pip install --disable-pip-version-check 'playwright>=1.45,<2'
+
+      - name: Test receipt storage, backup and mobile layout in Chrome
+        run: python apps/receiptrescue/tests/browser.test.py
 
   deploy:
     if: github.event_name != 'pull_request'
@@ -73,6 +87,11 @@ jobs:
           test -s _site/apps/moneyuntil/index.html
           test -s _site/apps/moneyuntil/sitemap.xml
           cmp _site/apps/moneyuntil/index.htm _site/apps/moneyuntil/index.html
+          mkdir -p _site/apps/receiptrescue
+          cp apps/receiptrescue/index.html apps/receiptrescue/index.htm apps/receiptrescue/core.js apps/receiptrescue/app.js apps/receiptrescue/style.css apps/receiptrescue/sitemap.xml _site/apps/receiptrescue/
+          cmp _site/apps/receiptrescue/index.htm _site/apps/receiptrescue/index.html
+          test -s _site/apps/receiptrescue/app.js
+          test -s _site/apps/receiptrescue/core.js
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
@@ -98,6 +117,24 @@ jobs:
               exit 0
             fi
             echo "Deployment not yet accessible; check $attempt/24"
+            sleep 5
+          done
+          echo "PUBLIC_SMOKE_FAIL $SITE" >&2
+          exit 1
+
+      - name: Verify public ReceiptRescue is accessible
+        run: |
+          set -euo pipefail
+          SITE="https://googgpt.github.io/Louvre/apps/receiptrescue/"
+          for attempt in $(seq 1 24); do
+            if curl --fail --location --silent --show-error --max-time 12 "$SITE" -o /tmp/receiptrescue-live.html \
+              && grep -q '<title>ReceiptRescue' /tmp/receiptrescue-live.html \
+              && curl --fail --silent --show-error --max-time 12 "https://googgpt.github.io/Louvre/apps/receiptrescue/core.js" -o /tmp/receiptrescue-core.js \
+              && grep -q 'validateBackup' /tmp/receiptrescue-core.js; then
+              echo "PUBLIC_SMOKE_PASS $SITE"
+              exit 0
+            fi
+            echo "ReceiptRescue not yet accessible; check $attempt/24"
             sleep 5
           done
           echo "PUBLIC_SMOKE_FAIL $SITE" >&2
