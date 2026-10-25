@@ -1,6 +1,7 @@
 """Real Chromium test of the local-only SnapAction web application. No external APIs."""
 from __future__ import annotations
-import base64
+import struct
+import zlib
 import json
 import os
 import shutil
@@ -11,8 +12,16 @@ from threading import Thread
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
-# 1x1 PNG used as a private fake screenshot.
-PNG = base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/nL8AAAAASUVORK5CYII=')
+# Generate a valid PNG using only Python stdlib to avoid malformed tiny-fixture CRCs.
+def fake_png():
+    def chunk(tag, data):
+        return struct.pack('>I', len(data)) + tag + data + struct.pack('>I', zlib.crc32(tag + data) & 0xFFFFFFFF)
+    w, h = 16, 16
+    header = struct.pack('>IIBBBBB', w, h, 8, 2, 0, 0, 0)
+    pixels = b''.join(b'\x00' + bytes([75, 175, 130]) * w for _ in range(h))
+    return b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', header) + chunk(b'IDAT', zlib.compress(pixels)) + chunk(b'IEND', b'')
+
+PNG = fake_png()
 
 
 def main():
