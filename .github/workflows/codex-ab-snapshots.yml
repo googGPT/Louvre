@@ -29,6 +29,15 @@ jobs:
           node --check experiments/codex-ab-01/evaluator/recovery.acceptance.test.mjs
       - name: Create isolated A/B snapshots
         run: bash experiments/codex-ab-01/scripts/make-snapshots.sh
+      - name: Validate isolated Codex workspaces without API spending
+        run: |
+          bash -n experiments/codex-ab-01/scripts/prepare-agent-workspace.sh
+          bash experiments/codex-ab-01/scripts/prepare-agent-workspace.sh experiments/codex-ab-01/dist/arm-a-without-louvre.tar.gz a "$RUNNER_TEMP/test-arm-a"
+          bash experiments/codex-ab-01/scripts/prepare-agent-workspace.sh experiments/codex-ab-01/dist/arm-b-with-louvre.tar.gz b "$RUNNER_TEMP/test-arm-b"
+          test ! -e "$RUNNER_TEMP/test-arm-a/technical-library"
+          test -f "$RUNNER_TEMP/test-arm-b/technical-library/INDEX.md"
+          test -d "$RUNNER_TEMP/test-arm-a/.git"
+          test -d "$RUNNER_TEMP/test-arm-b/.git"
       - name: Upload no-library snapshot
         uses: actions/upload-artifact@v4
         with:
