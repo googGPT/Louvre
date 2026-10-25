@@ -22,3 +22,15 @@ Ces décisions sont **des adaptations originales**, pas des extraits des cinq li
 ## Validation requise
 
 Exécuter les tests Node, le parcours automatisé Chrome de GitHub Actions, vérifier la publication publique de ReceiptRescue et la non-régression de MoneyUntil. Ne pas déclarer une version mobile native tant qu'elle n'est pas réellement produite.
+
+## Adaptations apportées en Web 1.1 — aucune infrastructure payante
+
+- **TS16-001, Total TypeScript** (SRC-001, PDF p.396–400) : les données issues de l'utilisateur restent validées à l'exécution par `cleanRecord`; les événements `.ics` n'infèrent jamais de dates manquantes. La lecture de la fiche est documentée, pas une conversion du site en TypeScript.
+- **FULL08-001, The Complete Developer** (SRC-002, PDF p.160–174) : tests déterministes ajoutés sur les échéances, l'heure d'été, les statistiques en centimes et l'échappement ICS ; le CI exécute aussi le scénario navigateur réel.
+- **NEXT08-001, Ultimate Next.js** (SRC-003, PDF p.212–226) : les statistiques sont dérivées à l'affichage à partir des enregistrements persistés, sans dupliquer des soldes; aucune couche serveur Next.js inutile n'a été installée.
+- **VUE07-001, Vue.js 3** (SRC-004, PDF p.186–202) : séparation claire entre `core.js` (domaine), `app.js` (interface + IndexedDB) et `sw.js` (shell hors ligne); les fichiers sont exploitables plus tard dans un wrapper mobile, sans prétendre utiliser Quasar ou Electron.
+- **GHA09-001, Learning GitHub Actions** (SRC-005, PDF p.210–220) : jobs de test en lecture seule ; la publication est conditionnée aux tests et vérifie HTTP les deux applications, ainsi que les fichiers PWA. Chaque permission élargie est réservée au job de publication.
+
+Fonctionnalités ajoutées : **échéances triées**, **export ICS**, **répartition mensuelle par catégorie**, **installation progressive hors ligne via manifest/service worker**, **état d'erreur IndexedDB réessayable**, **contrôle de taille de l'export JSON**. Les garanties de retours sont des dates *saisies*, jamais des droits légaux présumés. Les rappels calendaires sont importés volontairement : aucun service push ou envoi en arrière-plan.
+
+Limites : le PWA est disponible hors ligne **après une première ouverture réussie en ligne** ; aucune synchronisation inter-appareils, aucune garantie d'effacement impossible du stockage navigateur, pas de push même avec l'application fermée. Un logo SVG améliore la prise en charge mais certaines plateformes requièrent des icônes PNG spécifiques pour l'installation native.

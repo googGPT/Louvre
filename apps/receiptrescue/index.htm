@@ -8,6 +8,8 @@
   <meta name="robots" content="index,follow">
   <link rel="canonical" href="https://googgpt.github.io/Louvre/apps/receiptrescue/">
   <title>ReceiptRescue — Gardez vos achats sous contrôle</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./style.css">
   <script defer src="./core.js"></script>
   <script defer src="./app.js"></script>
@@ -19,6 +21,8 @@
     <div class="nav-label">MON ESPACE</div>
     <nav aria-label="Navigation principale">
       <a class="nav-link active" href="#dashboard"><span>▦</span> Tableau de bord</a>
+      <a class="nav-link" href="#upcoming"><span>◷</span> Échéances</a>
+      <a class="nav-link" href="#analytics"><span>◴</span> Statistiques</a>
       <a class="nav-link" href="#purchases"><span>◫</span> Mes achats</a>
       <button class="nav-link" type="button" id="nav-backup"><span>⇩</span> Mes sauvegardes</button>
     </nav>
@@ -33,13 +37,16 @@
       <div class="stat"><div class="stat-head"><span class="stat-icon coral">↺</span><span>Retours proches</span></div><strong id="returns-count">0</strong><small>Dans les 7 prochains jours</small></div>
       <div class="stat"><div class="stat-head"><span class="stat-icon green">✧</span><span>Garanties proches</span></div><strong id="warranty-count">0</strong><small>Dans les 30 prochains jours</small></div>
     </section>
+    <section id="storage-warning" class="support-warning" hidden role="alert"><strong>Le coffre local ne répond pas.</strong> Activez les données de ce site dans votre navigateur puis réessayez. Une sauvegarde JSON permet aussi de retrouver vos achats sur un autre appareil. <button type="button" class="button secondary" id="retry-storage">Réessayer</button></section>
+    <section id="upcoming" class="insight-panel" aria-labelledby="upcoming-title"><div class="insight-head"><div><div class="section-label">LES DATES QUI COMPTENT</div><h2 id="upcoming-title">Prochaines échéances</h2><p>Affichées à l'ouverture de l'application, sans notification en arrière-plan.</p></div><button type="button" class="button secondary" id="export-calendar">↓ Ajouter à mon calendrier</button></div><div id="upcoming-list" class="deadline-list" aria-live="polite"></div></section>
+    <section id="analytics" class="insight-panel" aria-labelledby="analytics-title"><div class="insight-head"><div><div class="section-label">VOS ACHATS, EN CLAIR</div><h2 id="analytics-title">Répartition par catégorie</h2><p>Dépenses du mois sélectionné, à partir des achats enregistrés.</p></div><label class="month-picker">Mois <input type="month" id="analytics-month" aria-label="Mois des dépenses"></label></div><div id="analytics-list" class="category-list" aria-live="polite"></div></section>
     <section id="purchases" class="library" aria-labelledby="library-title"><div class="library-heading"><div><div class="section-label">VOTRE COLLECTION</div><h2 id="library-title">Mes achats <span id="total-badge">0</span></h2><p>Gardez l'historique et retrouvez un justificatif en quelques secondes.</p></div><button class="button secondary" type="button" id="add-list">＋ Nouvel achat</button></div>
       <div class="tools"><div class="search"><span aria-hidden="true">⌕</span><label class="visually-hidden" for="search-input">Rechercher un achat</label><input id="search-input" type="search" placeholder="Rechercher un magasin, un objet…" autocomplete="off"></div><div class="filters" role="group" aria-label="Filtrer les achats"><button type="button" class="filter active" data-filter="all" aria-pressed="true">Tout voir</button><button type="button" class="filter" data-filter="returns" aria-pressed="false">Retours</button><button type="button" class="filter" data-filter="warranty" aria-pressed="false">Garanties</button></div></div>
       <div id="cards" class="cards" aria-live="polite"></div>
       <div id="empty-state" class="empty" hidden><div class="empty-icon">▤</div><h3 id="empty-title">Votre coffre attend son premier reçu</h3><p id="empty-description">Ajoutez votre premier achat pour commencer à suivre vos justificatifs et vos dates importantes.</p><button type="button" id="empty-add" class="button primary">＋ Ajouter mon premier achat</button></div>
     </section>
     <section class="bottom-banner"><div class="heart">♡</div><div><strong>Sans compte. Sans abonnement. Sans mauvaise surprise.</strong><p>Cette version fonctionne gratuitement et localement. Pensez à exporter une sauvegarde avant de changer d'appareil ou d'effacer votre navigateur.</p></div><button class="button secondary" type="button" id="export-inline">⇩ Sauvegarder</button></section>
-    <footer>ReceiptRescue · Version Web 1.0 · Une création Louvre · Les dates de retour et de garantie sont renseignées par vous et ne constituent pas un avis juridique. <a href="../moneyuntil/">Découvrir MoneyUntil</a></footer>
+    <footer>ReceiptRescue · Version Web 1.1 · Une création Louvre · Les dates de retour et de garantie sont renseignées par vous et ne constituent pas un avis juridique. <a href="../moneyuntil/">Découvrir MoneyUntil</a></footer>
   </main>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>

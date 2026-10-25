@@ -2,6 +2,7 @@
 
 Requires: python package playwright and a locally installed Chrome/Chromium.
 """
+import datetime
 import contextlib
 import http.server
 import json
@@ -44,9 +45,10 @@ def main():
                 page.locator('input[name="item"]').fill('Casque audio')
                 page.locator('input[name="merchant"]').fill('Boutique ABC')
                 page.locator('input[name="amount"]').fill('59,90')
-                page.locator('input[name="purchasedOn"]').fill('2026-10-25')
-                page.locator('input[name="returnBy"]').fill('2026-10-30')
-                page.locator('input[name="warrantyUntil"]').fill('2026-11-10')
+                day=datetime.date.today()
+                page.locator('input[name="purchasedOn"]').fill(day.isoformat())
+                page.locator('input[name="returnBy"]').fill((day + datetime.timedelta(days=5)).isoformat())
+                page.locator('input[name="warrantyUntil"]').fill((day + datetime.timedelta(days=16)).isoformat())
                 png=pathlib.Path(temp)/'ticket.png'
                 import base64
                 png.write_bytes(base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL/ggAAAABJRU5ErkJggg=='))
@@ -56,6 +58,16 @@ def main():
                 assert page.locator('.card-name').inner_text()=='Casque audio'
                 assert page.locator('.card-actions a').count()==1
                 assert page.locator('#total-count').inner_text()=='1'
+                assert page.locator('#upcoming-list .deadline-row').count()==2
+                assert page.locator('#analytics-list .category-row').count()==1
+                assert '59,90' in page.locator('#analytics-list').inner_text()
+                with page.expect_download() as cal_event:
+                    page.click('#export-calendar')
+                calendar=pathlib.Path(temp)/'echeances.ics'
+                cal_event.value.save_as(str(calendar))
+                assert calendar.read_text().count('BEGIN:VEVENT')==2
+                assert 'DTSTART;VALUE=DATE:' in calendar.read_text()
+
                 page.reload()
                 page.locator('.purchase-card').wait_for()
                 assert page.locator('.card-name').inner_text()=='Casque audio'
@@ -80,6 +92,15 @@ def main():
                 page.locator('#import-file').set_input_files(str(backup))
                 page.locator('.purchase-card').wait_for()
                 assert page.locator('.card-actions a').count()==1
+                # A true PWA offline reload must retain the app shell and IndexedDB receipts.
+                page.evaluate("navigator.serviceWorker.ready")
+                page.reload()
+                page.locator('.purchase-card').wait_for()
+                page.context.set_offline(True)
+                page.reload()
+                page.locator('.purchase-card').wait_for()
+                assert page.locator('#total-count').inner_text()=='1'
+                page.context.set_offline(False)
                 assert not errors,errors
                 mobile=browser.new_page(viewport={'width':390,'height':844})
                 mobile_errors=[]
@@ -88,7 +109,7 @@ def main():
                 mobile.locator('#empty-state:not([hidden])').wait_for()
                 assert mobile.evaluate('document.documentElement.scrollWidth')<=390
                 assert not mobile_errors,mobile_errors
-                print('BROWSER PASS: photo -> save -> reload -> search -> export -> delete -> restore; mobile 390px')
+                print('BROWSER PASS: photo, restore, upcoming deadlines, ICS, monthly stats, PWA offline reload; mobile 390px')
                 page.close();mobile.close()
             browser.close()
         srv.shutdown()
