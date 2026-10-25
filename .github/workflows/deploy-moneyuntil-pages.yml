@@ -1,0 +1,65 @@
+name: Deploy MoneyUntil to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/moneyuntil/**'
+      - '.github/workflows/deploy-moneyuntil-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: moneyuntil-pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Prepare isolated static website
+        run: |
+          set -euo pipefail
+          mkdir -p _site/apps/moneyuntil
+          cp apps/moneyuntil/index.html _site/apps/moneyuntil/index.html
+          cp apps/moneyuntil/index.htm _site/apps/moneyuntil/index.htm
+          cp apps/moneyuntil/sitemap.xml _site/apps/moneyuntil/sitemap.xml
+          cat > _site/index.html <<'HTML'
+          <!doctype html>
+          <html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+          <meta http-equiv="refresh" content="0;url=./apps/moneyuntil/">
+          <title>MoneyUntil — Mon budget jusqu'à ma prochaine paie</title>
+          <meta name="robots" content="noindex"></head>
+          <body><main><h1>MoneyUntil</h1><p>Votre budget jusqu'à la prochaine paie.</p>
+          <p><a href="./apps/moneyuntil/">Ouvrir MoneyUntil</a></p></main></body></html>
+          HTML
+          touch _site/.nojekyll
+          test -s _site/index.html
+          test -s _site/apps/moneyuntil/index.html
+          test -s _site/apps/moneyuntil/sitemap.xml
+          cmp _site/apps/moneyuntil/index.htm _site/apps/moneyuntil/index.html
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload MoneyUntil site
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+      - name: Publish MoneyUntil
+        id: deployment
+        uses: actions/deploy-pages@v4
