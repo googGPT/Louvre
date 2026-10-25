@@ -36,6 +36,12 @@ npm run dev
 
 Réponse `201` : `{ "reservationId": "DEMO-00001", "workshopId": "typescript-clinic", "quantity": 2, "remaining": 2 }`.
 
+## Amélioration 02 — Reprise d'une demande incertaine
+
+Si le serveur enregistre une réservation mais que sa réponse est perdue, l'interface peut maintenant proposer **« Réessayer la même demande »** avec le **même requestId**, même atelier et même quantité. Cette reprise fonctionne même si le stock affiché est épuisé. Les tests de classification d'une réponse réseau sont dans `tests/retry.test.mjs` ; voir [l'audit de traçabilité](LOUVRE-AUDIT-02.md).
+
+**Limites :** le suivi de l'essai n'est conservé que dans l'état React, pas au rechargement de la page, et le cache d'idempotence du serveur est toujours volatile et mono-processus. L'abandon du suivi ne garantit aucune annulation. Ce changement n'est pas une garantie de réservation réelle.
+
 ## Limites essentielles
 
 **Ne pas utiliser ce projet pour de vraies réservations.** Les données sont en mémoire dans un objet global au seul processus serveur : un redémarrage efface les réservations ; deux serveurs peuvent vendre les mêmes places. Ni base persistante, ni transactions SQL, ni authentification, ni contrôle de propriété, ni annulation, ni limitation de débit, ni contrôle de fraude. Les tests de concurrence n'établissent la sécurité que pour **un seul processus Node.js**. Aucune garantie de disponibilité externe.

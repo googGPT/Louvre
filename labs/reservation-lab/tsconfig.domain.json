@@ -11,6 +11,6 @@
     "outDir": ".domain-build",
     "skipLibCheck": true
   },
-  "include": ["lib/contracts.ts", "lib/catalog.ts", "lib/reservation-store.ts"],
+  "include": ["lib/contracts.ts", "lib/catalog.ts", "lib/reservation-store.ts", "lib/booking-request.ts"],
   "exclude": ["node_modules", ".domain-build"]
 }
