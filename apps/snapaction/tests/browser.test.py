@@ -61,6 +61,7 @@ def main():
             page.locator('#edit-title-input').fill('Envoyer le dossier corrigé')
             page.locator('#edit-note').fill('Pièce à joindre après vérification')
             page.locator('#edit-form button[type="submit"]').click()
+            page.wait_for_function("document.querySelector('.task-row .task-body h3')?.textContent==='Envoyer le dossier corrigé'", timeout=10000)
             assert page.get_by_text('Envoyer le dossier corrigé', exact=True).count() == 1
             with page.expect_download() as download_info:
                 page.locator('#export-json').click()
