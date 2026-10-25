@@ -1,0 +1,5 @@
+/* Scoped app-shell caching. No cross-app interception. */
+const CACHE='parkwise-shell-v1';const ASSETS=['./','index.html','style.css','core.js','app.js','manifest.webmanifest','icon.svg'];
+self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()))});
+self.addEventListener('activate',event=>{event.waitUntil(Promise.all([caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('parkwise-shell-')&&k!==CACHE).map(k=>caches.delete(k)))),self.clients.claim()]))});
+self.addEventListener('fetch',event=>{const r=event.request;if(r.method!=='GET')return;const path=new URL(r.url), scope=new URL(self.registration.scope);if(path.origin!==scope.origin||!path.pathname.startsWith(scope.pathname))return;event.respondWith(fetch(r).then(response=>{if(response.ok){const copy=response.clone();caches.open(CACHE).then(cache=>cache.put(r,copy)).catch(()=>{});}return response;}).catch(()=>caches.match(r).then(cached=>cached||caches.match('./'))));});

@@ -8,6 +8,7 @@ on:
       - 'apps/snapaction/**'
       - 'apps/fridgefirst/**'
       - 'apps/homepulse/**'
+      - 'apps/parkwise/**'
       - '.github/workflows/deploy-moneyuntil-pages.yml'
   push:
     branches: [main]
@@ -17,6 +18,7 @@ on:
       - 'apps/snapaction/**'
       - 'apps/fridgefirst/**'
       - 'apps/homepulse/**'
+      - 'apps/parkwise/**'
       - '.github/workflows/deploy-moneyuntil-pages.yml'
   workflow_dispatch:
 
@@ -74,6 +76,14 @@ jobs:
           node -e "JSON.parse(require('fs').readFileSync('apps/homepulse/manifest.webmanifest','utf8'))"
           TZ=Europe/Paris node --test apps/homepulse/tests/core.test.cjs
 
+      - name: Verify ParkWise parking math, schema and PWA scripts
+        run: |
+          node --check apps/parkwise/core.js
+          node --check apps/parkwise/app.js
+          node --check apps/parkwise/sw.js
+          node -e "JSON.parse(require('fs').readFileSync('apps/parkwise/manifest.webmanifest','utf8'))"
+          TZ=Europe/Paris node --test apps/parkwise/tests/core.test.cjs
+
       - name: Install free browser test harness
         run: python -m pip install --disable-pip-version-check 'playwright>=1.45,<2'
 
@@ -88,6 +98,9 @@ jobs:
 
       - name: Test HomePulse maintenance, photos, costs, backups and offline mobile browser
         run: python apps/homepulse/tests/browser.test.py
+
+      - name: Test ParkWise pricing, GPS, local backups and offline mobile browser
+        run: python apps/parkwise/tests/browser.test.py
 
   deploy:
     if: github.event_name != 'pull_request'
@@ -163,6 +176,17 @@ jobs:
           cmp _site/apps/homepulse/index.html _site/apps/homepulse/index.htm
           test -s _site/apps/homepulse/core.js
           for app in moneyuntil receiptrescue snapaction fridgefirst; do
+            test -s "_site/apps/$app/index.html"
+          done
+
+      - name: Prepare ParkWise without overwriting earlier applications
+        run: |
+          set -euo pipefail
+          mkdir -p _site/apps/parkwise
+          cp apps/parkwise/index.html apps/parkwise/index.htm apps/parkwise/core.js apps/parkwise/app.js apps/parkwise/style.css apps/parkwise/sw.js apps/parkwise/manifest.webmanifest apps/parkwise/icon.svg apps/parkwise/sitemap.xml _site/apps/parkwise/
+          cmp _site/apps/parkwise/index.html _site/apps/parkwise/index.htm
+          test -s _site/apps/parkwise/core.js
+          for app in moneyuntil receiptrescue snapaction fridgefirst homepulse; do
             test -s "_site/apps/$app/index.html"
           done
 
@@ -269,6 +293,26 @@ jobs:
               exit 0
             fi
             echo "HomePulse not yet public; attempt $attempt/24"
+            sleep 5
+          done
+          echo "PUBLIC_SMOKE_FAIL $SITE" >&2
+          exit 1
+
+
+      - name: Verify public ParkWise site
+        run: |
+          set -euo pipefail
+          SITE="https://googgpt.github.io/Louvre/apps/parkwise/"
+          for attempt in $(seq 1 24); do
+            if curl --fail --location --silent --show-error --max-time 12 "$SITE" -o /tmp/parkwise-live.html \
+              && grep -q '<title>ParkWise' /tmp/parkwise-live.html \
+              && curl --fail --silent --show-error --max-time 12 "${SITE}core.js" -o /tmp/parkwise-core.js \
+              && grep -q 'costOfParking' /tmp/parkwise-core.js \
+              && curl --fail --silent --show-error --max-time 12 "${SITE}sw.js" -o /tmp/parkwise-sw.js; then
+              echo "PUBLIC_SMOKE_PASS $SITE"
+              exit 0
+            fi
+            echo "ParkWise not yet public; attempt $attempt/24"
             sleep 5
           done
           echo "PUBLIC_SMOKE_FAIL $SITE" >&2
