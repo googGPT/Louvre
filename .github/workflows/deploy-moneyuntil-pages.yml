@@ -7,6 +7,7 @@ on:
       - 'apps/receiptrescue/**'
       - 'apps/snapaction/**'
       - 'apps/fridgefirst/**'
+      - 'apps/homepulse/**'
       - '.github/workflows/deploy-moneyuntil-pages.yml'
   push:
     branches: [main]
@@ -15,6 +16,7 @@ on:
       - 'apps/receiptrescue/**'
       - 'apps/snapaction/**'
       - 'apps/fridgefirst/**'
+      - 'apps/homepulse/**'
       - '.github/workflows/deploy-moneyuntil-pages.yml'
   workflow_dispatch:
 
@@ -64,6 +66,14 @@ jobs:
           node -e "JSON.parse(require('fs').readFileSync('apps/fridgefirst/manifest.webmanifest','utf8'))"
           TZ=Europe/Paris node --test apps/fridgefirst/tests/core.test.cjs
 
+      - name: Test HomePulse maintenance dates and validated backups
+        run: |
+          node --check apps/homepulse/core.js
+          node --check apps/homepulse/app.js
+          node --check apps/homepulse/sw.js
+          node -e "JSON.parse(require('fs').readFileSync('apps/homepulse/manifest.webmanifest','utf8'))"
+          TZ=Europe/Paris node --test apps/homepulse/tests/core.test.cjs
+
       - name: Install free browser test harness
         run: python -m pip install --disable-pip-version-check 'playwright>=1.45,<2'
 
@@ -75,6 +85,9 @@ jobs:
 
       - name: Test FridgeFirst inventory, recipes, backups and offline mobile browser
         run: python apps/fridgefirst/tests/browser.test.py
+
+      - name: Test HomePulse maintenance, photos, costs, backups and offline mobile browser
+        run: python apps/homepulse/tests/browser.test.py
 
   deploy:
     if: github.event_name != 'pull_request'
@@ -141,6 +154,17 @@ jobs:
           test -s _site/apps/moneyuntil/index.html
           test -s _site/apps/receiptrescue/index.html
           test -s _site/apps/snapaction/index.html
+
+      - name: Prepare HomePulse without overwriting earlier applications
+        run: |
+          set -euo pipefail
+          mkdir -p _site/apps/homepulse
+          cp apps/homepulse/index.html apps/homepulse/index.htm apps/homepulse/core.js apps/homepulse/app.js apps/homepulse/style.css apps/homepulse/sw.js apps/homepulse/manifest.webmanifest apps/homepulse/icon.svg apps/homepulse/sitemap.xml _site/apps/homepulse/
+          cmp _site/apps/homepulse/index.html _site/apps/homepulse/index.htm
+          test -s _site/apps/homepulse/core.js
+          for app in moneyuntil receiptrescue snapaction fridgefirst; do
+            test -s "_site/apps/$app/index.html"
+          done
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
@@ -226,6 +250,25 @@ jobs:
               exit 0
             fi
             echo "FridgeFirst unavailable; check $attempt/24"
+            sleep 5
+          done
+          echo "PUBLIC_SMOKE_FAIL $SITE" >&2
+          exit 1
+
+      - name: Verify public HomePulse site
+        run: |
+          set -euo pipefail
+          SITE="https://googgpt.github.io/Louvre/apps/homepulse/"
+          for attempt in $(seq 1 24); do
+            if curl --fail --location --silent --show-error --max-time 12 "$SITE" -o /tmp/homepulse-live.html \
+              && grep -q '<title>HomePulse' /tmp/homepulse-live.html \
+              && curl --fail --silent --show-error --max-time 12 "${SITE}core.js" -o /tmp/homepulse-core.js \
+              && grep -q 'cleanState' /tmp/homepulse-core.js \
+              && curl --fail --silent --show-error --max-time 12 "${SITE}sw.js" -o /tmp/homepulse-sw.js; then
+              echo "PUBLIC_SMOKE_PASS $SITE"
+              exit 0
+            fi
+            echo "HomePulse not yet public; attempt $attempt/24"
             sleep 5
           done
           echo "PUBLIC_SMOKE_FAIL $SITE" >&2
