@@ -50,7 +50,7 @@ def run():
             blob=pathlib.Path(download.value.path()).read_text()
             backup=json.loads(blob)
             assert len(backup['spots'])==2 and backup['parkingSpot']['note']=='Niveau B1'
-            page.on('dialog',lambda d:d.accept())
+            page.on('dialog',lambda d:d.accept('120') if d.type=='prompt' else d.accept())
             page.locator('.spot').first.locator('button',has_text='Supprimer').click()
             page.wait_for_function("document.querySelectorAll('.spot').length === 1")
             page.locator('#import-file').set_input_files({'name':'parkwise.json','mimeType':'application/json','buffer':blob.encode()})
