@@ -1,0 +1,18 @@
+{
+  "name": "WorldMeet",
+  "short_name": "WorldMeet",
+  "description": "Afficher une réunion UTC dans plusieurs fuseaux horaires",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "theme_color": "#101827",
+  "background_color": "#0b111d",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
