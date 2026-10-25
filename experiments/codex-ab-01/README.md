@@ -20,6 +20,9 @@ Les deux archives `arm-a-without-louvre.tar.gz` et `arm-b-with-louvre.tar.gz` so
 
 **Important :** ce workflow prépare les paquets ; il ne démarre ni Codex ni des travaux asynchrones. Il ne modifie pas `main`.
 
+## Nouvelle option facultative : exécution automatisée Codex
+Lire [RUN-CODEX-OPTIONAL.md](RUN-CODEX-OPTIONAL.md) pour le workflow **manuel seulement** `.github/workflows/codex-ab-run-manual.yml`. Son exécution exige une clé API OpenAI facturable, un secret GitHub `OPENAI_API_KEY`, et une case explicite d'autorisation des frais. Aucune exécution n'est lancée par la fusion de ce fichier. La CI gratuite valide l'isolation des deux runners et les archives ; seuls de futurs runs manuels feront travailler les agents et exécuteront l'évaluation indépendante.
+
 ## Exécution de Codex (non encore réalisée)
 
 Faire ouvrir chaque archive dans **une session Codex distincte** ; appliquer uniquement `TASK.md` et ne pas exposer l'évaluateur. Conserver pour chaque condition : commit/code final, journal de tests, références réellement consultées, environnement (version du modèle/outil) et ressources consommées si disponibles. Un agent peut avoir connaissance de techniques similaires de sa propre formation ; le test mesure l'effet marginal de la disponibilité de Louvre, pas l'origine réelle de toutes ses connaissances.

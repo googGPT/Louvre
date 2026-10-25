@@ -1,0 +1,159 @@
+name: Louvre Codex A/B agent run (manual, API charges)
+
+# IMPORTANT: This never runs on pushes or pull requests. It requires a person
+# to authorize API charges and configure an OPENAI_API_KEY repository secret.
+on:
+  workflow_dispatch:
+    inputs:
+      authorize_api_charges:
+        description: 'I explicitly authorize two potentially billable Codex API runs'
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    if: ${{ inputs.authorize_api_charges == true }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out benchmark preparation (frozen base fetched inside script)
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Generate both frozen snapshots
+        run: bash experiments/codex-ab-01/scripts/make-snapshots.sh
+      - name: Upload control arm A
+        uses: actions/upload-artifact@v4
+        with:
+          name: baseline-arm-a
+          path: experiments/codex-ab-01/dist/arm-a-without-louvre.tar.gz
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload library arm B
+        uses: actions/upload-artifact@v4
+        with:
+          name: baseline-arm-b
+          path: experiments/codex-ab-01/dist/arm-b-with-louvre.tar.gz
+          if-no-files-found: error
+          retention-days: 30
+
+  run-codex:
+    needs: prepare
+    strategy:
+      fail-fast: false
+      matrix:
+        arm: [a, b]
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - name: Fail safely before any paid API call when the key is absent
+        env:
+          API_KEY_IS_SET: ${{ secrets.OPENAI_API_KEY != '' }}
+        run: |
+          if [[ "$API_KEY_IS_SET" != 'true' ]]; then
+            echo 'Missing OPENAI_API_KEY GitHub repository secret. No Codex API call made.' >&2
+            exit 1
+          fi
+      - name: Fetch selected frozen archive (NO repository checkout)
+        uses: actions/download-artifact@v4
+        with:
+          name: baseline-arm-${{ matrix.arm }}
+          path: ${{ runner.temp }}/input
+      - name: Download verified isolated-workspace helper
+        uses: actions/download-artifact@v4
+        with:
+          name: ab-isolation-helper
+          path: ${{ runner.temp }}/helper
+      - name: Build isolated Git repository from this arm only
+        env:
+          ARM: ${{ matrix.arm }}
+        run: |
+          set -euo pipefail
+          if [[ "$ARM" == a ]]; then
+            ARCHIVE="$RUNNER_TEMP/input/arm-a-without-louvre.tar.gz"
+          else
+            ARCHIVE="$RUNNER_TEMP/input/arm-b-with-louvre.tar.gz"
+          fi
+          bash "$RUNNER_TEMP/helper/prepare-agent-workspace.sh" "$ARCHIVE" "$ARM" "$GITHUB_WORKSPACE"
+      - name: Set up Node.js for identical dependency installation
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install application dependencies without rewriting manifest
+        working-directory: labs/reservation-lab
+        run: npm install --no-audit --no-fund --no-package-lock --ignore-scripts
+      - name: Run Codex in isolated workspace (billable action)
+        id: codex
+        uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          permission-profile: ':workspace'
+          prompt-file: TASK.md
+          output-file: codex-final.md
+      - name: Capture generated files and diagnostic output without pushing code
+        if: always()
+        run: |
+          set -euo pipefail
+          if [[ -f codex-final.md ]]; then
+            cp codex-final.md "$RUNNER_TEMP/arm-${{ matrix.arm }}-codex-final.md"
+            rm -f codex-final.md
+          fi
+          git add -N . || true
+          git diff --binary > "$RUNNER_TEMP/arm-${{ matrix.arm }}.patch"
+          tar -czf "$RUNNER_TEMP/arm-${{ matrix.arm }}-candidate.tar.gz" \
+            --exclude=.git --exclude=node_modules --exclude=.next \
+            --exclude=.domain-build --exclude=codex-final.md .
+          printf 'This archive is a candidate solution, not a scored result.\n' > "$RUNNER_TEMP/arm-${{ matrix.arm }}-NOTICE.txt"
+      - name: Upload candidate for independent evaluation
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: codex-candidate-${{ matrix.arm }}
+          path: |
+            ${{ runner.temp }}/arm-${{ matrix.arm }}.patch
+            ${{ runner.temp }}/arm-${{ matrix.arm }}-candidate.tar.gz
+            ${{ runner.temp }}/arm-${{ matrix.arm }}-NOTICE.txt
+            ${{ runner.temp }}/arm-${{ matrix.arm }}-codex-final.md
+          if-no-files-found: warn
+          retention-days: 30
+
+  evaluate:
+    needs: run-codex
+    if: always() && needs.run-codex.result != 'skipped'
+    strategy:
+      fail-fast: false
+      matrix:
+        arm: [a, b]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Check out ONLY trusted independent evaluator
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Download candidate from the relevant arm
+        uses: actions/download-artifact@v4
+        with:
+          name: codex-candidate-${{ matrix.arm }}
+          path: ${{ runner.temp }}/candidate-input
+      - name: Expand candidate into isolated evaluation area
+        env:
+          ARM: ${{ matrix.arm }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/candidate"
+          tar -xzf "$RUNNER_TEMP/candidate-input/arm-${ARM}-candidate.tar.gz" -C "$RUNNER_TEMP/candidate"
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run independent acceptance tests, build and HTTP smoke
+        run: bash experiments/codex-ab-01/scripts/evaluate-candidate.sh "$RUNNER_TEMP/candidate"
