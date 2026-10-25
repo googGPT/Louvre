@@ -1,0 +1,28 @@
+# SnapAction Web v1 — application explicite des cinq ouvrages Louvre
+
+**Méthode.** L'index `technical-library/INDEX.md` a servi de point d'entrée ; les cinq fiches ci-dessous ont été consultées sur GitHub avant la conception. Les choix et le code de SnapAction sont **des adaptations originales**, pas du texte ou du code recopié des livres. Les pages physiques de PDF citées proviennent des notes Louvre préalablement établies : nous n'affirmons pas avoir rouvert/revérifié les fichiers PDF originaux à cette étape. Les cinq *principes* sont pris en compte sans imposer les cinq frameworks à une application GitHub Pages statique.
+
+| Source (catalogue) | Fiche Louvre et repères des PDF | Application réelle dans SnapAction | Limite de la transposition |
+| --- | --- | --- | --- |
+| **Total TypeScript: The Essentials** (SRC-001) | `technical-library/concepts/language-and-types/TS16-001-runtime-type-guards.md`, chap. 16, pages PDF physiques 396–400 | `core.js`: `validTask`, `validateBackup`, `validImage`, `isoDate` contrôlent effectivement les entrées JSON et les pièces jointes au runtime ; rejet des champs inconnus | Pas de TypeScript dans l'exécution navigateur ; un type seul ne sécurise pas des données venues d'un fichier |
+| **The Complete Developer** (SRC-002) | `technical-library/concepts/testing/FULL08-001-tdd-and-test-doubles.md`, chap. 8, pages PDF 160–174 | `tests/core.test.cjs`: tests purs déterministes des dates, récurrences, importations et échappement ICS ; `tests/browser.test.py`: intégration de vrais composants navigateur/IndexedDB | Tests et mocks ne garantissent pas le comportement sur tous les appareils mobiles |
+| **Ultimate Next.js for Modern Web Applications** (SRC-003) | `technical-library/concepts/frontend/NEXT08-001-client-vs-server-state.md`, chap. 8, pages PDF 212–226 | `app.js`: dissociation de la source de vérité persistée (IndexedDB) des compteurs/filtres recalculés (`core.statistics` et `core.filterTasks`) ; pas de duplication de compteurs | **Pas de Next.js ni de rendu serveur**, sans utilité dans ce prototype privé local ; concept d'architecture seulement |
+| **Building Real-World Web Applications with Vue.js 3** (SRC-004) | `technical-library/concepts/frontend/VUE07-001-multiplatform-quasar-supabase.md`, chap. 7, pages PDF 186–202 | `core.js` sans DOM ni API navigateur, `app.js` comme adaptateur UI/persistance et `sw.js` comme cache : noyau réutilisable lors d'une future adaptation Android/iOS | **Pas de Vue/Quasar/Supabase** : déploiement Web léger uniquement, applications natives non produites |
+| **Learning GitHub Actions** (SRC-005) | `technical-library/concepts/security/GHA09-001-permissions-and-untrusted-input.md`, chap. 9, pages PDF 210–220 | Workflow `.github/workflows/deploy-moneyuntil-pages.yml`: tests sous permissions `contents: read`, déploiement seulement sur `main` après tests, permissions `pages: write` et `id-token: write` limitées au job de publication ; pas de secrets | GitHub Pages reste soumis aux limites de l'offre GitHub ; pas de promesse d'hébergement gratuit illimité |
+
+## Décisions d'architecture et de sécurité
+
+- **Aucune API payante** : parsing local de dates, analyse de règles, IndexedDB, compression image Canvas, export JSON/iCalendar et PWA statique. Aucun backend ou compte. Les notifications Web facultatives dépendent du navigateur et de l'ouverture de l'application.
+- **Transactions** : `writeRecords` conserve une atomicité IndexedDB pour marquer une tâche récurrente terminée et créer sa prochaine échéance ; même transaction lors de la restauration après validation préalable.
+- **Sécurité** : titres et notes affichés par `textContent`, jamais insérés depuis du HTML non fiable. Seuls `image/png`, `image/jpeg`, `image/webp` sont acceptés et compressés en JPEG ; SVG exécutable n'est pas accepté comme pièce jointe. Les données à importer sont vérifiées au-delà des types JavaScript.
+- **Fiabilité des dates** : le parseur ne lance **aucune IA** et ne doit jamais convertir silencieusement un texte sans date en rendez-vous fictif ; les propositions reconnues sont éditables. Les dates relatives en jours utilisent 24 h ; les changements d'heure et formulations ambiguës restent des limites affichées.
+- **Confidentialité** : données utilisateur local-only, sans analytics. Le service worker précharge uniquement les fichiers statiques. Les exports JSON comprennent potentiellement des données personnelles, d'où l'avertissement explicite de sauvegarde.
+- **Régression** : déploiement multi-applications conserve les copies de MoneyUntil et ReceiptRescue à leurs URLs actuelles ; le pipeline doit contrôler ces deux sites en plus de SnapAction.
+
+## Validation factuelle
+
+- Lancer `TZ=Europe/Paris node --test apps/snapaction/tests/core.test.cjs` (29 scénarios) ; le résultat exact doit être tiré des logs GitHub, pas présumé.
+- Lancer `python apps/snapaction/tests/browser.test.py` avec Chromium/Chrome : création, pièce jointe, rechargement IndexedDB, édition, export/restauration, ICS, tâche terminée, rechargement hors ligne, interface mobile.
+- La validation sur la page publique GitHub Pages exige la fusion puis le workflow de `push main`. Un succès des tests sur PR ne prouve pas que l'URL publique est déployée.
+
+**Statut avant CI :** le parseur et les tests Node ont été exécutés dans l'environnement de préparation (29/29). Le Chromium local s'est lancé mais ses navigations HTTP locales ont été bloquées par la politique de cet environnement (`ERR_BLOCKED_BY_ADMINISTRATOR`). Les scénarios navigateur sont donc soumis au runner GitHub, et leur résultat sera communiqué après exécution effective.

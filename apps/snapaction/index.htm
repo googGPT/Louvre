@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101e2c"><meta name="description" content="SnapAction : notez une tâche en quelques mots, reconnaissez les dates, organisez vos rappels et gardez vos données sur votre appareil. Gratuit, sans compte ni API payante.">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/snapaction/"><link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icon.svg" type="image/svg+xml">
+<title>SnapAction — Une idée. Une action. C'est noté.</title>
+<link rel="stylesheet" href="./style.css"><script src="./core.js" defer></script><script src="./app.js" defer></script>
+</head>
+<body>
+<div class="shell">
+  <aside class="side" aria-label="Navigation SnapAction">
+    <a class="logo" href="#inbox"><span class="logo-mark">s<span class="logo-dot">.</span></span><span>snap<span class="green">action</span></span></a>
+    <div class="nav-caption">MON ESPACE</div>
+    <nav class="nav" aria-label="Listes de tâches">
+      <button class="nav-item active" data-view="inbox" type="button"><span>▦</span><span>Toutes les actions</span><b id="count-inbox" class="count">0</b></button>
+      <button class="nav-item" data-view="today" type="button"><span>◷</span><span>Aujourd'hui & retards</span><b id="count-today" class="count">0</b></button>
+      <button class="nav-item" data-view="upcoming" type="button"><span>▤</span><span>Prochainement</span></button>
+      <button class="nav-item" data-view="done" type="button"><span>✓</span><span>Terminées</span></button>
+    </nav>
+    <div class="nav-caption secondary-caption">MES DONNÉES</div>
+    <div class="nav utility-nav"><button id="export-json" class="nav-item" type="button"><span>↓</span><span>Sauvegarder</span></button><button id="import-trigger" class="nav-item" type="button"><span>↑</span><span>Restaurer</span></button><button id="export-calendar" class="nav-item" type="button"><span>▦</span><span>Exporter calendrier</span></button></div>
+    <div class="side-foot"><span class="dot-online"></span><strong>Privé par défaut</strong><p>Vos actions et captures restent sur cet appareil. Pas de compte. Pas de publicité.</p></div>
+  </aside>
+  <main class="main">
+    <header class="topbar"><div><span class="date-line" id="today-label"></span><strong>Votre espace personnel</strong></div><div class="topbuttons"><span class="privacy-chip">◈ Données locales</span><button id="install-btn" class="small-button" type="button" hidden>＋ Installer</button><button id="notice-btn" class="small-button" type="button">♧ Alertes</button></div></header>
+    <section class="welcome"><span class="eyebrow">MOINS DE CHARGE MENTALE, PLUS DE TEMPS</span><h1>Une idée. <span>Une action.</span><br>C'est noté.</h1><p>Écrivez ce que vous ne voulez pas oublier. SnapAction repère certaines dates et vous aide à passer à l'action.</p></section>
+    <div id="storage-warning" class="warning" role="alert" hidden><strong>⚠ Stockage indisponible.</strong> La sauvegarde de vos actions n'est pas garantie. Vérifiez le mode privé et les autorisations de votre navigateur. <button id="retry-storage" type="button">Réessayer</button></div>
+    <div id="notify-warning" class="info-banner" role="status"><strong>Rappels honnêtes :</strong> SnapAction affiche les échéances et peut déclencher une notification pendant que l'application est ouverte. Pour les rappels fiables lorsque tout est fermé, exportez vos tâches dans votre calendrier.</div>
+    <section class="capture" aria-labelledby="capture-title">
+      <div class="capture-top"><div><span class="eyebrow">CAPTURE RAPIDE</span><h2 id="capture-title">Qu'est-ce qu'on ne doit pas oublier ?</h2></div><span class="shortcut">✦ Sans IA payante</span></div>
+      <form id="new-task-form">
+        <label for="quick-text" class="sr-only">Votre tâche</label>
+        <textarea id="quick-text" rows="3" maxlength="180" required placeholder="Ex. Envoyer le dossier demain à 14h30…"></textarea>
+        <div class="parse-preview" id="parse-preview" role="status"><span>✧</span> Astuce : essayez « demain 14h », « lundi 9h », « dans 2 heures » ou « 28/10 à 16h ».</div>
+        <div class="capture-controls">
+          <div class="form-field"><label for="due-local">📅 Échéance (facultatif)</label><input id="due-local" type="datetime-local"></div>
+          <div class="form-field"><label for="priority">Priorité</label><select id="priority"><option value="normal">Normale</option><option value="high">Importante</option></select></div>
+          <div class="form-field"><label for="repeat">Répétition</label><select id="repeat"><option value="none">Une seule fois</option><option value="daily">Tous les jours</option><option value="weekly">Chaque semaine</option><option value="monthly">Chaque mois</option></select></div>
+        </div>
+        <div class="capture-footer"><div class="photo-picker"><label for="image-file" class="outline-button">▧ Ajouter une capture</label><input type="file" id="image-file" accept="image/png,image/jpeg,image/webp" hidden><span id="image-label" class="subtle">Facultatif · photo ou capture</span></div><button type="submit" id="create-button" class="primary-button">＋ Créer l'action</button></div>
+      </form>
+    </section>
+    <section class="metrics" aria-label="Statistiques des tâches"><div class="metric"><span>Actions en cours</span><strong id="metric-open">0</strong><small>Votre liste active</small></div><div class="metric"><span>Pour aujourd'hui</span><strong id="metric-today">0</strong><small>À faire avant demain</small></div><div class="metric"><span>En retard</span><strong id="metric-late">0</strong><small>Encore à accomplir</small></div><div class="metric"><span>Terminées</span><strong id="metric-done">0</strong><small>Vos petites victoires</small></div></section>
+    <section class="task-panel" aria-labelledby="list-heading"><div class="list-top"><div><span class="eyebrow">RESTEZ SUR LA BONNE VOIE</span><h2 id="list-heading">Toutes les actions</h2><p id="list-subtitle">Une chose à la fois, sans rien oublier.</p></div><div class="search-wrap"><label for="search" class="sr-only">Rechercher une tâche</label><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Rechercher…"></div></div>
+      <div id="task-list" class="task-list" aria-live="polite"></div>
+    </section>
+    <footer class="footer"><span>SnapAction 1.0 · Gratuit · Sans compte · <a href="./README.md">Mode d'emploi</a></span><span>Une date détectée est une suggestion : vérifiez-la avant d'enregistrer.</span></footer>
+  </main>
+</div>
+<input id="import-file" type="file" accept=".json,application/json" hidden>
+<dialog id="edit-dialog" aria-labelledby="edit-title"><form id="edit-form" class="edit-form"><div class="dialog-top"><h2 id="edit-title">Modifier l'action</h2><button id="close-edit" type="button" class="icon-button" aria-label="Fermer">×</button></div><label for="edit-title-input">Titre</label><input id="edit-title-input" required maxlength="180"><label for="edit-note">Note</label><textarea id="edit-note" rows="3" maxlength="2000" placeholder="Détails facultatifs"></textarea><label for="edit-date">Échéance</label><input id="edit-date" type="datetime-local"><label for="edit-priority">Priorité</label><select id="edit-priority"><option value="normal">Normale</option><option value="high">Importante</option></select><label for="edit-repeat">Répétition</label><select id="edit-repeat"><option value="none">Une seule fois</option><option value="daily">Tous les jours</option><option value="weekly">Chaque semaine</option><option value="monthly">Chaque mois</option></select><div class="dialog-buttons"><button class="outline-button" id="delete-action" type="button">Supprimer</button><button class="primary-button" type="submit">Enregistrer</button></div></form></dialog>
+<dialog id="image-dialog" aria-label="Aperçu d'une pièce jointe"><button class="image-close small-button" id="close-image" type="button">Fermer ×</button><img id="full-image" alt="Capture jointe à l'action"></dialog>
+<div id="toast" class="toast" role="status" hidden></div>
+</body>
+</html>
