@@ -2,14 +2,14 @@
 
 Louvre transforme cinq ouvrages de développement logiciel en références structurées : fiches de conception, compromis, exemples originaux, limites et provenance documentaire.
 
-## État au 25 octobre 2026 — 35 fiches
+## État au 25 octobre 2026 — 45 fiches
 
-- **35 fiches techniques** couvrant partiellement **31 chapitres** sur 70 ; les 39 autres chapitres sont seulement cartographiés.
-- **5 ouvrages** représentés avec thèmes : TypeScript, backend, Docker, Next.js, Vue/Nuxt et GitHub Actions.
-- **Exemples TypeScript du lot 3C3 :** compilation stricte sous TypeScript 5.8.3 et 11 scénarios d'exécution sous Node.js 22.16.0 rapportés par l'environnement ChatGPT, sans prétendre une exécution Codex.
-- **Contrôles structuraux GitHub Actions :** identifiants, chemins, références locales et absence de livres PDF dans ce dépôt public ; toujours vérifier le statut de la CI sur la dernière révision de la Pull Request.
-- Aucun exemple Next.js/Nuxt/Docker du lot 3C3 n'a été exécuté dans une application réelle.
-- Si le Skill est absent des catalogues Codex, consulter directement `AGENTS.md` puis l'index.
+- **45 fiches techniques**, couvrant partiellement **41 des 70 chapitres** ; les 29 autres chapitres n'ont encore qu'une cartographie bibliographique.
+- **Cinq ouvrages représentés**, avec des pages PDF physiquement vérifiées dans l'environnement source privé.
+- **Provenance :** chaque fiche distingue contenu du livre, adaptation Louvre et limites. Les cinq PDF et les passages substantiels ne sont jamais publiés ici.
+- **Validation documentaire :** `python3 scripts/validate_library.py` est exécuté via GitHub Actions à chaque Pull Request.
+- **Validation TypeScript :** le workflow ajoute des contrôles stricts de compilation et des tests déterministes sur les exemples 3C3 et 3C4 ; leur réussite sur GitHub doit être observée sur le dernier commit.
+- **Aucune exécution réelle** de serveur Next.js, MongoDB, Vue/Nuxt, TensorFlow, déploiement ou action composite du lot 3C4. Le code d'exemple ne vaut pas certification d'application.
 
 ## Utiliser Louvre dans Codex
 
@@ -36,3 +36,6 @@ Aucun contenu substantiel d'ouvrage sous droit d'auteur n'est reproduit. Toute p
 
 - [Rapport du lot 3C3](technical-library/validation/batch-3c3-source-audit.md)
 - [Exemples typés et exécutés du lot 3C3](technical-library/examples/validated-contracts-3c3.ts)
+
+- [Audit du lot 3C4](technical-library/validation/batch-3c4-source-and-typechecks.md)
+- [Fonctions TypeScript testables 3C4](technical-library/examples/validated-contracts-3c4.ts) et [leurs cas de test](technical-library/examples/validated-contracts-3c4.test.ts)

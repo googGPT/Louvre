@@ -4,9 +4,9 @@ Trouver un concept par son problème ou ses mots-clés, puis consulter uniquemen
 
 ## Couverture vérifiée au 25 octobre 2026
 
-- **35 fiches techniques distinctes**, réparties sur les cinq ouvrages.
-- **70 chapitres cartographiés** ; **31 possèdent au moins une fiche**, sans couverture exhaustive.
-- **39 chapitres restent uniquement cartographiés**.
+- **45 fiches techniques distinctes**, réparties sur les cinq ouvrages.
+- **70 chapitres cartographiés** ; **41 possèdent au moins une fiche**, sans couverture exhaustive.
+- **29 chapitres restent uniquement cartographiés**.
 - Les nouvelles pages référencées proviennent d'une lecture ciblée des cinq PDF privés dans l'environnement ChatGPT ; Codex n'a pas lu les PDF.
 - Les démonstrations applicatives doivent être testées dans les projets réels avant usage.
 - Les contrôles documentaires automatisés utilisent [ce script](../scripts/validate_library.py) et [ce rapport](validation/batch-3c2-verified-source-notes.md). Ils ne certifient pas le code produit.
@@ -306,3 +306,87 @@ Les dix fiches supplémentaires traitent TypeScript, Docker, routage/tests Next.
 - **Fiche :** [GHA10-001](concepts/devops/GHA10-001-workflow-diagnostics.md).
 - **Source :** `SRC-005` / `GHA-2023`, chapitre 10 — *Monitoring, Logging, and Debugging*, pages physiques PDF 245–268.
 - **Statut :** pages du PDF vérifiées dans ChatGPT ; exemple non validé en production.
+
+## Lot 3C4 — Dix nouveaux chapitres ciblés
+
+Les fiches suivantes ajoutent une couverture initiale de dix chapitres auparavant uniquement cartographiés. [Rapport de sources et tests](validation/batch-3c4-source-and-typechecks.md) ; [exemples](examples/validated-contracts-3c4.ts) et [vérifications automatisables](examples/validated-contracts-3c4.test.ts).
+
+### TS03-001 — Séparer vérification des types, compilation et exécution
+
+- **Problème :** Un développeur croit que le navigateur exécute directement des fichiers TypeScript, ou confond compilation, assemblage et tests.
+- **Mots-clés :** TypeScript, tsc, transpilation, noEmit, build, bundler, CI.
+- **Fiche :** [TS03-001](concepts/language-and-types/TS03-001-typecheck-and-build.md).
+- **Livre :** `SRC-001` / `TS-2026`, chapitre 3 — *TypeScript in the Development Pipeline* ; pages PDF inspectées : 54, 55, 56, 58, 59..
+- **Limite :** lecture ciblée seulement, pas analyse exhaustive du chapitre ni application validée.
+
+### TS07-001 — Distinguer readonly au compilateur et immutabilité réelle
+
+- **Problème :** Une fonction modifie involontairement un tableau fourni par son appelant ; une configuration annotée `readonly` est supposée figée à l’exécution.
+- **Mots-clés :** readonly, as const, Object.freeze, mutabilité, API, types littéraux.
+- **Fiche :** [TS07-001](concepts/language-and-types/TS07-001-readonly-contracts.md).
+- **Livre :** `SRC-001` / `TS-2026`, chapitre 7 — *Mutability* ; pages PDF inspectées : 169, 170, 174, 175, 180, 181, 185, 187..
+- **Limite :** lecture ciblée seulement, pas analyse exhaustive du chapitre ni application validée.
+
+### FULL12-001 — Mettre la connexion et les services MongoDB derrière une frontière
+
+- **Problème :** Les composants et résolveurs interrogent MongoDB directement, chacun recréant la connexion et les règles métier.
+- **Mots-clés :** Next.js, MongoDB, Mongoose, service, connexion, modèle, middleware.
+- **Fiche :** [FULL12-001](concepts/backend-and-apis/FULL12-001-database-services.md).
+- **Livre :** `SRC-002` / `FULL-2024`, chapitre 12 — *Building the Middleware* ; pages PDF inspectées : 225, 227, 228, 230, 232, 234, 235..
+- **Limite :** lecture ciblée seulement, pas analyse exhaustive du chapitre ni application validée.
+
+### FULL13-001 — Assembler schémas GraphQL et résolveurs sans contourner les autorisations
+
+- **Problème :** Une API GraphQL regroupe tous les types et résolveurs dans un fichier géant, ou autorise une mutation simplement parce que le client fournit un identifiant.
+- **Mots-clés :** GraphQL, schema, query, mutation, resolver, OAuth, service.
+- **Fiche :** [FULL13-001](concepts/backend-and-apis/FULL13-001-modular-graphql-resolvers.md).
+- **Livre :** `SRC-002` / `FULL-2024`, chapitre 13 — *Building the GraphQL API* ; pages PDF inspectées : 237, 238, 239, 240, 241, 242, 243..
+- **Limite :** lecture ciblée seulement, pas analyse exhaustive du chapitre ni application validée.
+
+### NEXT04-001 — Construire une route API qui valide ses entrées côté serveur
+
+- **Problème :** Une application accepte des paramètres HTTP non contrôlés et expose des clés API à son navigateur.
+- **Mots-clés :** Next.js, API route, pages/api, GET, POST, JSON, validation, BFF.
+- **Fiche :** [NEXT04-001](concepts/backend-and-apis/NEXT04-001-api-route-validation.md).
+- **Livre :** `SRC-003` / `NEXT-2026`, chapitre 4 — *API Routes in Next.js* ; pages PDF inspectées : 100, 102, 103, 106, 108, 115, 116..
+- **Limite :** lecture ciblée seulement, pas analyse exhaustive du chapitre ni application validée.
+
+### NEXT11-001 — Préparer le déploiement Next.js avec vérifications et rollback
+
+- **Problème :** Une application passe du poste développeur en production sans vérification de la compilation, des variables d’environnement ou de la surveillance.
+- **Mots-clés :** Next.js, déploiement, build, hosting, Vercel, CDN, rollback, monitoring.
+- **Fiche :** [NEXT11-001](concepts/architecture-and-devops/NEXT11-001-deployment-readiness.md).
+- **Livre :** `SRC-003` / `NEXT-2026`, chapitre 11 — *Deploying Next.js Applications* ; pages PDF inspectées : 265, 266, 267, 269, 272, 275, 282, 283..
+- **Limite :** lecture ciblée seulement, pas analyse exhaustive du chapitre ni application validée.
+
+### VUE04-001 — Extraire les appels API d’un composant Vue vers des composables
+
+- **Problème :** Un composant Vue de recherche mélange formulaire, calcul de pagination, appels réseau, gestion du chargement et logique métier.
+- **Mots-clés :** Vue 3, composable, ref, API, pagination, search, defineEmits.
+- **Fiche :** [VUE04-001](concepts/frontend/VUE04-001-composables-api-search.md).
+- **Livre :** `SRC-004` / `VUE-2024`, chapitre 4 — *Creating the Marvel Explorer App* ; pages PDF inspectées : 82, 89, 92, 97, 101, 107, 108..
+- **Limite :** lecture ciblée seulement, pas analyse exhaustive du chapitre ni application validée.
+
+### VUE09-001 — Encadrer la reconnaissance d’objets et les limites d’un modèle prêt à l’emploi
+
+- **Problème :** Une application affiche une étiquette produite par un modèle de reconnaissance comme si elle constituait une identification certaine.
+- **Mots-clés :** Vue, TensorFlow.js, COCO-SSD, reconnaissance objets, confiance, limites, webcam.
+- **Fiche :** [VUE09-001](concepts/ai-and-frontend/VUE09-001-browser-object-detection.md).
+- **Livre :** `SRC-004` / `VUE-2024`, chapitre 9 — *Experimental Object Recognition with TensorFlow* ; pages PDF inspectées : 244, 245, 246, 247, 248, 250, 254, 260, 266..
+- **Limite :** lecture ciblée seulement, pas analyse exhaustive du chapitre ni application validée.
+
+### GHA06-001 — Isoler variables, secrets et approbations par environnement GitHub
+
+- **Problème :** Un workflow traite des secrets de production comme de simples variables de configuration, ou permet à toutes les branches de déployer.
+- **Mots-clés :** GitHub Actions, environment, vars, secrets, approvals, GITHUB_TOKEN.
+- **Fiche :** [GHA06-001](concepts/devops/GHA06-001-environments-and-secrets.md).
+- **Livre :** `SRC-005` / `GHA-2023`, chapitre 6 — *Managing Your Workflow Environments* ; pages PDF inspectées : 113, 115, 118, 121, 125, 126, 128, 132, 134, 137..
+- **Limite :** lecture ciblée seulement, pas analyse exhaustive du chapitre ni application validée.
+
+### GHA11-001 — Factoriser un workflow en action composite locale
+
+- **Problème :** Plusieurs pipelines répètent les mêmes étapes de contrôle et se contredisent progressivement.
+- **Mots-clés :** GitHub Actions, action.yml, composite, inputs, outputs, reusable workflow.
+- **Fiche :** [GHA11-001](concepts/devops/GHA11-001-local-composite-actions.md).
+- **Livre :** `SRC-005` / `GHA-2023`, chapitre 11 — *Creating Custom actions* ; pages PDF inspectées : 281, 282, 283, 285, 286, 289, 310, 312, 313..
+- **Limite :** lecture ciblée seulement, pas analyse exhaustive du chapitre ni application validée.

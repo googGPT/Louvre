@@ -1,5 +1,7 @@
 # Catalogue des sources
 
+> **Statut actuel (25 octobre 2026 — lot 3C4) :** 45 fiches distinctes, 41 chapitres partiellement couverts sur les 70 chapitres répertoriés. Les statistiques antérieures figurant dans les sections historiques correspondent à l'état des anciens lots et ne doivent pas être interprétées comme l'état courant. Les nouveaux PDF ont été lus de manière ciblée dans l'environnement source ChatGPT, sans publier les livres.
+
 > **Statut actuel au 25 octobre 2026 (lot 3C3) :** 35 fiches décrivent des concepts de **31 chapitres**, sans couvrir intégralement les ouvrages. Les chiffres de 15 ou 25 dans les sections plus anciennes sont historiques. Les exemples TypeScript du lot 3C3 ont passé compilation stricte et scénarios Node 22 ; les autres applications ne sont pas testées.
 
 > **Statut actuel — 25 octobre 2026 : 25 fiches issues de 21 chapitres partiellement couverts.** Les paragraphes historiques sur la non-consultation des PDF concernent les environnements Codex utilisés pendant les premières intégrations. Pour le lot 3C2, les pages et empreintes ont été vérifiées sur les fichiers originaux disponibles dans l'environnement source ChatGPT.
@@ -144,3 +146,21 @@ La validation structurelle automatique ne remplace pas la relecture technique ni
 | `GHA10-001` | `SRC-005` | 10 | 245–268 | [Lire](concepts/devops/GHA10-001-workflow-diagnostics.md) |
 
 [Audit de provenance du lot 3C3](validation/batch-3c3-source-audit.md). L'ensemble représente une couverture partielle, et non un audit complet des 31 chapitres.
+
+
+## Lot 3C4 — Dix chapitres nouvellement représentés
+
+| Fiche | Catalogue | Chapitre | Pages physiques PDF examinées | Chemin |
+|---|---|---:|---|---|
+| `TS03-001` | `SRC-001` | 3 | 54, 55, 56, 58, 59. | [Consulter](concepts/language-and-types/TS03-001-typecheck-and-build.md) |
+| `TS07-001` | `SRC-001` | 7 | 169, 170, 174, 175, 180, 181, 185, 187. | [Consulter](concepts/language-and-types/TS07-001-readonly-contracts.md) |
+| `FULL12-001` | `SRC-002` | 12 | 225, 227, 228, 230, 232, 234, 235. | [Consulter](concepts/backend-and-apis/FULL12-001-database-services.md) |
+| `FULL13-001` | `SRC-002` | 13 | 237, 238, 239, 240, 241, 242, 243. | [Consulter](concepts/backend-and-apis/FULL13-001-modular-graphql-resolvers.md) |
+| `NEXT04-001` | `SRC-003` | 4 | 100, 102, 103, 106, 108, 115, 116. | [Consulter](concepts/backend-and-apis/NEXT04-001-api-route-validation.md) |
+| `NEXT11-001` | `SRC-003` | 11 | 265, 266, 267, 269, 272, 275, 282, 283. | [Consulter](concepts/architecture-and-devops/NEXT11-001-deployment-readiness.md) |
+| `VUE04-001` | `SRC-004` | 4 | 82, 89, 92, 97, 101, 107, 108. | [Consulter](concepts/frontend/VUE04-001-composables-api-search.md) |
+| `VUE09-001` | `SRC-004` | 9 | 244, 245, 246, 247, 248, 250, 254, 260, 266. | [Consulter](concepts/ai-and-frontend/VUE09-001-browser-object-detection.md) |
+| `GHA06-001` | `SRC-005` | 6 | 113, 115, 118, 121, 125, 126, 128, 132, 134, 137. | [Consulter](concepts/devops/GHA06-001-environments-and-secrets.md) |
+| `GHA11-001` | `SRC-005` | 11 | 281, 282, 283, 285, 286, 289, 310, 312, 313. | [Consulter](concepts/devops/GHA11-001-local-composite-actions.md) |
+
+[Rapport 3C4](validation/batch-3c4-source-and-typechecks.md). Les notes reproduisent uniquement des synthèses originales, avec limites et adaptations. Une fiche ne signifie pas chapitre lu intégralement.
