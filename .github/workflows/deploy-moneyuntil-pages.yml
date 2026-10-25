@@ -1,6 +1,10 @@
 name: Deploy MoneyUntil to GitHub Pages
 
 on:
+  pull_request:
+    paths:
+      - 'apps/moneyuntil/**'
+      - '.github/workflows/deploy-moneyuntil-pages.yml'
   push:
     branches: [main]
     paths:
@@ -10,17 +14,35 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: moneyuntil-pages
+  group: moneyuntil-pages-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  deploy:
+  test:
+    name: Verify MoneyUntil without paid dependencies
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Test budget math, backups and what-if calculator
+        run: |
+          node --version
+          node --test apps/moneyuntil/tests/moneyuntil.test.mjs
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: [test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
