@@ -40,3 +40,10 @@ python apps/receiptrescue/tests/browser.test.py
 ## Traçabilité Louvre
 
 Consulter [LOUVRE-REVIEW.md](LOUVRE-REVIEW.md) pour la sélection des fiches issues des cinq livres et les compromis. Les PDF privés **ne sont pas publiés**.
+
+## Web 1.1
+- Vue des dates à venir, export volontaire au calendrier (.ics) et ventilation des achats par mois.
+- PWA avec shell hors ligne après première visite; les données et photos restent dans IndexedDB.
+- Un avertissement explicite apparaît si le navigateur bloque le stockage local, avec bouton de réessai.
+- Export JSON refusé plutôt que de générer silencieusement un fichier de plus de 32 Mo impossible à réimporter.
+- **Aucun serveur/API/abonnement** ajouté.

@@ -113,6 +113,46 @@
     actions.append(edit, deleteBtn); el.append(actions);
     return el;
   }
+  function renderInsights() {
+    const upcoming = C.upcomingDeadlines(records, today(), 30);
+    const deadlineBox = $('#upcoming-list');
+    deadlineBox.replaceChildren();
+    if (!upcoming.length) deadlineBox.append(safeNode('p','insight-empty','Aucune échéance signalée dans les 30 prochains jours.'));
+    for (const d of upcoming.slice(0, 8)) {
+      const line = safeNode('div','deadline-row');
+      const title = safeNode('strong','',`${d.kind === 'return' ? '↺ Retour' : '✧ Garantie'} · ${d.item}`);
+      const context = safeNode('small','',`${d.merchant} · ${C.dateLabel(d.due)}`);
+      const left = safeNode('div','deadline-description');left.append(title,context);
+      line.append(left,safeNode('span',d.days <= 3 ? 'deadline-urgent' : 'deadline-date',d.days===0?'Aujourd’hui':`J-${d.days}`));
+      deadlineBox.append(line);
+    }
+    if (upcoming.length > 8) deadlineBox.append(safeNode('p','insight-empty',`Et ${upcoming.length-8} autres échéances dans votre calendrier.`));
+    const month = $('#analytics-month').value || today().slice(0,7);
+    const list = C.categoryBreakdown(records, month);
+    const total = list.reduce((n,r) => n+r.cents,0);
+    const analyticsBox = $('#analytics-list');analyticsBox.replaceChildren();
+    if (!list.length) analyticsBox.append(safeNode('p','insight-empty','Aucun achat enregistré pour ce mois.'));
+    else {
+      for (const r of list) {
+        const item = safeNode('div','category-row');
+        const head=safeNode('div','category-line');
+        head.append(safeNode('span','',r.category),safeNode('strong','',C.formatMoney(r.cents)));
+        const track=safeNode('div','category-track');
+        const fill=safeNode('div','category-fill');fill.style.width=`${Math.round(r.cents/total*100)}%`;
+        track.append(fill);item.append(head,track);analyticsBox.append(item);
+      }
+      analyticsBox.append(safeNode('p','category-total',`Total : ${C.formatMoney(total)}`));
+    }
+  }
+  function exportCalendar() {
+    const result=C.calendarIcs(records);
+    if (!result.count) return notice('Ajoutez au moins une échéance de retour ou de garantie.');
+    const blob=new Blob([result.content],{type:'text/calendar;charset=utf-8'});
+    const url=URL.createObjectURL(blob), a=document.createElement('a');
+    a.href=url;a.download='receiptrescue-echeances.ics';document.body.append(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),30000);
+    notice(`${result.count} dates exportées. Importez le fichier dans votre calendrier pour recevoir des rappels.`);
+  }
   function render() {
     urls.forEach(url => URL.revokeObjectURL(url)); urls = [];
     const sum = C.summarize(records, today());
@@ -120,6 +160,7 @@
     $('#returns-count').textContent = sum.returnSoon;
     $('#warranty-count').textContent = sum.warrantySoon;
     $('#total-badge').textContent = sum.tracked;
+    renderInsights();
     const filtered = records.filter(r => {
       const s = C.status(r, today());
       if (selectedFilter === 'returns' && !s.returnSoon) return false;
@@ -206,12 +247,13 @@
         exported.push({ ...rest, photoData: photo instanceof Blob ? await blobToDataURL(photo) : null });
       }
       const text = JSON.stringify({version:1,records:exported},null,2);
+      if (new Blob([text]).size > C.MAX_BACKUP_BYTES) throw new Error('Sauvegarde trop volumineuse (plus de 32 Mo). Archivez des tickets ou réduisez les photos avant un nouvel export.');
       const file = new Blob([text],{type:'application/json'});
       const url = URL.createObjectURL(file);
       const a = document.createElement('a');a.href=url;a.download=`receiptrescue-sauvegarde-${today()}.json`;
       document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
       notice('Sauvegarde téléchargée. Conservez-la dans un endroit privé.');
-    } catch { notice('Impossible d’exporter la sauvegarde.'); }
+    } catch (error) { notice(error?.message || 'Impossible d’exporter la sauvegarde.'); }
   }
   async function importBackup(file) {
     if (!file || file.size > C.MAX_BACKUP_BYTES || file.size < 10) return notice('Ce fichier est trop volumineux ou illisible (32 Mo maximum).');
@@ -241,6 +283,9 @@
     $('#help-btn').addEventListener('click',()=>openDialog('#help-dialog'));
     $('#export-inline').addEventListener('click',()=>openDialog('#backup-dialog'));
     $('#export-backup').addEventListener('click',exportBackup);
+    $('#export-calendar').addEventListener('click',exportCalendar);
+    $('#analytics-month').addEventListener('change',renderInsights);
+    $('#retry-storage').addEventListener('click',()=>initStorage());
     $('#import-trigger').addEventListener('click',()=>$('#import-file').click());
     $('#import-file').addEventListener('change',async e=>{const file=e.currentTarget.files[0];e.currentTarget.value='';if(file)await importBackup(file)});
     $('#clear-all').addEventListener('click',async()=>{
@@ -260,17 +305,29 @@
     for(const dialog of $$('dialog')) dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close()});
     window.addEventListener('pagehide',()=>{urls.forEach(url=>URL.revokeObjectURL(url));urls=[]});
   }
-  async function init() {
-    bind();
-    try {db=await openDatabase();await refresh();}
+  async function initStorage() {
+    try {
+      db=await openDatabase();await refresh();
+      $('#storage-warning').hidden=true;
+      for(const id of ['#add-top','#add-hero','#add-list','#export-inline','#nav-backup']) $(id).disabled=false;
+    }
     catch {
+      $('#storage-warning').hidden=false;
       $('#cards').replaceChildren();
       const box=$('#empty-state');box.hidden=false;
       $('#empty-title').textContent='Le stockage local est indisponible';
-      $('#empty-description').textContent='Votre navigateur bloque l’enregistrement local. Essayez un navigateur récent hors navigation privée. Rien n’est envoyé à un serveur.';
+      $('#empty-description').textContent='Autorisez les données du site, désactivez la navigation privée ou utilisez un autre navigateur. Aucune donnée ne part sur un serveur.';
       $('#empty-add').hidden=true;
       for(const id of ['#add-top','#add-hero','#add-list','#export-inline','#nav-backup']) $(id).disabled=true;
-      notice('Impossible d’utiliser le coffre : stockage local bloqué.');
+      notice('Stockage local bloqué : aucun ticket ne sera enregistré.');
+    }
+  }
+  function init() {
+    bind();
+    $('#analytics-month').value=today().slice(0,7);
+    initStorage();
+    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+      navigator.serviceWorker.register('./sw.js', {scope:'./'}).catch(()=>{ /* Le site reste utilisable en ligne. */ });
     }
   }
   init();

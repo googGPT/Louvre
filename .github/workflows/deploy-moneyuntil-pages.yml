@@ -40,6 +40,8 @@ jobs:
         run: |
           node --check apps/receiptrescue/core.js
           node --check apps/receiptrescue/app.js
+          node --check apps/receiptrescue/sw.js
+          node -e "JSON.parse(require('fs').readFileSync('apps/receiptrescue/manifest.webmanifest','utf8'))"
           node --test apps/receiptrescue/tests/receiptrescue.test.mjs
 
       - name: Install free browser test harness
@@ -88,7 +90,7 @@ jobs:
           test -s _site/apps/moneyuntil/sitemap.xml
           cmp _site/apps/moneyuntil/index.htm _site/apps/moneyuntil/index.html
           mkdir -p _site/apps/receiptrescue
-          cp apps/receiptrescue/index.html apps/receiptrescue/index.htm apps/receiptrescue/core.js apps/receiptrescue/app.js apps/receiptrescue/style.css apps/receiptrescue/sitemap.xml _site/apps/receiptrescue/
+          cp apps/receiptrescue/index.html apps/receiptrescue/index.htm apps/receiptrescue/core.js apps/receiptrescue/app.js apps/receiptrescue/style.css apps/receiptrescue/sitemap.xml apps/receiptrescue/sw.js apps/receiptrescue/manifest.webmanifest apps/receiptrescue/icon.svg _site/apps/receiptrescue/
           cmp _site/apps/receiptrescue/index.htm _site/apps/receiptrescue/index.html
           test -s _site/apps/receiptrescue/app.js
           test -s _site/apps/receiptrescue/core.js
@@ -130,7 +132,10 @@ jobs:
             if curl --fail --location --silent --show-error --max-time 12 "$SITE" -o /tmp/receiptrescue-live.html \
               && grep -q '<title>ReceiptRescue' /tmp/receiptrescue-live.html \
               && curl --fail --silent --show-error --max-time 12 "https://googgpt.github.io/Louvre/apps/receiptrescue/core.js" -o /tmp/receiptrescue-core.js \
-              && grep -q 'validateBackup' /tmp/receiptrescue-core.js; then
+              && grep -q 'validateBackup' /tmp/receiptrescue-core.js \
+              && curl --fail --silent --show-error --max-time 12 "https://googgpt.github.io/Louvre/apps/receiptrescue/sw.js" -o /tmp/receiptrescue-sw.js \
+              && grep -q 'receiptrescue-shell-' /tmp/receiptrescue-sw.js \
+              && curl --fail --silent --show-error --max-time 12 "https://googgpt.github.io/Louvre/apps/receiptrescue/manifest.webmanifest" -o /tmp/receiptrescue-manifest.json; then
               echo "PUBLIC_SMOKE_PASS $SITE"
               exit 0
             fi

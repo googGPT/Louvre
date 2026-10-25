@@ -23,3 +23,30 @@ test('sauvegarde JSON invalide rejetée', () => { assert.equal(core.validateBack
 test('sauvegarde contenant un doublon rejetée', () => { const {photo,...r}=record(); assert.equal(core.validateBackup({version:1,records:[r,r]}),null); });
 test('sauvegarde simple valide', () => { const {photo,...r}=record(); const out=core.validateBackup({version:1,records:[r]}); assert.equal(out[0].amountCents,2999); });
 test('interdit des champs supplémentaires dans les fiches restaurées', () => { const {photo,...r}=record(); assert.equal(core.validateBackup({version:1,records:[{...r,malicious:'x'}]}),null); });
+
+test('échéances triées, passées exclues, retours avant garanties', () => {
+  const a=record({id:'abcde-1001',item:'A',returnBy:'2026-10-27',warrantyUntil:'2026-10-27'});
+  const b=record({id:'abcde-1002',item:'B',returnBy:'2026-10-23',warrantyUntil:'2027-12-01'});
+  const arr=core.upcomingDeadlines([b,a], '2026-10-25',30);
+  assert.equal(arr.length,2);assert.deepEqual(arr.map(x=>x.kind),['return','warranty']);assert.equal(arr[0].days,2);
+});
+test('échéances traversent correctement un changement heure été',()=> {
+  const a=record({returnBy:'2027-03-29', warrantyUntil:''});
+  assert.equal(core.upcomingDeadlines([a],'2027-03-27',7)[0].days,2);
+});
+test('catégories : centimes entiers et mois distincts',()=>{
+  const a=record({id:'abcd-1234',amountCents:1299,category:'Maison'});
+  const b=record({id:'abcd-1235',amountCents:199,category:'Maison'});
+  const c=record({id:'abcd-1236',amountCents:200,category:'Sport',purchasedOn:'2026-09-23'});
+  assert.deepEqual(core.categoryBreakdown([a,b,c],'2026-10'),[{category:'Maison',cents:1498}]);
+  assert.deepEqual(core.categoryBreakdown([a,b,c],'2026-13'),[]);
+});
+test('export calendrier ICS correctement échappé et sans dates inventées',()=>{
+  const a=record({item:'Téléphone, édition; pro',returnBy:'2026-11-01',warrantyUntil:''});
+  const result=core.calendarIcs([a]);
+  assert.equal(result.count,1);
+  assert.match(result.content,/DTSTART;VALUE=DATE:20261101/);
+  assert.match(result.content,/Téléphone\\, édition\\; pro/);
+  assert.ok(result.content.endsWith('END:VCALENDAR\r\n'));
+  assert.equal(core.calendarIcs([record({returnBy:'',warrantyUntil:''})]).count,0);
+});

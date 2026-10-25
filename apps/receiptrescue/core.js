@@ -75,6 +75,52 @@
     }
     return { tracked, returnSoon, warrantySoon };
   }
+  // Adaptation Louvre : dérivations calculées sans état d'interface dupliqué.
+  function upcomingDeadlines(records, today, daysAhead = 30) {
+    if (dateMs(today) === null || !Number.isInteger(daysAhead) || daysAhead < 0 || daysAhead > 365) return [];
+    const items = [];
+    for (const record of records) {
+      if (!cleanRecord(record)) continue;
+      for (const [kind, due] of [['return', record.returnBy], ['warranty', record.warrantyUntil]]) {
+        if (!due) continue;
+        const days = daysUntil(due, today);
+        if (days !== null && days >= 0 && days <= daysAhead)
+          items.push({ recordId: record.id, item: record.item, merchant: record.merchant, kind, due, days });
+      }
+    }
+    return items.sort((a, b) => a.days - b.days || (a.kind === 'return' ? -1 : 1) || a.item.localeCompare(b.item, 'fr'));
+  }
+  function categoryBreakdown(records, month) {
+    if (typeof month !== 'string' || !/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) return [];
+    const totals = new Map();
+    for (const record of records) {
+      if (!cleanRecord(record) || record.purchasedOn.slice(0, 7) !== month) continue;
+      totals.set(record.category, (totals.get(record.category) || 0) + record.amountCents);
+    }
+    return [...totals].map(([category, cents]) => ({category, cents}))
+      .sort((a, b) => b.cents - a.cents || a.category.localeCompare(b.category, 'fr'));
+  }
+  function icsEscape(s) {
+    return String(s).replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/;/g, '\\;').replace(/,/g, '\\,');
+  }
+  // Export de dates saisies par l'utilisateur. Aucun serveur, aucune notification implicite.
+  function calendarIcs(records) {
+    const lines = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Louvre//ReceiptRescue//FR','CALSCALE:GREGORIAN','METHOD:PUBLISH'];
+    let count = 0;
+    for (const r of records) {
+      if (!cleanRecord(r)) continue;
+      for (const [kind, date] of [['Retour',r.returnBy],['Garantie',r.warrantyUntil]]) {
+        if (!date) continue;
+        const day = date.replace(/-/g,'');
+        // Identifiant déterministe, aucune donnée personnelle envoyée sur Internet.
+        const uid = `${r.id}-${kind.toLowerCase()}-${day}@receiptrescue.local`;
+        lines.push('BEGIN:VEVENT',`UID:${icsEscape(uid)}`,`DTSTART;VALUE=DATE:${day}`,`SUMMARY:${icsEscape(kind + ' : ' + r.item)}`,`DESCRIPTION:${icsEscape('Magasin : ' + r.merchant + ' — date renseignée dans ReceiptRescue')}`,'END:VEVENT');
+        count++;
+      }
+    }
+    lines.push('END:VCALENDAR');
+    return { content: lines.join('\r\n') + '\r\n', count };
+  }
   function formatMoney(cents, currency = 'EUR') {
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency }).format(cents / 100);
   }
@@ -99,5 +145,5 @@
     }
     return records;
   }
-  return { MAX_PHOTO_BYTES, MAX_BACKUP_BYTES, MAX_RECORDS, VALID_MIMES, CATEGORIES, dateMs, todayLocal, daysUntil, eurosToCents, cleanRecord, status, summarize, formatMoney, dateLabel, validateBackup };
+  return { MAX_PHOTO_BYTES, MAX_BACKUP_BYTES, MAX_RECORDS, VALID_MIMES, CATEGORIES, dateMs, todayLocal, daysUntil, eurosToCents, cleanRecord, status, summarize, formatMoney, dateLabel, validateBackup, upcomingDeadlines, categoryBreakdown, calendarIcs };
 });
