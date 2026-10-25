@@ -4,9 +4,9 @@ Trouver un concept par son problème ou ses mots-clés, puis consulter uniquemen
 
 ## Couverture vérifiée au 25 octobre 2026
 
-- **56 fiches techniques distinctes**, réparties sur les cinq ouvrages.
-- **70 chapitres cartographiés** ; **51 possèdent au moins une fiche**, sans couverture exhaustive.
-- **19 chapitres restent uniquement cartographiés**.
+- **75 fiches techniques distinctes**, réparties sur les cinq ouvrages.
+- **70 chapitres cartographiés** ; **70 possèdent au moins une fiche**, sans couverture exhaustive.
+- **0 chapitre n'est dépourvu de fiche**.
 - Les nouvelles pages référencées proviennent d'une lecture ciblée des cinq PDF privés dans l'environnement ChatGPT ; Codex n'a pas lu les PDF.
 - Les démonstrations applicatives doivent être testées dans les projets réels avant usage.
 - Les contrôles documentaires automatisés utilisent [ce script](../scripts/validate_library.py) et [ce rapport](validation/batch-3c2-verified-source-notes.md). Ils ne certifient pas le code produit.
@@ -482,3 +482,121 @@ Ces fiches portent la bibliothèque à 56 entrées sur 51 chapitres partiellemen
 - **Fiche :** [FULL15-001](concepts/security/FULL15-001-oauth-session-graphql-guard.md).
 - **Catalogue / cartographie :** `SRC-002` / `FULL-2024`, chapitre 15 — *Adding OAuth*, pages PDF 262–265, 277–281 (numérotation à partir de 1, non identique à la pagination imprimée)..
 - **Statut :** lecture ciblée, pas analyse intégrale du chapitre ; exemples à valider en conditions réelles.
+
+## Étape 3C6 — Couverture documentaire initiale des 70 chapitres
+
+Chacun des 70 chapitres cartographiés dispose maintenant d'au moins une fiche. **Couverture de présence, non couverture exhaustive du contenu !** Le nombre de fiches passe à **75**. Voir [le rapport de contrôle](validation/batch-3c6-70-chapter-audit.md) et [le script vérifiant le catalogue](../scripts/verify_chapter_coverage.py).
+
+### TS01-001 — Boucle IDE, types et JavaScript produit
+
+- **Fiche :** [TS01-001](concepts/language-and-types/TS01-001-feedback-loop.md).
+- **Source :** `SRC-001` / `TS-2026`, chapitre 1, *Kickstart Your TypeScript Setup*, pages physiques 33, 34, 35.
+- **Statut :** premier examen ciblé, sans prétendre à une lecture complète du chapitre ; tests applicatifs non exécutés.
+
+### TS02-001 — Exploiter autocomplétion et diagnostics IDE
+
+- **Fiche :** [TS02-001](concepts/language-and-types/TS02-001-ide-feedback-and-refactoring.md).
+- **Source :** `SRC-001` / `TS-2026`, chapitre 2, *IDE Superpowers*, pages physiques 39, 40, 41, 42.
+- **Statut :** premier examen ciblé, sans prétendre à une lecture complète du chapitre ; tests applicatifs non exécutés.
+
+### TS04-001 — Choisir annotation explicite et inférence
+
+- **Fiche :** [TS04-001](concepts/language-and-types/TS04-001-annotation-versus-inference.md).
+- **Source :** `SRC-001` / `TS-2026`, chapitre 4, *Essential Types and Annotations*, pages physiques 63, 64, 65, 66.
+- **Statut :** premier examen ciblé, sans prétendre à une lecture complète du chapitre ; tests applicatifs non exécutés.
+
+### TS08-001 — Initialisation des classes et contrat instance
+
+- **Fiche :** [TS08-001](concepts/language-and-types/TS08-001-class-constructor-contract.md).
+- **Source :** `SRC-001` / `TS-2026`, chapitre 8, *Classes*, pages physiques 189, 190, 191, 192.
+- **Statut :** premier examen ciblé, sans prétendre à une lecture complète du chapitre ; tests applicatifs non exécutés.
+
+### TS09-001 — Comprendre le coût runtime des enums
+
+- **Fiche :** [TS09-001](concepts/language-and-types/TS09-001-enum-runtime-tradeoffs.md).
+- **Source :** `SRC-001` / `TS-2026`, chapitre 9, *TypeScript-Only Features*, pages physiques 211, 212, 213, 214.
+- **Statut :** premier examen ciblé, sans prétendre à une lecture complète du chapitre ; tests applicatifs non exécutés.
+
+### FULL01-001 — Démarrer un service Node avec manifeste reproductible
+
+- **Fiche :** [FULL01-001](concepts/architecture-and-devops/FULL01-001-node-project-manifest.md).
+- **Source :** `SRC-002` / `FULL-2024`, chapitre 1, *Node.js*, pages physiques 33, 34, 35, 36.
+- **Statut :** premier examen ciblé, sans prétendre à une lecture complète du chapitre ; tests applicatifs non exécutés.
+
+### FULL02-001 — ES modules pour frontières maintenables
+
+- **Fiche :** [FULL02-001](concepts/architecture-and-devops/FULL02-001-es-modules-boundaries.md).
+- **Source :** `SRC-002` / `FULL-2024`, chapitre 2, *Modern Javascript*, pages physiques 45, 46, 47.
+- **Statut :** premier examen ciblé, sans prétendre à une lecture complète du chapitre ; tests applicatifs non exécutés.
+
+### FULL03-001 — TypeScript pour repérer tôt des erreurs de types
+
+- **Fiche :** [FULL03-001](concepts/architecture-and-devops/FULL03-001-static-type-boundary.md).
+- **Source :** `SRC-002` / `FULL-2024`, chapitre 3, *Typescript*, pages physiques 63, 64, 65.
+- **Statut :** premier examen ciblé, sans prétendre à une lecture complète du chapitre ; tests applicatifs non exécutés.
+
+### FULL04-001 — Décomposer une interface React déclarative
+
+- **Fiche :** [FULL04-001](concepts/architecture-and-devops/FULL04-001-react-declarative-components.md).
+- **Source :** `SRC-002` / `FULL-2024`, chapitre 4, *React*, pages physiques 83, 84, 85, 86.
+- **Statut :** premier examen ciblé, sans prétendre à une lecture complète du chapitre ; tests applicatifs non exécutés.
+
+### FULL05-001 — Comprendre la structure Next.js Pages Router
+
+- **Fiche :** [FULL05-001](concepts/architecture-and-devops/FULL05-001-nextjs-pages-routing-boundary.md).
+- **Source :** `SRC-002` / `FULL-2024`, chapitre 5, *Next.js*, pages physiques 99, 100, 101, 102.
+- **Statut :** premier examen ciblé, sans prétendre à une lecture complète du chapitre ; tests applicatifs non exécutés.
+
+### FULL14-001 — Assembler le frontend du projet full-stack
+
+- **Fiche :** [FULL14-001](concepts/architecture-and-devops/FULL14-001-frontend-components-integration.md).
+- **Source :** `SRC-002` / `FULL-2024`, chapitre 14, *Building the Frontend*, pages physiques 245, 246, 247, 248.
+- **Statut :** premier examen ciblé, sans prétendre à une lecture complète du chapitre ; tests applicatifs non exécutés.
+
+### NEXT01-001 — Cadrer React, Next.js et initialisation du projet
+
+- **Fiche :** [NEXT01-001](concepts/frontend/NEXT01-001-react-framework-bootstrap.md).
+- **Source :** `SRC-003` / `NEXT-2026`, chapitre 1, *Getting Started with Next.js*, pages physiques 27, 28, 29, 30.
+- **Statut :** premier examen ciblé, sans prétendre à une lecture complète du chapitre ; tests applicatifs non exécutés.
+
+### NEXT07-001 — Distinguer styles globaux et CSS Modules
+
+- **Fiche :** [NEXT07-001](concepts/frontend/NEXT07-001-global-vs-module-css.md).
+- **Source :** `SRC-003` / `NEXT-2026`, chapitre 7, *Styling in Next.js*, pages physiques 189, 190, 191, 192.
+- **Statut :** premier examen ciblé, sans prétendre à une lecture complète du chapitre ; tests applicatifs non exécutés.
+
+### NEXT13-001 — Cartographier les flux d’un projet e-commerce et CMS
+
+- **Fiche :** [NEXT13-001](concepts/frontend/NEXT13-001-commerce-blog-dataflows.md).
+- **Source :** `SRC-003` / `NEXT-2026`, chapitre 13, *Real-World Projects with Next.js*, pages physiques 307, 308, 309, 310.
+- **Statut :** premier examen ciblé, sans prétendre à une lecture complète du chapitre ; tests applicatifs non exécutés.
+
+### NEXT14-001 — Transformer un portfolio développeur en preuves vérifiables
+
+- **Fiche :** [NEXT14-001](concepts/frontend/NEXT14-001-portfolio-evidence-for-developers.md).
+- **Source :** `SRC-003` / `NEXT-2026`, chapitre 14, *Preparing for Front-End Development Jobs*, pages physiques 331, 332, 333, 334.
+- **Statut :** premier examen ciblé, sans prétendre à une lecture complète du chapitre ; tests applicatifs non exécutés.
+
+### GHA01-001 — Choisir quand automatiser avec GitHub Actions
+
+- **Fiche :** [GHA01-001](concepts/devops/GHA01-001-automation-event-fit.md).
+- **Source :** `SRC-005` / `GHA-2023`, chapitre 1, *The Basics*, pages physiques 25, 26, 27, 28.
+- **Statut :** premier examen ciblé, sans prétendre à une lecture complète du chapitre ; tests applicatifs non exécutés.
+
+### GHA02-001 — Comprendre événement, workflow, job et step
+
+- **Fiche :** [GHA02-001](concepts/devops/GHA02-001-events-jobs-steps.md).
+- **Source :** `SRC-005` / `GHA-2023`, chapitre 2, *How Does Actions Work?*, pages physiques 37, 38, 39, 40.
+- **Statut :** premier examen ciblé, sans prétendre à une lecture complète du chapitre ; tests applicatifs non exécutés.
+
+### GHA03-001 — Lire les contrats action.yml avant de réutiliser une action
+
+- **Fiche :** [GHA03-001](concepts/devops/GHA03-001-action-metadata-contract.md).
+- **Source :** `SRC-005` / `GHA-2023`, chapitre 3, *What’s in an action?*, pages physiques 47, 48, 49, 50, 53.
+- **Statut :** premier examen ciblé, sans prétendre à une lecture complète du chapitre ; tests applicatifs non exécutés.
+
+### GHA14-001 — Migrer progressivement une CI existante vers GitHub Actions
+
+- **Fiche :** [GHA14-001](concepts/devops/GHA14-001-legacy-ci-migration-audit.md).
+- **Source :** `SRC-005` / `GHA-2023`, chapitre 14, *Migrating to GitHub Actions*, pages physiques 359, 360, 361, 362.
+- **Statut :** premier examen ciblé, sans prétendre à une lecture complète du chapitre ; tests applicatifs non exécutés.

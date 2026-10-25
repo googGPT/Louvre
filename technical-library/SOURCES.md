@@ -1,5 +1,7 @@
 # Catalogue des sources
 
+> **État actuel — étape 3C6 (25 octobre 2026) : 75 fiches et 70/70 chapitres possédant au moins une analyse ciblée.** Ceci représente un index documentaire initial, **pas une lecture complète des cinq livres**, ni une garantie de conformité des techniques avec les versions logicielles actuelles. Les chiffres plus anciens des sections suivantes sont conservés comme historique.
+
 > **État courant — lot 3C5 : 56 fiches correspondant à 51 chapitres possédant une analyse partielle sur 70.** Les chiffres plus anciens du présent document sont conservés à des fins d'historique. Le nouveau lot comprend 11 fiches, dont une seconde analyse du chapitre Vue 5.
 
 > **Statut actuel (25 octobre 2026 — lot 3C4) :** 45 fiches distinctes, 41 chapitres partiellement couverts sur les 70 chapitres répertoriés. Les statistiques antérieures figurant dans les sections historiques correspondent à l'état des anciens lots et ne doivent pas être interprétées comme l'état courant. Les nouveaux PDF ont été lus de manière ciblée dans l'environnement source ChatGPT, sans publier les livres.
@@ -185,3 +187,30 @@ La validation structurelle automatique ne remplace pas la relecture technique ni
 | `FULL15-001` | `SRC-002` | 15 | 262–265, 277–281 (numérotation à partir de 1, non identique à la pagination imprimée). | [fiche](concepts/security/FULL15-001-oauth-session-graphql-guard.md) |
 
 Consulter [l'audit des sources](validation/batch-3c5-source-audit.md) et le [parcours inter-ouvrages pour les réservations](playbooks/reservation-system-cross-book.md). Aucun PDF privé n'est publié.
+
+
+## Étape 3C6 — 19 derniers chapitres ajoutés au catalogue
+
+| Fiche | Livre | Chapitre | Pages physiques lues | Lien |
+|---|---|---:|---|---|
+| `TS01-001` | `SRC-001` | 1 | 33, 34, 35 | [fiche](concepts/language-and-types/TS01-001-feedback-loop.md) |
+| `TS02-001` | `SRC-001` | 2 | 39, 40, 41, 42 | [fiche](concepts/language-and-types/TS02-001-ide-feedback-and-refactoring.md) |
+| `TS04-001` | `SRC-001` | 4 | 63, 64, 65, 66 | [fiche](concepts/language-and-types/TS04-001-annotation-versus-inference.md) |
+| `TS08-001` | `SRC-001` | 8 | 189, 190, 191, 192 | [fiche](concepts/language-and-types/TS08-001-class-constructor-contract.md) |
+| `TS09-001` | `SRC-001` | 9 | 211, 212, 213, 214 | [fiche](concepts/language-and-types/TS09-001-enum-runtime-tradeoffs.md) |
+| `FULL01-001` | `SRC-002` | 1 | 33, 34, 35, 36 | [fiche](concepts/architecture-and-devops/FULL01-001-node-project-manifest.md) |
+| `FULL02-001` | `SRC-002` | 2 | 45, 46, 47 | [fiche](concepts/architecture-and-devops/FULL02-001-es-modules-boundaries.md) |
+| `FULL03-001` | `SRC-002` | 3 | 63, 64, 65 | [fiche](concepts/architecture-and-devops/FULL03-001-static-type-boundary.md) |
+| `FULL04-001` | `SRC-002` | 4 | 83, 84, 85, 86 | [fiche](concepts/architecture-and-devops/FULL04-001-react-declarative-components.md) |
+| `FULL05-001` | `SRC-002` | 5 | 99, 100, 101, 102 | [fiche](concepts/architecture-and-devops/FULL05-001-nextjs-pages-routing-boundary.md) |
+| `FULL14-001` | `SRC-002` | 14 | 245, 246, 247, 248 | [fiche](concepts/architecture-and-devops/FULL14-001-frontend-components-integration.md) |
+| `NEXT01-001` | `SRC-003` | 1 | 27, 28, 29, 30 | [fiche](concepts/frontend/NEXT01-001-react-framework-bootstrap.md) |
+| `NEXT07-001` | `SRC-003` | 7 | 189, 190, 191, 192 | [fiche](concepts/frontend/NEXT07-001-global-vs-module-css.md) |
+| `NEXT13-001` | `SRC-003` | 13 | 307, 308, 309, 310 | [fiche](concepts/frontend/NEXT13-001-commerce-blog-dataflows.md) |
+| `NEXT14-001` | `SRC-003` | 14 | 331, 332, 333, 334 | [fiche](concepts/frontend/NEXT14-001-portfolio-evidence-for-developers.md) |
+| `GHA01-001` | `SRC-005` | 1 | 25, 26, 27, 28 | [fiche](concepts/devops/GHA01-001-automation-event-fit.md) |
+| `GHA02-001` | `SRC-005` | 2 | 37, 38, 39, 40 | [fiche](concepts/devops/GHA02-001-events-jobs-steps.md) |
+| `GHA03-001` | `SRC-005` | 3 | 47, 48, 49, 50, 53 | [fiche](concepts/devops/GHA03-001-action-metadata-contract.md) |
+| `GHA14-001` | `SRC-005` | 14 | 359, 360, 361, 362 | [fiche](concepts/devops/GHA14-001-legacy-ci-migration-audit.md) |
+
+[Protocole de vérification et limites](validation/batch-3c6-70-chapter-audit.md). Les concepts sont des synthèses originales ; les livres privés ne sont pas ajoutés au dépôt public.

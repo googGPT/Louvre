@@ -2,14 +2,14 @@
 
 Louvre transforme cinq ouvrages de développement logiciel en références structurées : fiches de conception, compromis, exemples originaux, limites et provenance documentaire.
 
-## État au 25 octobre 2026 — 56 fiches
+## État au 25 octobre 2026 — 75 fiches ; 70/70 chapitres avec une première fiche
 
-- **56 fiches de connaissances** réparties sur les cinq livres, couvrant partiellement **51 chapitres des 70 cartographiés** ; 19 chapitres restent sans fiche.
-- Le lot 3C5 ajoute **11 fiches** (10 chapitres jusque-là sans fiche et une nouvelle analyse de Vue chapitre 5) et un [parcours transversal pour une application de réservation](technical-library/playbooks/reservation-system-cross-book.md).
-- Les PDF source sont privés et non publiés. La provenance, les numéros physiques et les limites sont documentés dans chaque fiche.
-- **Vérifications :** [GitHub Actions](.github/workflows/knowledge-integrity.yml) contrôle les liens/identifiants et compile les exemples TypeScript des lots 3C3 à 3C5. La réussite doit être constatée sur la dernière exécution, et ne garantit pas de déploiement applicatif.
-- Le nouvel [exemple autonome](technical-library/examples/reservation-contracts-3c5.ts) a été compilé avec TypeScript 5.8.3 et passé **9 tests de logique métier sous Node.js 22.16.0** en local ; il ne gère pas la disponibilité atomique des stocks.
-- Codex peut consulter les fiches en lisant `AGENTS.md` puis `technical-library/INDEX.md` même si la découverte automatique du Skill n'est pas disponible.
+- **75 fiches techniques** issues des cinq ouvrages ; **chacun des 70 chapitres possède au moins une analyse ciblée**. Les livres ne sont pas étudiés intégralement.
+- **Nouvelle étape 3C6 :** 19 premières fiches pour les chapitres auparavant uniquement cartographiés ; [rapport de provenance](technical-library/validation/batch-3c6-70-chapter-audit.md).
+- **Contrôles structurels automatiques :** `scripts/validate_library.py` (liens, identifiants, absence de PDF) et `scripts/verify_chapter_coverage.py` (présence d'au moins une fiche pour chacun des 70 chapitres). La réussite doit être observée sur GitHub Actions pour le dernier commit.
+- **Exemples exécutables :** les scripts et tests TypeScript des lots 3C3 à 3C5 sont contrôlés en CI, sans prouver que des applications Next.js, Vue ou Docker complètes fonctionnent.
+- **Provenance :** chaque nouvelle fiche documente le SHA-256 du PDF privé, les pages réellement ouvertes, les adaptations Louvre et les limites. Les PDF ne sont pas publiés.
+- **Utilisation dans Codex :** lire `AGENTS.md`, puis `technical-library/INDEX.md`, et seulement les fiches pertinentes ; ne pas confondre présence d'une fiche et compétence validée par un test d'intégration.
 
 ## Utiliser Louvre dans Codex
 
@@ -41,3 +41,5 @@ Aucun contenu substantiel d'ouvrage sous droit d'auteur n'est reproduit. Toute p
 - [Fonctions TypeScript testables 3C4](technical-library/examples/validated-contracts-3c4.ts) et [leurs cas de test](technical-library/examples/validated-contracts-3c4.test.ts)
 
 - [Rapport lot 3C5](technical-library/validation/batch-3c5-source-audit.md)
+
+- [Rapport de couverture initiale 70/70](technical-library/validation/batch-3c6-70-chapter-audit.md)
