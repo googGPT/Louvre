@@ -1,0 +1,5 @@
+/* Cache app-shell only; never caches private records or user documents. */
+const CACHE='homepulse-shell-v1';const FILES=['./','./index.html','./style.css','./core.js','./app.js','./icon.svg','./manifest.webmanifest'];
+self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting()))});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('homepulse-shell-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
+self.addEventListener('fetch',e=>{if(e.request.method!=='GET'||e.request.mode==='navigate'&&new URL(e.request.url).origin!==self.location.origin)return;const u=new URL(e.request.url);const scope=new URL(self.registration.scope);if(u.origin!==scope.origin||!u.pathname.startsWith(scope.pathname))return;e.respondWith(caches.match(e.request).then(cached=>cached||fetch(e.request)));});
