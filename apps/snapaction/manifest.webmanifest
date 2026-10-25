@@ -1,0 +1,1 @@
+{"name":"SnapAction — Rappels intelligents","short_name":"SnapAction","description":"Vos tâches et rappels privés, sans compte ni API payante","start_url":"./","scope":"./","display":"standalone","background_color":"#f4f7f4","theme_color":"#112330","lang":"fr","icons":[{"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}
