@@ -16,7 +16,7 @@ La GitHub Action [Codex A/B snapshots](../../.github/workflows/codex-ab-snapshot
 bash experiments/codex-ab-01/scripts/make-snapshots.sh
 ```
 
-Les deux archives `arm-a-without-louvre.tar.gz` et `arm-b-with-louvre.tar.gz` sont publiées comme artefacts **du workflow**, avec des manifestes SHA-256 prouvant l'identité du code applicatif. `A` ne contient pas la bibliothèque, `B` la contient. Les archives ne contiennent ni les PDF originaux, ni le correcteur indépendant. Les artefacts peuvent expirer selon la configuration GitHub.
+Les deux archives `arm-a-without-louvre.tar.gz` et `arm-b-with-louvre.tar.gz` sont publiées comme artefacts **du workflow**, avec des manifestes SHA-256 prouvant l'identité du code applicatif. Les deux archives excluent de manière identique les fichiers narratifs `labs/reservation-lab/README.md` et `labs/reservation-lab/LOUVRE-AUDIT-02.md`, qui indiqueraient d'avance les références de l'ancien audit. Le code et les tests de l'application restent identiques dans les deux conditions. `A` ne contient pas la bibliothèque, `B` la contient. Les archives ne contiennent ni les PDF originaux, ni le correcteur indépendant. Les artefacts peuvent expirer selon la configuration GitHub.
 
 **Important :** ce workflow prépare les paquets ; il ne démarre ni Codex ni des travaux asynchrones. Il ne modifie pas `main`.
 
