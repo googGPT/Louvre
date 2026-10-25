@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "lib": ["ES2022"],
+    "strict": true,
+    "noEmitOnError": true,
+    "esModuleInterop": true,
+    "rootDir": ".",
+    "outDir": ".domain-build",
+    "skipLibCheck": true
+  },
+  "include": ["lib/contracts.ts", "lib/catalog.ts", "lib/reservation-store.ts"],
+  "exclude": ["node_modules", ".domain-build"]
+}

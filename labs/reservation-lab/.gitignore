@@ -1,0 +1,6 @@
+node_modules/
+.next/
+.domain-build/
+*.tsbuildinfo
+.env*
+!.env.example

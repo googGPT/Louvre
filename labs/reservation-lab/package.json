@@ -1,0 +1,24 @@
+{
+  "name": "louvre-reservation-lab",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test:domain": "tsc -p tsconfig.domain.json && node --test tests/*.test.mjs",
+    "test:smoke": "node tests/smoke.mjs",
+    "check": "npm run test:domain && npm run build && npm run test:smoke"
+  },
+  "dependencies": {
+    "next": "16.4.3",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "typescript": "5.8.3",
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0"
+  }
+}
