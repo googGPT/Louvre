@@ -131,7 +131,7 @@ def main():
             page.locator('#edit-label').fill('<img src=x onerror=alert(1)>')
             page.locator('#apply-furniture').click()
             assert page.locator('#plan-view img').count()==0
-            assert '<img src=x' in page.locator('#plan-view').inner_text()
+            assert '<img src=x' in page.locator('#plan-view').text_content()
             with page.expect_download() as d:page.locator('#export-svg').click()
             exported=pathlib.Path(d.value.path()).read_text(encoding='utf-8')
             assert '&lt;img src=x onerror=alert(1)&gt;' in exported
