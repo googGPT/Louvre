@@ -69,19 +69,19 @@ try:
         # Invalid import must never destroy the old store.
         invalid=Path(temp)/'invalid.json';invalid.write_text('{not-json',encoding='utf-8')
         page.locator('#import').set_input_files(str(invalid))
-        assert 'Import refusé' in page.locator('#status').inner_text()
+        page.wait_for_function("document.querySelector('#status').textContent.includes('Import refusé')")
         assert page.locator('.item').count()==3
         page.once('dialog',lambda d:d.accept())
         page.locator('.item').filter(has_text='Petit musée').get_by_role('button',name='Supprimer').click()
         assert page.locator('.item').count()==2
         page.once('dialog',lambda d:d.accept())
         page.locator('#import').set_input_files(str(backup_path))
-        assert page.locator('.item').count()==3
+        page.wait_for_function("document.querySelectorAll('.item').length===3")
         # Legacy version-1 backup with only historical fields.
         old=Path(temp)/'old.json';old.write_text(json.dumps({'app':'travelday','version':1,'records':[{'id':'legacy0001','day':'2026-11-11','place':'Ancienne visite','start':'10:00','end':'11:00','cost':5}]}),encoding='utf-8')
         page.once('dialog',lambda d:d.accept())
         page.locator('#import').set_input_files(str(old))
-        assert page.locator('.item').count()==1
+        page.wait_for_function("document.querySelectorAll('.item').length===1")
         assert page.locator('.item').first.get_by_text('Ancienne visite').count()==1
         # Overnight: following-day intersection flagged in itinerary.
         page.locator('#day-filter').select_option('all')
