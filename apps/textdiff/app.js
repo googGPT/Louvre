@@ -24,7 +24,7 @@
     by('result-meta').textContent = 'Lancez une comparaison pour afficher les modifications.';
   }
   function invalidate() {
-    revision++;clear();
+    revision++;by('compare').disabled = false;clear();
     message('Textes ou paramètres modifiés : relancez la comparaison pour actualiser le rapport.');
   }
   function settings() {
