@@ -48,3 +48,25 @@ Architecture volontairement sans framework : `core.js` (fonctions métier vérif
 ## Limites
 
 StudyRecall (révisions) — pas de calcul de moyenne ni scénarios pondérés. Les résultats sont locaux et ne reposent sur aucune donnée externe vérifiée. Les propriétés de stockage ou d'accessibilité ne sont pas certifiées pour tous les navigateurs.
+
+
+## Audit de l'application n°21 — 26 octobre 2026 (v2)
+
+### Défauts reproductibles par lecture de la v1
+1. **Persistance trompeuse** : lors de l'ajout/édition et de la suppression, `state` était modifié avant `persist()` ; en cas de quota ou blocage du stockage, l'interface pouvait annoncer l'enregistrement d'une note restée uniquement en mémoire. v2 : validation et écriture avant mutation de l'état ; aucune annonce de succès après échec.
+2. **Sauvegarde corrompue** : `reset` passait `blocked=false` avant confirmation d'écriture, avec risque d'écraser l'historique brut ; `import` faisait de même lors de tentatives infructueuses. v2 : toutes les mutations, y compris « Tout effacer », restent bloquées tant qu'une restauration JSON validée n'est pas réellement écrite. Export brut disponible.
+3. **Arrondi de seuil** : `required.toFixed(2)` pouvait présenter une note arrondie **en-dessous** du strict minimum requis ; `minimumScore` arrondit au centième **supérieur** et les tests calculent la moyenne correspondante.
+4. **Statut déjà acquis** : `requirement` renvoyait `feasible=false` pour une note requise négative alors que `status='already'`. v2 : `feasible=true` pour « already ».
+5. **Moteur public partiellement non validé** : `weightedAverage` et `requirement` acceptaient un tableau de fiches non vérifiées ; v2 réutilise la validation commune du contrat de sauvegarde et refuse les nombres non finis.
+6. **Indicateur manquant** : le score théorique à la prochaine évaluation n'était pas simulable directement. v2 ajoute une moyenne projetée en direct et une fourchette des valeurs atteignables.
+
+### Adaptations originales, distinctes des ouvrages cités
+- Calcul `minimumScore`, `projectedAverage`, fourchette minimale/maximale, avec tests aux frontières.
+- Stockage transactionnel en navigateur, protection du stockage corrompu et export CSV neutralisé contre les formules.
+- Interface enrichie et parcours Chromium : quota simulé, restauration JSON refusée et réussie, PWA et affichage mobile.
+
+### Validation exigée
+Les assertions des **36 tests métier** et le nouveau navigateur Playwright doivent être confrontés aux journaux GitHub Actions du **dernier commit** avant toute conclusion. Les références TS16-001, FULL08-001, NEXT08-001, VUE02-001, GHA04-001 sont des fiches du dépôt lues pour la conception ; elles ne certifient pas à elles seules les modifications de l'application. Aucune lecture intégrale supplémentaire des PDF revendiquée.
+
+### Portée et limites
+Mêmes sauvegardes `version=1`, même clé `localStorage`, aucune migration destructive. Maximum 200 notes, calcul sur l'échelle /20 uniquement ; aucune règle de validation d'enseignement supérieur ou arrondi institutionnel garanti. Le score minimum suppose une prochaine **unique** évaluation. Les données restent sur l'appareil, export conseillé.
