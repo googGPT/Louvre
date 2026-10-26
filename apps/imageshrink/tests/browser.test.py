@@ -31,7 +31,7 @@ def run():
                     not req.url.startswith(f'http://127.0.0.1:{server.server_port}/')
                     else None)
             page.goto(f'http://127.0.0.1:{server.server_port}/',wait_until='domcontentloaded')
-            page.locator('#file-input').wait_for()
+            page.locator('#file-input').wait_for(state='attached')
             assert page.title().startswith('ImageShrink')
             assert page.evaluate('document.documentElement.scrollWidth <= window.innerWidth+2')
 
