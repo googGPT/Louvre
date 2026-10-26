@@ -71,6 +71,8 @@ try:
         with page.expect_download(timeout=15000) as req2:page.locator('#export-csv').click()
         csv=Path(req2.value.path()).read_text(encoding='utf-8-sig')
         assert 'Valeur convertie' in csv and 'Bouteille test' in csv
+        # La température -20 °C et son résultat -4 °F doivent rester numériques.
+        assert '"Froid Bordeaux";-20;"°C";-4;"°F"' in csv
         # Suppression confirmée et restauration
         page.locator('#items .item').filter(has_text='Bouteille test').get_by_role('button',name='Supprimer').click()
         page.wait_for_function('document.querySelectorAll("#items .item").length===1')
