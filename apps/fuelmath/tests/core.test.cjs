@@ -1,8 +1,8 @@
-const test=require('node:test'),assert=require('node:assert/strict');const L=require('../core.js'),base={"id":"sample0001","route":"Exemple","km":180,"litres":6.2,"price":1.8,"people":2},today='2026-11-01';
+const test=require('node:test'),assert=require('node:assert/strict');const L=require('../core.js'),base={"id":"sample0001","route":"Exemple","km":180,"litres":6.2,"price":1.8,"people":2,"tolls":0,"parking":0,"returnTrip":"Aller simple"},today='2026-11-01';
 const mk=(changes={})=>({...base,...changes});
-test('application correcte et indépendante',()=>{assert.equal(L.SPEC.slug,'fuelmath');assert.equal(L.SPEC.fields.length,5)});
+test('application correcte et indépendante',()=>{assert.equal(L.SPEC.slug,'fuelmath');assert.equal(L.SPEC.fields.length,8)});
 test('accepte une fiche conforme',()=>{assert.deepEqual(L.normalizeRecord(base),base)});
-test('refuse null, array, champ absent',()=>{assert.throws(()=>L.normalizeRecord(null));assert.throws(()=>L.normalizeRecord([]));for(const f of L.SPEC.fields){const x=mk();delete x[f.key];assert.throws(()=>L.normalizeRecord(x),f.key)}});
+test('refuse null, array, champ absent',()=>{assert.throws(()=>L.normalizeRecord(null));assert.throws(()=>L.normalizeRecord([]));for(const f of L.SPEC.fields.filter(f=>!['tolls','parking','returnTrip'].includes(f.key))){const x=mk();delete x[f.key];assert.throws(()=>L.normalizeRecord(x),f.key)}});
 test('refuse injection de nombres invalides',()=>{for(const f of L.SPEC.fields.filter(x=>x.type==='number'))for(const bad of [NaN,Infinity,-1,'42'])assert.throws(()=>L.normalizeRecord(mk({[f.key]:bad})));});
 test('export/import JSON et version',()=>{const b=L.backup([base]);const arr=L.validateBackup(JSON.parse(b));assert.equal(arr.length,1);assert.equal(arr[0].id,base.id);assert.throws(()=>L.validateBackup({...JSON.parse(b),version:8}))});
 test('import d’une autre application refusé',()=>{assert.throws(()=>L.validateBackup({app:'invalid',version:1,records:[base]}))});
@@ -41,4 +41,25 @@ test('refuse les valeurs de carburant irréalistes ou numériquement dangereuses
  }
  assert.throws(()=>L.splitCents(12,0));
  assert.throws(()=>L.splitCents(Number.MAX_SAFE_INTEGER+1,2));
+});
+
+test('sauvegardes v1 historiques compatibles sans nouveaux champs',()=>{
+ const old={id:'history001',route:'Ancien trajet',km:180,litres:6.2,price:1.8,people:2};
+ const n=L.normalizeRecord(old);
+ assert.equal(n.tolls,0);assert.equal(n.parking,0);assert.equal(n.returnTrip,'Aller simple');
+ assert.equal(L.validateBackup({app:'fuelmath',version:1,records:[old]})[0].tolls,0);
+});
+test('détail carburant, péages, parking et aller-retour',()=>{
+ const x=L.tripDetails({...base,returnTrip:'Aller-retour',tolls:5.50,parking:2});
+ assert.equal(x.distance,360);assert.equal(x.fuelLiters,22.32);
+ assert.equal(x.fuelCents,4018);assert.equal(x.extrasCents,750);assert.equal(x.totalCents,4768);
+ assert.equal(x.split.high*x.split.highCount+x.split.low*x.split.lowCount,x.totalCents);
+});
+test('aller-retour ne double pas le parking',()=>{
+ const one=L.tripDetails({...base,tolls:3,parking:7});
+ const two=L.tripDetails({...base,returnTrip:'Aller-retour',tolls:3,parking:7});
+ assert.equal(one.extrasCents,two.extrasCents);assert.equal(two.fuelCents,2*one.fuelCents);
+});
+test('contrôles des nouvelles entrées',()=>{
+ for(const item of [{tolls:-1},{parking:Infinity},{returnTrip:'autre'},{tolls:100001},{parking:100001}])assert.throws(()=>L.normalizeRecord({...base,...item}));
 });

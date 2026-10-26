@@ -31,3 +31,10 @@ Estimer carburant et partage entre passagers. Application autonome Web statique,
 - `core.js`: `tripCostCents` arrondit le coût de chaque trajet en centimes ; `splitCents` attribue le reliquat d'arrondi aux passagers afin que la somme des parts soit égale au coût du trajet.
 - `tests/core.test.cjs`: vérifie le reliquat pour deux et trois passagers, la somme des coûts et les bornes numériques.
 - Fait vérifié via GitHub Actions seulement après réussite du workflow déclenché par ce commit ; la description ne vaut pas validation automatique.
+
+## Revue ciblée FuelMath v2
+- État initial : PR #27 fusionnée ; correctif de centimes déjà présent, conservé.
+- Correction métier : distinction carburant/frais annexes et trajet aller-retour dans `tripDetails` ; jamais de doublement automatique des péages/parking.
+- Compatibilité : `normalizeRecord` fournit 0 et « Aller simple » pour les trois champs absents des archives précédentes (schéma de sauvegarde reste v1).
+- Ergonomie : aperçu avant enregistrement ; CSV local ; champs plus précis sur le partage avec le conducteur.
+- Contrôles : scénarios numériques unitaires additionnels et validation GitHub Actions ; ne pas revendiquer une nouvelle lecture des PDF.
