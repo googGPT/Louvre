@@ -43,7 +43,7 @@ Statut des PR première vague au début de la mission : #18, #19, #21 fusionnée
 | 01 | GradePilot | Moyenne académique coefficientée et seuil futur | StudyRecall / QuizCraft | calcul inverse de note requise | v2 auditée : moyenne et seuil arrondi par excès, stockage transactionnel, simulation ; consulter CI du dernier SHA | [#39](https://github.com/googGPT/Louvre/pull/39) |
 | 02 | ShiftLedger | Horaires, pauses, rémunération théorique | RoundPlan | reconstitution des pauses et durée | Piste évaluée ; non développée | — |
 | 03 | ColorContrast | Audit contrastes et palettes WCAG | aucune | luminance sRGB + AA/AAA | Code + tests Node réussis localement ; CI Chrome à confirmer | — |
-| 04 | ImageShrink | Compression locale d’images | ReceiptRescue (photos accessoires) | redimensionnement et qualité image | Application initiale créée (conversion PNG/JPEG/WebP, redimensionnement, vie privée, QA dédiée) ; CI dernier commit à vérifier | [#49](https://github.com/googGPT/Louvre/pull/49) |
+| 04 | ImageShrink | Compression locale d’images | ReceiptRescue (photos accessoires) | redimensionnement et qualité image | Application créée et auditée : compression/conversion locale, garde dimensions, 34 tests Node + Chromium mobile/offline réussis (PR #49) | [#49](https://github.com/googGPT/Louvre/pull/49) |
 | 05 | QRForge | QR codes locaux | aucune | encodage QR et masque | Piste évaluée ; non développée | — |
 | 06 | CSVClinic | Nettoyage CSV et doublons | aucune | parseur CSV quote/newlines et dédup | Piste évaluée ; non développée | — |
 | 07 | TextDiff | Comparaison textuelle | aucune | LCS et alignement de modifications | Piste évaluée ; non développée | — |
