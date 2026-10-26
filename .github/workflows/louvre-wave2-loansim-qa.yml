@@ -1,0 +1,28 @@
+name: Wave 2 QA — LoanSim
+on:
+  pull_request:
+    paths:
+      - 'apps/loansim/**'
+      - '.github/workflows/louvre-wave2-loansim-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Node syntax and business cases
+        run: |
+          node --check apps/loansim/core.js
+          node --check apps/loansim/app.js
+          node --check apps/loansim/sw.js
+          node -e "JSON.parse(require('fs').readFileSync('apps/loansim/manifest.webmanifest','utf8'))"
+          node --test apps/loansim/tests/core.test.cjs
+      - name: Browser test dependencies
+        run: python -m pip install --disable-pip-version-check 'playwright>=1.45,<2'
+      - name: Chromium integration and mobile PWA
+        run: python apps/loansim/tests/browser.test.py
