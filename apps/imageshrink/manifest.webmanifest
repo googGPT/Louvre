@@ -1,0 +1,18 @@
+{
+  "name": "ImageShrink — Compression locale d'images",
+  "short_name": "ImageShrink",
+  "description": "Redimensionnement et conversion JPEG, PNG, WebP en local",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f7fb",
+  "theme_color": "#172b42",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
