@@ -47,7 +47,7 @@ Statut des PR première vague au début de la mission : #18, #19, #21 fusionnée
 | 05 | QRForge | QR codes locaux | aucune | encodage QR et masque | Application créée, auditée et testée : MIT QR Model 2, URL/Wi-Fi, SVG/PNG, 40/40 Node et décodage indépendant ZXing-C++ validés | [#50](https://github.com/googGPT/Louvre/pull/50) |
 | 06 | CSVClinic | Nettoyage CSV et doublons | aucune | parseur CSV quote/newlines et dédup | Piste évaluée ; non développée | — |
 | 07 | TextDiff | Comparaison textuelle | aucune | LCS et alignement de modifications | Application initiale créée : LCS par lignes/mots, export sûr, bornes 700 unités, tests Node + Chromium ; [QA](https://github.com/googGPT/Louvre/actions/runs/40409322718) initiale réussie, CI du HEAD final à vérifier | [#51](https://github.com/googGPT/Louvre/pull/51) |
-| 08 | CitationCraft | Gestion bibliographique BibTeX/RIS | ReadTrail (livres personnels) | sérialisation de références structurées | Piste évaluée ; non développée | — |
+| 08 | CitationCraft | Gestion bibliographique BibTeX/RIS | ReadTrail (livres personnels) | sérialisation de références structurées | Application créée : CRUD local transactionnel, BibTeX/RIS/JSON, champs inconnus signalés, DOI/clé sans doublons, 56 tests Node et Chromium réussis ; CI finale à vérifier | [#52](https://github.com/googGPT/Louvre/pull/52) |
 | 09 | InvoiceCanvas | Devis et factures imprimables | SplitFair (dépenses partagées) | TVA, HT/TTC et numérotation | Piste évaluée ; non développée | — |
 | 10 | RoomSketch | Plan de pièce à échelle | HomePulse | géométrie 2D, zones de collision | Piste évaluée ; non développée | — |
 | 11 | KeyboardCoach | Vitesse de frappe et précision | aucune | mots/minutes ajustés erreurs | Piste évaluée ; non développée | — |
