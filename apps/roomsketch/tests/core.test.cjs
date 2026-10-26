@@ -80,7 +80,7 @@ test('SVG représente chaque meuble avec les dimensions projetées',()=>{
 });
 test('SVG échappe correctement le HTML et les caractères spéciaux',()=>{
  const x=C.svg(plan([o('obj-0000001',{label:'<script>&"\'</script>'})]));
- a.ok(x.includes('&lt;script&gt;&amp;"'));a.ok(!x.includes('<script>'));
+ a.ok(x.includes('&lt;script&gt;&amp;&quot;&apos;'));a.ok(!x.includes('<script>'));
 });
 test('SVG export invalide impossible',()=>a.throws(()=>C.svg(plan([o(),o()])),/dupliqué/));
 test('format JSON import/export invariant',()=>{
