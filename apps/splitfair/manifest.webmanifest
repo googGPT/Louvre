@@ -1,18 +1,9 @@
 {
   "name": "SplitFair",
   "short_name": "SplitFair",
-  "description": "Répartir des dépenses entre amis et calculer des remboursements",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "theme_color": "#101827",
-  "background_color": "#0b111d",
-  "icons": [
-    {
-      "src": "icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    }
-  ]
+  "background_color": "#071f22",
+  "theme_color": "#163c37"
 }
