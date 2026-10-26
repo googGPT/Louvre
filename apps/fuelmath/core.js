@@ -38,7 +38,7 @@ const AppLogic=(()=>{
  function summarize(records,today){
   const rows=records.map(r=>{
    const cents=tripCostCents(r),parts=splitCents(cents,r.people);
-   return r.route+' : '+eur(cents)+' · partage '+splitLabel(parts);
+   return r.route+' : '+eur(cents)+' · partage entre passagers : '+splitLabel(parts);
   });
   const sum=records.reduce((s,r)=>s+tripCostCents(r),0);
   return {kpis:[['Coût estimé',eur(sum)],['Distance totale',records.reduce((s,r)=>s+r.km,0).toFixed(1)+' km']],notes:['Estimation carburant seulement : hors péages, usure, circulation et stationnement.','Répartition en centimes : les éventuels centimes restants sont attribués à certains passagers.'],rows:rows.slice(0,15)};
