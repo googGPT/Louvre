@@ -2,7 +2,7 @@
 
 ## Audit source et correction originale
 
-1. `core.js` de la PR #35 refusait `value<0` sans tenir compte de la catégorie : les températures négatives valides ne pouvaient pas être sauvegardées. `convert()` corrige cette restriction avec vérification du zéro absolu.
+1. `core.js` de la PR #35 refusait `value<0` sans tenir compte de la catégorie : les températures négatives valides ne pouvaient pas être sauvegardées. `convert()` corrige cette restriction avec vérification du zéro absolu. L'audit complémentaire a supprimé une normalisation qui écrasait à zéro les températures de très faible amplitude (par exemple `1e-13 K`), et écarté la tolérance autorisant des températures très légèrement inférieures au zéro absolu. Six tests de non-régression supplémentaires couvrent ces cas.
 2. Les conversions étaient formatées systématiquement via `toFixed(3)` : des petites valeurs pouvaient apparaître nulles. `formatValue()` utilise une précision significative et la notation scientifique lorsque nécessaire.
 3. La première interface affichait seulement une liste. La v2 ajoute le résultat direct, des catégories sûres et un véritable historique filtrable.
 4. Les unités US sont distinguées des unités impériales ; les facteurs restent des constantes documentées. Les nombres JavaScript conservent leurs limitations de précision intrinsèques.
@@ -25,4 +25,4 @@ Les références et repères PDF proviennent des fiches Louvre consultées via G
 - Export CSV : neutralisation des formules dans les chaînes utilisateur, séparateur `;`, UTF-8 BOM ; **seul JSON restaure l'historique**.
 - Pas d'API, pas de réseau de mesure, pas de gestion de monnaie ; stockage navigateur effaçable et pas de chiffrement local. Maximum 500 fiches et JSON limité à 900 Ko.
 - Le calcul reste IEEE-754 `Number`, sans garantie métrologique ou comptable ; affichage à 9 chiffres significatifs, zéro absolu contrôlé avec tolérance d'arrondi numérique.
-- Le cache PWA `shell-v2` remplace l'ancien cache après activation du nouveau service worker.
+- Le cache PWA `shell-v3` remplace les caches antérieurs après activation du nouveau service worker. La mise à jour explicite du service worker est nécessaire pour que les navigateurs ayant déjà mis `core.js` en cache reçoivent le correctif.
