@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="fr"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#183749">
+<meta name="description" content="RoomSketch : dessinez votre pièce à l’échelle en centimètres, déplacez vos meubles, repérez les collisions et exportez en SVG/JSON, sans compte.">
+<title>RoomSketch — Plan de pièce à l’échelle</title>
+<link rel="icon" href="./icon.svg" type="image/svg+xml"><link rel="manifest" href="./manifest.webmanifest"><link rel="stylesheet" href="./style.css"></head>
+<body>
+<header class="top"><div class="brand"><span class="brand-mark" aria-hidden="true">▦</span><div><strong>RoomSketch</strong><small>Votre pièce, vos idées, vos mesures</small></div></div><span class="privacy">100 % local · Sans compte</span></header>
+<main>
+<section class="hero"><p class="eyebrow">APPLICATION 30 · LOUVRE VAGUE 2</p><h1>Imaginez l’espace.<br><em>Respectez les dimensions.</em></h1><p>Dessinez une pièce rectangulaire, placez vos meubles en centimètres et vérifiez les chevauchements avant de réaménager. Le plan est conservé uniquement dans ce navigateur.</p><div class="hero-tags"><span>Grille métrique</span><span>Déplacement tactile</span><span>Contrôle des collisions</span><span>SVG & JSON</span></div></section>
+<div class="workspace">
+<section class="panel controls-panel">
+<div class="heading"><span>01</span><div><h2>Configurer la pièce</h2><p>Dimensions intérieures exprimées en centimètres.</p></div></div>
+<div class="duo"><label for="room-width">Largeur (cm)<input id="room-width" type="number" min="200" max="1500" step="1" value="500"></label><label for="room-depth">Profondeur (cm)<input id="room-depth" type="number" min="200" max="1500" step="1" value="400"></label></div>
+<button id="resize-room" class="secondary wide-button" type="button">Appliquer les dimensions</button>
+<h3 class="subheading">Ajouter un meuble</h3>
+<div class="add-row"><label for="furniture-kind">Catégorie<select id="furniture-kind"><option value="table">Table · 120 × 70</option><option value="bed">Lit · 200 × 160</option><option value="sofa">Canapé · 210 × 90</option><option value="desk">Bureau · 140 × 70</option><option value="chair">Chaise · 50 × 50</option><option value="wardrobe">Armoire · 120 × 60</option><option value="custom">Meuble libre · 80 × 60</option></select></label><button id="add-furniture" class="primary" type="button">Ajouter</button></div>
+<div class="checkboxes"><label class="check"><input id="snap-grid" type="checkbox" checked>Magnétisme à la grille (10 cm)</label><label class="check"><input id="grid-visual" type="checkbox" checked>Afficher la grille (50 cm)</label></div>
+<hr>
+<div class="heading compact"><span>02</span><div><h2>Meuble sélectionné</h2><p>Modifiez sa position ou ses dimensions exactement.</p></div></div>
+<label for="selected-id">Meuble<select id="selected-id"><option value="">Aucun meuble</option></select></label>
+<div class="duo"><label for="edit-x">Position X (cm)<input id="edit-x" type="number" min="0" max="1500" step="1"></label><label for="edit-y">Position Y (cm)<input id="edit-y" type="number" min="0" max="1500" step="1"></label></div>
+<div class="duo"><label for="edit-width">Largeur initiale (cm)<input id="edit-width" type="number" min="20" max="600" step="1"></label><label for="edit-depth">Profondeur initiale (cm)<input id="edit-depth" type="number" min="20" max="600" step="1"></label></div>
+<label for="edit-label">Nom du meuble<input id="edit-label" maxlength="80" placeholder="Nom du meuble"></label>
+<p id="rotation-note" class="hint">La rotation 90° échange largeur et profondeur du rectangle occupé.</p>
+<div class="action-row"><button id="apply-furniture" class="secondary" type="button">Appliquer</button><button id="rotate-furniture" class="secondary" type="button">Rotation 90°</button><button id="remove-furniture" class="danger" type="button">Supprimer</button></div>
+<p class="hint">Avec le meuble sélectionné : flèches pour déplacer de 10 cm, Maj + flèches pour 1 cm ; touche R pour tourner. Un objet ne peut ni traverser un autre meuble ni sortir de la pièce.</p>
+<hr>
+<div class="heading compact"><span>03</span><div><h2>Conserver le plan</h2><p>SVG pour partager l’image ; JSON pour continuer l’édition.</p></div></div>
+<div class="action-row"><button id="export-svg" class="primary" type="button">Exporter SVG</button><button id="export-json" class="secondary" type="button">Sauvegarder JSON</button><button id="print-plan" class="secondary" type="button">Imprimer</button></div>
+<div class="action-row"><button id="import-plan" class="secondary" type="button">Restaurer JSON</button><button id="reset-plan" class="danger" type="button">Réinitialiser</button><button id="raw-export" class="secondary" type="button" hidden>Copie brute</button></div>
+<input id="import-file" type="file" accept=".json,application/json" hidden>
+<div id="warning" class="warning" role="alert" hidden>Le stockage local est inaccessible ou corrompu. Les changements sont bloqués afin de préserver les données ; exportez la copie brute avant de restaurer un JSON valide.</div>
+<p id="feedback" role="status" aria-live="polite" class="feedback"></p>
+</section>
+<section class="panel canvas-panel">
+<div class="heading"><span>04</span><div><h2>Plan interactif</h2><p>Coordonnées réelles en centimètres, origine dans le coin supérieur gauche.</p></div></div>
+<div class="statistics"><div><span>Surface totale</span><strong id="area-room">20,00 m²</strong></div><div><span>Meubles</span><strong id="object-count">0</strong></div><div><span>Surface occupée</span><strong id="area-filled">0,00 m²</strong></div><div><span>Surface libre*</span><strong id="area-free">20,00 m²</strong></div></div>
+<div class="canvas-frame"><svg id="plan-view" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 400" role="img" tabindex="0" aria-label="Plan interactif de la pièce avec meubles déplaçables"><title>Plan RoomSketch</title></svg></div>
+<div class="legend"><span><i class="legend-room"></i> Pièce</span><span><i class="legend-furniture"></i> Meuble</span><span><i class="legend-selected"></i> Sélection</span><span><i class="legend-grid"></i> Grille 50 cm</span></div>
+<p id="plan-caption" class="plan-caption">500 × 400 cm · Échelle relative : 1 unité SVG = 1 cm.</p>
+<p class="hint">Cliquez ou touchez un meuble pour le sélectionner, puis faites-le glisser. Un déplacement invalide est refusé. Les meubles simplement adjacents sont autorisés.</p>
+<p class="hint"><strong>*</strong> Surface libre = surface de la pièce moins les rectangles des meubles (vue en plan). Cela ne modélise ni la circulation, ni les portes, ni l’ouverture des placards, ni les hauteurs ou les dégagements de sécurité. Vérifiez toutes les mesures sur place.</p>
+</section>
+</div>
+</main>
+<footer>RoomSketch est un planificateur schématique 2D de pièces rectangulaires, pas un logiciel de DAO/BIM ni un plan architectural, d’accessibilité ou de sécurité certifié. Les SVG ont des proportions métriques, mais leur dimension imprimée dépend du logiciel et de l’imprimante. La sauvegarde locale peut être effacée par le navigateur ; exportez un JSON régulier. Hors ligne après un premier chargement réussi.</footer>
+<script src="./core.js"></script><script src="./app.js"></script>
+</body></html>
