@@ -1,4 +1,4 @@
-name: QA Louvre App XX — GoalLadder
+name: QA Louvre App 19 — GoalLadder
 on:
   pull_request:
     paths:
