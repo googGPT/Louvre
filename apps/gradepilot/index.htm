@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#2735a8">
+<meta name="description" content="GradePilot : calculez votre moyenne pondérée, simulez votre prochaine note et protégez vos sauvegardes. Gratuit et hors ligne.">
+<title>GradePilot — Moyennes pondérées et simulations</title>
+<link rel="stylesheet" href="./style.css"><link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml"></head><body>
+<header class="site"><div class="brand"><span class="logo" aria-hidden="true">G</span><div><strong>GradePilot <span class="version">v2</span></strong><small>Votre copilote académique · hors ligne</small></div></div><span class="private">● Données locales, sans compte</span></header>
+<main>
+<section class="intro"><div><p class="eyebrow">APPLICATION 21 · LOUVRE VAGUE 2</p>
+<h1>Chaque point compte.<br><em>Visualisez votre trajectoire.</em></h1>
+<p>Ajoutez vos notes et coefficients, puis découvrez précisément la note minimale à obtenir pour atteindre votre objectif.</p></div>
+<aside class="hero-stat"><small>MOYENNE PONDÉRÉE</small><output id="average">—</output><span id="average-caption">Ajoutez votre première note</span></aside></section>
+<div class="dashboard">
+<section class="panel assessments" aria-labelledby="grades-title">
+<div class="heading"><div><p class="eyebrow">01 · MES ÉVALUATIONS</p><h2 id="grades-title">Notes enregistrées</h2></div><span class="counter" id="count">0 note</span></div>
+<form id="grade-form" class="form-grid"><label>Évaluation
+<input id="label" maxlength="64" placeholder="Ex. Contrôle de finance" required></label>
+<label>Note /20 <input id="grade" type="number" min="0" max="20" step="0.01" placeholder="14,5" required></label>
+<label>Coefficient <input id="weight" type="number" min="0.01" max="100" step="0.01" value="1" required></label>
+<button class="primary" type="submit" id="save">Ajouter la note</button>
+<button type="button" id="cancel-edit" hidden>Annuler</button></form>
+<p class="feedback" role="status" aria-live="polite" id="feedback"></p>
+<p id="warning" class="warning" hidden>Le stockage existant est illisible. Aucun ajout, suppression ni effacement n'est autorisé : exportez d'abord la copie brute, puis importez un JSON valide.</p>
+<div class="list-tools"><label for="search">Rechercher une évaluation
+<input id="search" type="search" placeholder="Ex. Finance" aria-label="Rechercher une évaluation"></label><span id="list-status" aria-live="polite"></span></div>
+<div id="grade-list" class="grade-list"></div>
+<p class="hint">La moyenne est calculée avec les coefficients enregistrés : ils n'ont pas besoin de totaliser 100 %.</p>
+</section>
+<aside class="panel forecast" aria-labelledby="target-title">
+<p class="eyebrow">02 · OBJECTIF</p><h2 id="target-title">Quelle note viser ?</h2>
+<label>Moyenne cible /20 <input id="target" type="number" min="0" max="20" step="0.01" value="12"></label>
+<label>Coefficient de la prochaine évaluation <input id="nextweight" type="number" min="0.01" max="100" step="0.01" value="2"></label>
+<div class="forecast-answer"><span>NOTE MINIMALE REQUISE SUR 20</span><output id="required">—</output><p id="feasibility" role="status" aria-live="polite"></p></div>
+<div class="track" aria-hidden="true"><span id="target-mark" style="width:60%"></span></div>
+<p id="forecast-range" class="hint"></p>
+<section class="scenario" aria-labelledby="scenario-title"><h3 id="scenario-title">Tester un scénario</h3>
+<label>Ma note à la prochaine évaluation /20 <input id="whatif-score" type="number" min="0" max="20" step="0.01" value="14"></label>
+<div class="scenario-result">Moyenne projetée : <output id="whatif-average">—</output></div>
+</section>
+<p class="hint">Simulation mathématique d'une seule évaluation future. Les règles de compensation, d'arrondi officiel et de validation de votre établissement ne sont pas incluses.</p>
+<div class="tools"><button id="export" type="button">Sauvegarder JSON</button><button id="export-csv" type="button">Exporter CSV</button><button id="import-trigger" type="button">Restaurer JSON</button>
+<input id="import-file" type="file" accept=".json,application/json" hidden>
+<button id="export-raw" type="button">Copie brute</button><button id="reset" class="danger" type="button">Tout effacer</button></div>
+<p class="hint">Seul le JSON permet de restaurer les notes. Conservez-le hors de ce navigateur.</p>
+</aside></div></main>
+<footer>GradePilot · Jusqu'à 200 évaluations · Aucun compte ni serveur · Vos données restent dans le navigateur, sans synchronisation entre appareils. Exportez régulièrement une sauvegarde.</footer>
+<script src="./core.js"></script><script src="./app.js"></script></body></html>
