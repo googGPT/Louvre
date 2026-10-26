@@ -57,6 +57,15 @@ test('une très petite valeur ne s’affiche pas comme zéro',()=>{assert.notEqu
 test('précision lisible sur conversion usuelle',()=>assert.match(L.formatValue(L.convert(12,'km','mile')),/^7,456/));
 test('zéro affiché simplement',()=>assert.equal(L.formatValue(0),'0'));
 test('valeur d’affichage invalide refusée',()=>assert.throws(()=>L.formatValue(Infinity)));
+test('petite température positive conservée en Kelvin',()=>assert.equal(L.convert(1e-13,'K','K'),1e-13));
+test('petite température signée conservée en Celsius',()=>assert.equal(L.convert(-1e-13,'°C','°C'),-1e-13));
+test('Kelvin légèrement négatif interdit sans tolérance arbitraire',()=>assert.throws(()=>L.convert(-1e-13,'K','K'),/zéro absolu/));
+test('Celsius juste sous zéro absolu interdit',()=>assert.throws(()=>L.convert(-273.15000000000003,'°C','K'),/zéro absolu/));
+test('Fahrenheit juste sous zéro absolu interdit',()=>assert.throws(()=>L.convert(-459.6700000000001,'°F','K'),/zéro absolu/));
+test('CSV ne transforme pas une petite température positive en zéro',()=>{
+  const csv=L.toCSV([r({name:'Cryogénie',value:1e-13,from:'K',to:'K'})]);
+  assert.match(csv,/"Cryogénie";1e-13;"K";1e-13;"K"/);
+});
 test('CSV exportable, Unicode et BOM',()=>{const csv=L.toCSV([base]);assert.ok(csv.startsWith('\uFEFF'));assert.ok(csv.includes('Balade'));assert.ok(csv.includes('Valeur convertie'))});
 test('CSV protège les formules',()=>{const csv=L.toCSV([r({name:'=IMPORTXML("x")'})]);assert.match(csv,/"'=IMPORTXML/)});
 test('CSV sépare et échappe les guillemets',()=>assert.match(L.toCSV([r({name:'un "nom"; étrange'})]),/"un ""nom""; étrange"/));
