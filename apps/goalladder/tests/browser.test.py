@@ -28,7 +28,7 @@ try:
   backup=d.value.path();assert backup is not None
   page.locator('#search').fill('mot-absent-zz');assert page.locator('#items .item').count()==0
   page.locator('#search').fill('');assert page.locator('#items .item').count()==1
-  page.locator('#items .item .item-actions button').first.click();assert page.locator('#save-button').inner_text()=='Mettre à jour'
+  page.locator('#items .item .item-actions button').first.click();assert page.locator('#save-button').inner_text()=='Enregistrer les modifications'
   page.locator('#cancel-edit').click()
   page.on('dialog',lambda x:x.accept())
   page.locator('#items .item .item-actions button').nth(1).click();page.wait_for_function('document.querySelectorAll("#items .item").length===0')
