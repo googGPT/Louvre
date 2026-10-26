@@ -1,27 +1,165 @@
-/* Interface accessible, aucune dépendance ni connexion réseau. */
+/* GoalLadder v2 : interface spécifique, stockage local validé et récupération sûre. */
 'use strict';
 (()=>{
-const L=AppLogic,C=L.SPEC,storageKey='louvre-factory:'+C.slug+':v1';
-let records=[],activeId=null,readOnly=false;
-const $=id=>document.getElementById(id);
-const status=$('status'),form=$('record-form'),body=$('items'),summary=$('summary');
-function tell(message,error=false){status.textContent=message;status.className=error?'status error':'status';}
-function download(name,text,type){const blob=new Blob([text],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),5000);}
-function safeSave(next){if(readOnly){tell('Sauvegarde locale corrompue : exportez-la ou restaurez un JSON valide.',true);return false;}const txt=L.backup(next);try{localStorage.setItem(storageKey,txt);records=next;return true;}catch(e){tell('Échec du stockage local : quota ou accès bloqué. Exportez une sauvegarde.',true);return false;}}
-function textNode(el,t){el.textContent=String(t);return el;}
-function node(tag,cls){const e=document.createElement(tag);if(cls)e.className=cls;return e;}
-function render(){const result=L.compute(records);summary.replaceChildren();for(const [label,value] of result.kpis){const card=node('div','stat');card.append(textNode(node('span','stat-label'),label),textNode(node('strong','stat-value'),value));summary.append(card);}const notes=$('notes');notes.replaceChildren(...result.notes.map(n=>textNode(node('p'),n)));const rows=$('insights');rows.replaceChildren(...(result.rows.length?result.rows:['Ajoutez une fiche pour obtenir des résultats.']).map(n=>textNode(node('li'),n)));
- const query=$('search').value.toLocaleLowerCase('fr').trim(),visible=records.filter(r=>Object.values(r).some(x=>String(x).toLocaleLowerCase('fr').includes(query)));$('counter').textContent=visible.length+' fiche(s)';body.replaceChildren();
- for(const r of visible.slice().reverse()){const card=node('article','item');const h=node('h3');h.textContent=r[C.fields[0].key];card.append(h);const dl=node('dl');for(const field of C.fields){const dt=node('dt'),dd=node('dd');dt.textContent=field.label;dd.textContent=String(r[field.key]);dl.append(dt,dd);}card.append(dl);if(C.slug==='quizcraft'||C.slug==='studyrecall'){const a=node('button','outline small');a.type='button';a.textContent='Révéler la réponse';const field=C.slug==='quizcraft'?'answer':'back';const secret=card.querySelectorAll('dd')[C.fields.findIndex(f=>f.key===field)];if(secret){secret.hidden=true;a.addEventListener('click',()=>{secret.hidden=!secret.hidden;a.textContent=secret.hidden?'Révéler la réponse':'Masquer la réponse'})}card.append(a);if(!readOnly){if(C.slug==='studyrecall'){for(const [text,success] of [['Révision réussie',true],['À revoir',false]]){const b=node('button','outline small');b.type='button';b.textContent=text;b.addEventListener('click',()=>{const box=success?Math.min(5,Number(r.box)+1):1,next=L.addDays(L.dayKey(),success?Math.pow(2,box-1):1),updated={...r,box:String(box),review:next};if(safeSave(records.map(x=>x.id===r.id?updated:x))){render();tell('Prochaine révision : '+next)}});card.append(b)}}else{for(const [text,mastered] of [['Je connais', 'oui'],['À retravailler','non']]){const b=node('button','outline small');b.type='button';b.textContent=text;b.addEventListener('click',()=>{if(safeSave(records.map(x=>x.id===r.id?{...r,mastered}:x))){render();tell('Progression mise à jour.')}});card.append(b)}}}}const bar=node('div','item-actions');const edit=node('button','outline small'),del=node('button','danger small');edit.type=del.type='button';edit.textContent='Modifier';del.textContent='Supprimer';edit.addEventListener('click',()=>editRecord(r));del.addEventListener('click',()=>{if(confirm('Supprimer cette fiche ?')&&safeSave(records.filter(x=>x.id!==r.id))){render();tell('Fiche supprimée.')}});bar.append(edit,del);card.append(bar);body.append(card)}
-}
-function editRecord(r){activeId=r.id;for(const f of C.fields)form.elements.namedItem(f.key).value=r[f.key];$('save-button').textContent='Mettre à jour';$('cancel-edit').hidden=false;form.scrollIntoView({behavior:'smooth',block:'start'});}
-function reset(){activeId=null;form.reset();$('save-button').textContent='Enregistrer';$('cancel-edit').hidden=true;}
-function initForm(){for(const f of C.fields){const outer=node('label','field'),label=node('span');label.textContent=f.label;let input;if(f.type==='select'){input=node('select');for(const o of f.options){const opt=node('option');opt.value=o;opt.textContent=o;input.append(opt)}}else{input=node('input');input.type=f.type;if(f.type==='number'){input.step='any';input.min='0';input.max='100000000';}else input.maxLength=160;}input.name=f.key;input.required=true;input.autocomplete='off';if(f.type==='date')input.value=L.dayKey();if(f.type==='datetime-local')input.value=L.dayKey()+'T12:00';outer.append(label,input);$('fields').append(outer)}form.addEventListener('submit',event=>{event.preventDefault();if(readOnly){tell('Stockage corrompu. Restaurez une sauvegarde valide avant de modifier.',true);return;}try{const o={id:activeId||crypto.randomUUID().replaceAll('-','').slice(0,24)};for(const f of C.fields){const raw=form.elements.namedItem(f.key).value;o[f.key]=f.type==='number'?Number(raw):raw;}const valid=L.normalizeRecord(o);let next=activeId?records.map(x=>x.id===activeId?valid:x):[...records,valid];if(next.length>L.MAX)throw Error('Capacité maximale de '+L.MAX+' fiches');if(safeSave(next)){reset();render();tell('Fiche enregistrée sur cet appareil.')}}catch(e){tell(e.message,true)}});$('cancel-edit').addEventListener('click',reset);}
-$('export').addEventListener('click',()=>{try{download(C.slug+'-sauvegarde.json',L.backup(records),'application/json');tell('Fichier JSON prêt. Conservez-le dans un emplacement sûr.')}catch(e){tell(e.message,true)}});
-$('import').addEventListener('change',async event=>{const file=event.target.files?.[0];event.target.value='';if(!file)return;try{if(file.size>L.STORAGE_LIMIT)throw Error('Fichier trop volumineux');const next=L.validateBackup(JSON.parse(await file.text()));if(!confirm('Remplacer les '+records.length+' fiches locales par '+next.length+' fiches validées ?'))return;readOnly=false;if(safeSave(next)){reset();render();tell('Sauvegarde restaurée.')}}catch(e){tell('Import refusé : '+e.message,true)}});
-$('export-raw').addEventListener('click',()=>{download(C.slug+'-stockage-original.txt',localStorage.getItem(storageKey)||'','text/plain');tell('Copie brute du stockage téléchargée. Ne la publiez pas.');});
-$('search').addEventListener('input',render);
-try{const raw=localStorage.getItem(storageKey);if(raw){records=L.validateBackup(JSON.parse(raw))}}catch(e){readOnly=true;tell('ATTENTION : stockage illisible. Aucune fiche ne sera écrasée. Exportez la copie brute, puis restaurez un JSON valide.',true);$('warning').hidden=false}
-initForm();render();
-if('serviceWorker'in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+ const L=AppLogic,KEY='louvre-factory:goalladder:v1';
+ const $=id=>document.getElementById(id);
+ const form=$('record-form'),status=$('status'),list=$('items');
+ let records=[],editing=null,readOnly=false;
+ const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=String(text);return n;};
+ function tell(message,error=false){status.textContent=message;status.className=error?'status error':'status';}
+ function download(name,contents,type){
+   const url=URL.createObjectURL(new Blob([contents],{type})),a=document.createElement('a');
+   a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),4000);
+ }
+ function save(next,{recover=false}={}){
+   if(readOnly&&!recover){tell('Stockage illisible : exportez la copie brute ou restaurez un JSON valide.',true);return false;}
+   try{
+     const text=L.backup(next);
+     localStorage.setItem(KEY,text);
+     records=L.validateBackup(JSON.parse(text));
+     if(recover){readOnly=false;$('warning').hidden=true;}
+     return true;
+   }catch(err){
+     tell('Enregistrement impossible : '+err.message,true);
+     return false;
+   }
+ }
+ function getFields(){
+   const obj={id:editing||crypto.randomUUID().replaceAll('-','').slice(0,24)};
+   for(const f of L.SPEC.fields)obj[f.key]=form.elements.namedItem(f.key).value;
+   return L.normalizeRecord(obj);
+ }
+ function reset(){
+   editing=null;form.reset();
+   form.elements.namedItem('due').value=L.addDays(L.dayKey(),7);
+   $('save-button').textContent='Ajouter cette étape';
+   $('cancel-edit').hidden=true;
+ }
+ function edit(record){
+   if(readOnly)return;
+   editing=record.id;
+   for(const f of L.SPEC.fields)form.elements.namedItem(f.key).value=record[f.key];
+   $('save-button').textContent='Enregistrer les modifications';
+   $('cancel-edit').hidden=false;
+   form.scrollIntoView({behavior:'smooth',block:'start'});
+ }
+ function changeStatus(record){
+   if(readOnly)return;
+   const changed={...record,done:record.done==='oui'?'non':'oui'};
+   if(save(records.map(r=>r.id===record.id?changed:r))){
+     if(editing===record.id)form.elements.namedItem('done').value=changed.done;
+     render();tell(changed.done==='oui'?'Étape terminée.':'Étape réouverte.');
+   }
+ }
+ function statusLabel(record){
+   const kind=L.recordStatus(record),days=L.diffDays(record.due,L.dayKey());
+   if(kind==='done')return ['Terminée','done'];
+   if(kind==='overdue')return ['En retard de '+Math.abs(days)+' j','overdue'];
+   if(kind==='soon')return [days===0?"Aujourd'hui":'Dans '+days+' j','soon'];
+   return ['Dans '+days+' j','future'];
+ }
+ function renderProgress(goals){
+   const container=$('goal-progress');container.replaceChildren();
+   if(!goals.length){container.append(el('p','empty','Créez une première étape pour visualiser votre progression.'));return;}
+   for(const g of goals){
+     const card=el('article','goal-card'),top=el('div','goal-head'),h=el('h3',null,g.name);
+     top.append(h,el('strong',null,g.progress+' %'));
+     const bar=el('progress');bar.value=g.progress;bar.max=100;bar.setAttribute('aria-label','Progression de '+g.name);
+     const details=el('p','goal-details',g.done+'/'+g.total+' étapes terminées · '+g.overdue+' en retard · '+g.soon+' à faire sous 7 jours');
+     card.append(top,bar,details);
+     if(g.nextDue)card.append(el('p','goal-due','Prochaine échéance ouverte : '+g.nextDue));
+     container.append(card);
+   }
+ }
+ function render(){
+   const data=L.compute(records),summary=$('summary');summary.replaceChildren();
+   for(const [name,value] of data.kpis){
+     const s=el('div','stat');s.append(el('span','stat-label',name),el('strong','stat-value',value));summary.append(s);
+   }
+   renderProgress(data.goalStats);
+   const shown=L.filterRecords(records,{query:$('search').value,status:$('filter-status').value,sort:$('sort').value});
+   $('counter').textContent=shown.length+' / '+records.length+' étapes';
+   list.replaceChildren();
+   if(!shown.length){list.append(el('p','empty',records.length?'Aucune étape ne correspond à vos filtres.':'Aucune étape enregistrée. Commencez par définir votre objectif.'));return;}
+   for(const record of shown){
+     const card=el('article','item'),top=el('div','item-top'),title=el('div','item-title');
+     title.append(el('p','item-goal',record.goal),el('h3',null,record.milestone));
+     const [label,kind]=statusLabel(record),chip=el('span','chip chip-'+kind,label);
+     top.append(title,chip);
+     const info=el('p','item-meta','Échéance : '+record.due+' · Priorité : '+record.priority);
+     const actions=el('div','item-actions');
+     function button(label,cls,fn){
+       const b=el('button',cls,label);b.type='button';b.disabled=readOnly;b.addEventListener('click',fn);actions.append(b);
+     }
+     button('Modifier','outline small',()=>edit(record));
+     button('Supprimer','danger small',()=>{
+       if(!confirm('Supprimer cette étape ?'))return;
+       if(save(records.filter(r=>r.id!==record.id))){
+         if(editing===record.id)reset();
+         render();tell('Étape supprimée.');
+       }
+     });
+     button(record.done==='oui'?'Rouvrir':'Marquer terminée','outline small',()=>changeStatus(record));
+     card.append(top,info,actions);list.append(card);
+   }
+ }
+ function initForm(){
+   const container=$('fields');
+   for(const f of L.SPEC.fields){
+     const label=el('label','field'),caption=el('span',null,f.label);let input;
+     if(f.type==='select'){
+       input=el('select');
+       for(const value of f.options){const opt=el('option',null,value);opt.value=value;input.append(opt);}
+     }else{input=el('input');input.type=f.type;input.maxLength=160;}
+     input.name=f.key;input.required=true;input.autocomplete='off';label.append(caption,input);container.append(label);
+   }
+   reset();
+   form.addEventListener('submit',e=>{
+     e.preventDefault();
+     if(readOnly){tell('Stockage illisible. Restaurez une sauvegarde JSON valide avant toute modification.',true);return;}
+     try{
+       const record=getFields();
+       const next=editing?records.map(r=>r.id===editing?record:r):[...records,record];
+       if(next.length>L.MAX)throw Error('Limite de '+L.MAX+' étapes atteinte');
+       if(save(next)){reset();render();tell('Étape enregistrée sur cet appareil.');}
+     }catch(err){tell(err.message,true);}
+   });
+   $('cancel-edit').addEventListener('click',reset);
+ }
+ $('search').addEventListener('input',render);
+ $('filter-status').addEventListener('change',render);
+ $('sort').addEventListener('change',render);
+ $('export').addEventListener('click',()=>{
+   try{download('goalladder-sauvegarde.json',L.backup(records),'application/json');tell('Sauvegarde JSON téléchargée.');}
+   catch(err){tell(err.message,true);}
+ });
+ $('export-csv').addEventListener('click',()=>{
+   try{download('goalladder-etapes.csv',L.toCSV(records),'text/csv;charset=utf-8');tell('CSV exporté (JSON nécessaire pour restaurer).');}
+   catch(err){tell(err.message,true);}
+ });
+ $('export-raw').addEventListener('click',()=>{
+   try{download('goalladder-stockage-brut.txt',localStorage.getItem(KEY)||'','text/plain');tell('Copie brute téléchargée : ne la partagez pas.');}
+   catch(err){tell('Impossible de lire le stockage : '+err.message,true);}
+ });
+ $('import').addEventListener('change',async e=>{
+   const file=e.target.files?.[0];e.target.value='';if(!file)return;
+   try{
+     if(file.size>L.STORAGE_LIMIT)throw Error('Fichier trop volumineux');
+     const restored=L.validateBackup(JSON.parse(await file.text()));
+     if(!confirm('Remplacer '+records.length+' étape(s) par '+restored.length+' étape(s) vérifiées ?'))return;
+     if(save(restored,{recover:true})){
+       reset();$('search').value='';$('filter-status').value='all';$('sort').value='due';
+       render();tell('Historique restauré depuis le JSON.');
+     }
+   }catch(err){tell('Import refusé : '+err.message,true);}
+ });
+ try{
+   const raw=localStorage.getItem(KEY);
+   if(raw)records=L.validateBackup(JSON.parse(raw));
+ }catch(err){
+   readOnly=true;$('warning').hidden=false;
+   tell('Stockage illisible : aucune donnée n’a été écrasée. Exportez la copie brute, puis restaurez un JSON valide.',true);
+ }
+ initForm();render();
+ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
 })();
