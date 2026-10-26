@@ -33,10 +33,52 @@ try:
   page.on('dialog',lambda x:x.accept())
   page.locator('#items .item .item-actions button').nth(1).click();page.wait_for_function('document.querySelectorAll("#items .item").length===0')
   page.locator('#import').set_input_files(backup);page.wait_for_function('document.querySelectorAll("#items .item").length===1')
-  page.wait_for_function('navigator.serviceWorker.controller !== null',{ 'timeout':15000}) if False else None
+  # Régression : nom d'objectif réservé et échéance réellement dépassée.
+  past=page.evaluate("() => AppLogic.addDays(AppLogic.dayKey(), -3)")
+  page.locator('[name="goal"]').fill('__proto__')
+  page.locator('[name="milestone"]').fill('Étape en retard')
+  page.locator('[name="due"]').fill(past)
+  page.locator('[name="done"]').select_option('non')
+  page.locator('[name="priority"]').select_option('haute')
+  page.locator('#save-button').click()
+  page.wait_for_function('document.querySelectorAll("#items .item").length===2')
+  assert page.locator('#summary .stat-value').first.inner_text()=='2'
+  assert page.locator('#summary .stat-value').nth(3).inner_text()=='1'
+  assert page.locator('#goal-progress .goal-card').count()==2
+  page.locator('#filter-status').select_option('overdue')
+  assert page.locator('#items .item').count()==1
+  page.locator('#items .item').get_by_role('button',name='Marquer terminée').click()
+  assert page.locator('#items .item').count()==0
+  assert page.locator('#summary .stat-value').nth(3).inner_text()=='0'
+  page.locator('#filter-status').select_option('done')
+  assert page.locator('#items .item').count()==1
+  page.locator('#items .item').get_by_role('button',name='Rouvrir').click()
+  page.locator('#filter-status').select_option('all')
+  assert page.locator('#summary .stat-value').nth(3).inner_text()=='1'
+  # L'export CSV n'exécute aucune formule issue d'un nom d'objectif.
+  page.locator('[name="goal"]').fill('=HYPERLINK("https://example.invalid")')
+  page.locator('[name="milestone"]').fill('Injection CSV')
+  page.locator('[name="due"]').fill(past)
+  page.locator('#save-button').click()
+  page.wait_for_function('document.querySelectorAll("#items .item").length===3')
+  with page.expect_download(timeout=10000) as d2:page.locator('#export-csv').click()
+  csv=Path(d2.value.path()).read_text(encoding='utf-8-sig')
+  assert "\"'=HYPERLINK" in csv
+  # Un stockage corrompu reste protégé après un import invalide.
+  page.evaluate("() => localStorage.setItem('louvre-factory:goalladder:v1','not valid JSON')")
+  page.reload()
+  assert page.locator('#warning').is_visible()
+  page.locator('#import').set_input_files({'name':'invalid.json','mimeType':'application/json','buffer':b'not json'})
+  assert 'Import refusé' in page.locator('#status').inner_text()
+  assert page.locator('#warning').is_visible()
+  page.locator('#import').set_input_files(backup)
+  page.wait_for_function('document.querySelectorAll("#items .item").length===1')
+  assert page.locator('#warning').is_hidden()
+  page.reload()
+  page.wait_for_function("navigator.serviceWorker.controller !== null",timeout=15000)
   page.wait_for_timeout(1200);page.reload();page.wait_for_timeout(450)
   page.context.set_offline(True);page.reload(wait_until='domcontentloaded');page.wait_for_selector('#record-form input')
   assert page.locator('#items .item').count()==1
   browser.close()
- print('BROWSER PASS: create, reload, search, edit, delete, JSON export/import, offline reload, 390px mobile; app=goalladder')
+ print('BROWSER PASS: dashboard, deadlines, special goal names, completion, CSV, corrupt JSON recovery, offline, 390px; app=goalladder')
 finally:server.shutdown();server.server_close()
