@@ -1,32 +1,34 @@
-# DecisionDeck — Louvre Technical Review
+# DecisionDeck v2 — revue de la bibliothèque Louvre
 
-## Objectif vérifiable
-Décider avec scores pondérés et transparents. Application autonome Web statique, sans serveur ni service facturable. La logique métier est dans `core.js` ; `app.js` n'enregistre et ne présente que des données validées. Aucun framework n'est installé artificiellement.
+**Sources examinées :** fiches du dépôt `googGPT/Louvre` identifiées ci-dessous. Les pages sont celles **rapportées dans les fiches**, sans revendiquer une nouvelle lecture des PDF durant cette intervention. Les décisions de code sont des adaptations originales, non des méthodes attribuées à leurs auteurs.
 
-## Cinq sources documentées effectivement consultées via les fiches GitHub Louvre
+| Livre | Fiche Louvre | Pages physiques PDF rapportées | Application technique effectivement réalisée |
+|---|---|---|---|
+| *Total TypeScript: The Essentials* (`SRC-001`) | `technical-library/concepts/language-and-types/TS16-001-runtime-type-guards.md` | 396–400 | `core.js`: `normalizeRecord`, `validateBackup`, poids finis et positifs, notes bornées 0–10, sauvegarde v1 validée *au runtime*. Pas de compilation TypeScript revendiquée. |
+| *The Complete Developer* (`SRC-002`) | `technical-library/concepts/testing/FULL08-001-tdd-and-test-doubles.md` | 160–174 | `tests/core.test.cjs`: calcul, stabilité, comparabilité, sensibilité, CSV et rétrocompatibilité ; `tests/browser.test.py`: parcours Chrome et stockage local réel. |
+| *Ultimate Next.js for Modern Web Applications* (`SRC-003`) | `technical-library/concepts/frontend/NEXT08-001-client-vs-server-state.md` | 212–226 | `core.js:compute` dérive les tableaux, graphiques et avertissements des notes sauvegardées ; `app.js` ne duplique pas de classements persistés. Aucun Next.js imposé à une app statique. |
+| *Building Real-World Web Applications with Vue.js 3* (`SRC-004`) | `technical-library/concepts/frontend/VUE07-001-multiplatform-quasar-supabase.md` | 186–202 | `core.js` reste indépendant du DOM, de `localStorage` et du rendu mobile (`app.js`), préparant la réutilisation future du moteur sans prétendre employer Vue ou Quasar. |
+| *Learning GitHub Actions* (`SRC-005`) | `technical-library/concepts/security/GHA09-001-permissions-and-untrusted-input.md` | 210–220 | Workflow existant `.github/workflows/louvre-decisiondeck-qa.yml` : tests Node puis Chromium, `permissions: contents: read`; aucune fusion ou élévation des droits depuis une PR. |
 
-| Livre | Fiche exacte | Pages PDF **rapportées par la fiche** | Transposition originale vérifiable dans le code |
-| --- | --- | --- | --- |
-| *Total TypeScript: The Essentials* (`SRC-001`) | `technical-library/concepts/language-and-types/TS16-001-runtime-type-guards.md` | 396–400 | `core.js`: `normalizeRecord`, validation à l'exécution de chaque champ avant stockage et restitution. |
-| *The Complete Developer* (`SRC-002`) | `technical-library/concepts/testing/FULL08-001-tdd-and-test-doubles.md` | 160–174 | `tests/core.test.cjs` : scénarios nominaux, données malformées, frontières et tests purs ; `tests/browser.test.py` pour l'intégration. |
-| *Ultimate Next.js for Modern Web Applications* (`SRC-003`) | `technical-library/concepts/frontend/NEXT08-001-client-vs-server-state.md` | 212–226 | `core.js`/`app.js` : `compute` dérive les indicateurs du tableau courant sans enregistrer un état analytique supplémentaire. Aucun SSR nécessaire. |
-| *Building Real-World Web Applications with Vue.js 3* (`SRC-004`) | `technical-library/concepts/frontend/VUE07-001-multiplatform-quasar-supabase.md` | 186–202 | `core.js` expose des fonctions pures ; `app.js` isole le navigateur et le stockage, afin de faciliter un futur portage mobile. Pas de dépendance Quasar. |
-| *Learning GitHub Actions* (`SRC-005`) | `technical-library/concepts/security/GHA09-001-permissions-and-untrusted-input.md` | 210–220 | `.github/workflows/louvre-decisiondeck-qa.yml` : `permissions: contents: read`, aucune interpolation de champs de PR dans des commandes shell, déploiement non autorisé par les tests. |
+## Audit métier et corrections
 
-**Provenance :** références et pages issues des fiches Louvre lues dans le dépôt ; nous ne prétendons pas avoir relu chaque PDF dans cette exécution. Les principes attribués aux livres ne sont pas assimilés à des implémentations d'auteur ; tous les traitements des applications sont originaux.
+La v1 savait suspendre un classement en cas de critères manquants, de poids divergents et de doublons exacts. La v2 **préserve** ces contrôles, et en renforce la cohérence : les noms des options et critères sont rapprochés sans tenir compte de la casse, des accents ou des espaces superflus. Les variantes comme « Coût » et « cout » ne permettent donc plus de contourner un doublon ou de créer un critère artificiellement distinct.
 
-## Limites et compromis
-- Les calculs dépendent entièrement des entrées de l'utilisateur ; ils ne font pas intervenir de données externes en temps réel.
-- Données stockées dans `localStorage` sous la clé propre à l'application. Perte possible si le navigateur supprime son stockage ; sauvegarde JSON indispensable.
-- Maximum 500 enregistrements, export JSON limité à ~900 Ko ; rien n'est chiffré au repos dans le profil local.
-- Service Worker : cache des ressources statiques après première visite et hors ligne si installation autorisée. Pas de synchronisation multiappareil ni notifications push.
-- Certaines valeurs sont illustratives ou déclaratives ; **aucune garantie professionnelle, légale, financière ou de santé** n'est fournie.
+Les scores sont toujours orientés : 10 = plus favorable, y compris pour un critère « coût » (prix inférieur = score supérieur). L'algorithme est une somme pondérée sur les mêmes critères ; il interdit de présenter un classement lorsque les critères ou poids ne sont pas comparables.
 
-## Vérifications prévues et observations
-- Commandes : `node --check core.js && node --check app.js && node --test tests/core.test.cjs` ; puis `python tests/browser.test.py` (Playwright Chromium).
-- Les résultats effectifs doivent être vérifiés dans les logs GitHub Actions de la Pull Request ; un code de test n'est pas une preuve d'exécution.
-- Ne pas fusionner en cas d'échec de CI. Aucune modification de `main` dans la branche proposée.
+## Nouvelles fonctions
 
-## Contrôle de comparabilité — correctif
+- Matrice notes / critères / poids / score final, avec contribution de chaque critère au score global.
+- Visualisation des rangs sous forme de barres à échelle 0–10.
+- Analyse de sensibilité univariée : pour chaque critère séparément, multiplier son poids par 0,5 ou 2, recalculer le rang 1, afficher un changement éventuel de leader. **Ne remplace pas une analyse globale de robustesse.**
+- Exemple guidé, saisie de critères et options facilitée, poids existant réutilisé automatiquement, prévention de doublons avant sauvegarde.
+- Export CSV local (échapper les cellules et préfixer celles pouvant être interprétées comme des formules), export/restauration JSON v1 inchangés.
+- Retrait du lien « Louvre ↗ » dans `index.html` et `index.htm` ; les autres applications Louvre ne sont pas modifiées.
+- Invalidation de l'ancien cache par changement `louvre-decisiondeck-shell-v1` → `v2`.
 
-Le classement n'est désormais affiché que si **chaque option** possède exactement la même grille de critères (absence de doublons) et si le **poids de chaque critère** est identique pour toutes les options. Dans le cas contraire, le tableau de bord suspend le classement et explicite les éléments manquants ou incohérents, au lieu de produire une moyenne trompeuse. Le score pondéré est `somme(score × poids)/somme(poids)` ; les égalités sont départagées alphabétiquement pour la stabilité. Cette règle est une décision métier originale Louvre, pas une proposition attribuée directement à un ouvrage. Les tests dédiés se trouvent dans `tests/core.test.cjs` ; consulter la CI correspondant au commit corrigé pour leur résultat réel.
+## Limites et vérifications
+
+- Aucune donnée distante et aucune API payante ; résultats totalement dépendants des notes données par l'utilisateur.
+- Les contrôles de la fiabilité multicritère exigent une grille comparable mais ne prouvent ni la justesse des préférences, ni l'indépendance des critères, ni la validité statistique d'une décision.
+- Stockage local limité à 500 fiches ; effacer les données du navigateur peut provoquer leur perte. Exporter les sauvegardes régulièrement.
+- `node --check core.js`, `node --check app.js`, `node --test tests/core.test.cjs` doivent être exécutés et enregistrés ; les résultats du test Chromium de GitHub Actions doivent être lus après lancement de la PR. Le navigateur local bloque `localhost` par `ERR_BLOCKED_BY_ADMINISTRATOR` dans l'environnement de génération.
