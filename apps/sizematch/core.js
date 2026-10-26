@@ -53,9 +53,11 @@ const AppLogic = (() => {
     if(category(to)!==dim)throw Error('Les unités doivent appartenir à la même catégorie');
     let answer;
     if(dim==='température'){
-      let kelvin=toKelvin(value,from);
-      if(kelvin < -1e-10)throw Error('Température sous le zéro absolu');
-      if(kelvin<0)kelvin=0;
+      // Contrôle des bornes dans l'unité source : aucune tolérance permettant
+      // d'accepter des températures physiques négatives en kelvins.
+      if((from==='K'&&value<0)||(from==='°C'&&value< -273.15)||(from==='°F'&&value< -459.67))
+        throw Error('Température sous le zéro absolu');
+      const kelvin=toKelvin(value,from);
       // Celsius ↔ Fahrenheit utilise une transformation affine directe :
       // évite l'erreur flottante d'un aller-retour artificiel via Kelvin
       // (par exemple −20 °C doit produire exactement −4 °F dans le CSV).
@@ -63,8 +65,8 @@ const AppLogic = (() => {
       else if(from==='°F'&&to==='°C')answer=(value-32)*5/9;
       else if(from===to)answer=value;
       else answer=fromKelvin(kelvin,to);
-      // Corrige les artefacts arithmétiques près de zéro sans modifier les valeurs physiques.
-      if(Math.abs(answer)<1e-12)answer=0;
+      // Ne jamais écraser une température valide proche de zéro :
+      // 1e-13 K et -1e-13 °C doivent rester inchangés si les unités sont identiques.
     } else {
       if(value<0)throw Error('Une longueur, masse ou quantité négative est impossible');
       answer=value*UNITS[from].factor/UNITS[to].factor;
