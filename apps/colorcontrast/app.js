@@ -44,10 +44,11 @@ function show(){
  by('adjusted-swatch').style.backgroundColor=bg;
  by('adjusted-swatch').style.color=suggestion.hex;
  by('adjusted-swatch').textContent='Aa';
- by('adjusted-reason').textContent=suggestion.changed?
-  'Ajustement des canaux RVB vers le noir ou le blanc pour atteindre le seuil choisi.':
+ by('adjusted-reason').textContent=!suggestion.reachable?
+  'Seuil inaccessible avec un texte HEX opaque sur ce fond fixe, même en noir ou en blanc. Modifiez aussi le fond.':
+  suggestion.changed?'Ajustement des canaux RVB vers le noir ou le blanc pour atteindre le seuil choisi.':
   'La couleur actuelle atteint déjà le seuil choisi.';
- by('use-adjusted').disabled=!suggestion.changed;
+ by('use-adjusted').disabled=!suggestion.changed||!suggestion.reachable;
  by('css-output').value=C.cssSnippet(fg,bg);
  renderSaved();
 }
