@@ -67,6 +67,12 @@ for(const id of controls){const element=by(id);
  });
  if(['margin','scale'].includes(id))element.addEventListener('change',render);
 }
+by('toggle-password').addEventListener('click',()=>{
+ const input=by('wifi-password'),visible=input.type==='text';
+ input.type=visible?'password':'text';
+ by('toggle-password').textContent=visible?'Afficher le mot de passe':'Masquer le mot de passe';
+ by('toggle-password').setAttribute('aria-pressed',String(!visible));
+});
 by('security').addEventListener('change',()=>{
  if(by('security').value==='nopass')status('Attention : le réseau déclaré sans mot de passe est un réseau ouvert.');
 });
@@ -78,6 +84,7 @@ by('reset').addEventListener('click',()=>{
  by('kind').value='url';
  by('content-text').value='';by('content-url').value='https://example.com';
  by('ssid').value='';by('wifi-password').value='';by('security').value='WPA';
+ by('wifi-password').type='password';by('toggle-password').textContent='Afficher le mot de passe';by('toggle-password').setAttribute('aria-pressed','false');
  by('email').value='';by('telephone').value='';
  by('ecc').value='M';by('margin').value='4';by('scale').value='10';
  by('dark').value='#102B43';by('light').value='#FFFFFF';
