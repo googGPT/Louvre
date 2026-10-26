@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#28203c"><meta name="description" content="ShiftLedger : journal des services, pauses, heures quotidiennes et rémunération brute estimée, sans compte.">
+<title>ShiftLedger — Horaires et rémunération estimée</title>
+<link rel="stylesheet" href="./style.css"><link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg"></head>
+<body>
+<header><div class="brand"><span class="symbol" aria-hidden="true">◷</span><strong>ShiftLedger <span class="version">v2</span><small>WORK HOURS STUDIO</small></strong></div><span class="privacy">Données locales · Sans abonnement</span></header>
+<main>
+ <section class="banner"><div><div class="eyebrow">APPLICATION 22 · LOUVRE VAGUE 2</div>
+ <h1>Chaque heure<br><em>mérite sa place.</em></h1>
+ <p>Enregistrez vos services, déduisez vos pauses et estimez votre rémunération sur la base de paramètres que vous choisissez.</p></div>
+ <div class="bigtime"><span>HEURES NETTES TOTALES</span><output id="hours">0 h 00</output><small id="shifts-count">Aucun service</small></div></section>
+ <div class="layout">
+ <section class="card" aria-labelledby="add-title"><div class="heading"><span>01</span><h2 id="add-title">Enregistrer un service</h2></div>
+ <form id="form"><label>Jour de début du service<input id="date" type="date" required></label>
+ <div class="dual"><label>Début<input id="start" type="time" value="09:00" required></label>
+ <label>Fin<input id="end" type="time" value="17:30" required></label></div>
+ <label>Pause non rémunérée (minutes)<input id="break" type="number" min="0" max="600" step="1" value="30" required></label>
+ <label>Étiquette<input id="label" maxlength="50" placeholder="Ex. Équipe du matin"></label>
+ <button type="submit" class="primary" id="add">Enregistrer le service</button>
+ <button type="button" id="cancel-edit" hidden>Annuler la modification</button></form>
+ <p id="message" role="status" aria-live="polite" class="message"></p>
+ <p id="warning" class="warning" hidden>Stockage illisible : modifications bloquées pour éviter de perdre l'historique. Téléchargez la copie brute puis restaurez un JSON valide.</p>
+ <p class="disclaimer">Si la fin est antérieure au début, elle est interprétée comme le lendemain. Début et fin identiques sont refusés : renseignez deux horaires distincts.</p>
+ </section>
+ <section class="card earnings" aria-labelledby="earn-title"><div class="heading"><span>02</span><h2 id="earn-title">Estimation des gains</h2></div>
+ <div class="dual"><label>Taux horaire brut (€)<input id="rate" type="number" min="0" max="1000" step="0.01" value="15"></label>
+ <label>Seuil par jour (heures)<input id="threshold" type="number" min="1" max="24" step="0.5" value="8"></label></div>
+ <label>Multiplicateur au-delà du seuil<input id="multiplier" type="number" min="1" max="4" step="0.05" value="1.25"></label>
+ <div class="keynumber"><span>RÉMUNÉRATION BRUTE THÉORIQUE</span><output id="pay">—</output></div>
+ <div class="splitstats"><div><span>Heures de base</span><b id="normal">—</b></div>
+ <div><span>Heures majorées</span><b id="overtime">—</b></div>
+ <div><span>Pauses déduites</span><b id="break-total">—</b></div>
+ <div><span>Services de nuit</span><b id="overnight-total">0</b></div></div>
+ <p class="disclaimer">Le seuil est appliqué au <strong>total net des services commençant le même jour</strong>. La durée complète d'un service traversant minuit est attribuée à son jour de début. Cette convention simplifiée et les durées d'horloge n'intègrent pas les changements d'heure ni la réglementation du travail. Aucun bulletin de paie ni montant dû n'est certifié.</p>
+ </section></div>
+ <section class="card log" aria-labelledby="log-title"><div class="heading"><span>03</span><h2 id="log-title">Historique des services</h2>
+ <div class="actions"><button id="export" type="button">Sauvegarder JSON</button><button id="csv" type="button">Exporter CSV</button><button id="import-trigger" type="button">Restaurer JSON</button><input id="import-file" type="file" accept=".json,application/json" hidden><button id="export-raw" type="button">Copie brute</button></div></div>
+ <div class="filters"><label>Rechercher<input id="search" type="search" placeholder="Étiquette, date, heure"></label>
+ <label>Mois du début<input id="month-filter" type="month"></label><button id="clear-filters" type="button">Effacer les filtres</button><span id="visible-count" aria-live="polite">0 / 0 service(s)</span></div>
+ <p id="overlap-warning" class="warning" role="alert" hidden></p>
+ <div id="list" class="list"><p>Aucun service enregistré.</p></div>
+ <h3 class="subheading">Récapitulatif par jour de début</h3><div id="day-list" class="day-list"></div>
+ </section></main>
+ <footer>ShiftLedger · Aucun compte ou serveur. 500 services maximum. Les données restent dans le navigateur et peuvent être effacées ; sauvegardez régulièrement le JSON. Les résultats sont exclusivement indicatifs.</footer>
+ <script src="./core.js"></script><script src="./app.js"></script>
+</body></html>
