@@ -62,3 +62,19 @@ test('CSV protège les formules',()=>{const csv=L.toCSV([r({name:'=IMPORTXML("x"
 test('CSV sépare et échappe les guillemets',()=>assert.match(L.toCSV([r({name:'un "nom"; étrange'})]),/"un ""nom""; étrange"/));
 test('les anciennes fiches ne sont pas modifiées par compute',()=>{const raw=JSON.stringify(base);L.compute([base]);assert.equal(JSON.stringify(base),raw)});
 test('aucune dépendance réseau ou variable navigateur dans le cœur',()=>assert.equal(typeof L.convert,'function'));
+test('CSV garde les températures négatives en cellules numériques',()=>{
+  const csv=L.toCSV([r({name:'Froid',from:'°C',to:'°F',value:-20})]);
+  assert.match(csv,/"Froid";-20;"°C";-4;"°F"/);
+  assert.doesNotMatch(csv,/;"'-20"/);
+});
+test('CSV fournit la virgule décimale pour Excel français',()=>{
+  const csv=L.toCSV([r({name:'Essai',from:'km',to:'m',value:1.5})]);
+  assert.match(csv,/"Essai";1,5;"km";1500;"m"/);
+});
+test('CSV continue à neutraliser les noms qui commencent par moins',()=>{
+  const csv=L.toCSV([r({name:'-HYPERLINK("https://example.com")'})]);
+  assert.match(csv,/"'-HYPERLINK/);
+});
+test('notation exponentielle produit neuf chiffres significatifs',()=>{
+  assert.equal(L.formatValue(0.000000000123456789),'1.23456789e-10');
+});
