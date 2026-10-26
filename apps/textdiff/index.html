@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#142C3A"><meta name="description" content="TextDiff : comparer deux textes par ligne ou par mot, en local et sans inscription.">
+<title>TextDiff — Comparez vos textes en toute confidentialité</title>
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css"><link rel="manifest" href="./manifest.webmanifest">
+</head>
+<body>
+<header class="top"><div class="brand"><div class="brand-symbol" aria-hidden="true">±</div><div><strong>TextDiff</strong><small>L’atelier des différences textuelles</small></div></div><div class="privacy">100 % local · Sans compte</div></header>
+<main>
+<section class="hero"><div><p class="eyebrow">APPLICATION 27 · LOUVRE VAGUE 2</p><h1>Repérez chaque changement.<br><em>Gardez le contrôle de vos textes.</em></h1><p>Comparez deux versions en conservant la trace des ajouts, suppressions et parties inchangées. Aucun texte n’est transmis ni sauvegardé.</p><div class="hero-tags"><span>Comparaison par lignes</span><span>Mode mots</span><span>Export TXT</span><span>Hors ligne*</span></div></div><div class="hero-symbol" aria-hidden="true"><span>-</span><span>+</span></div></section>
+<section class="panel editor-panel" aria-labelledby="editor-title">
+<div class="section-heading"><span>01</span><div><h2 id="editor-title">Vos deux versions</h2><p>Saisissez ou importez vos contenus. Les textes restent dans la mémoire de cet onglet.</p></div></div>
+<div class="editor-grid">
+<div class="editor-column"><div class="editor-heading"><label for="original">Version d’origine</label><label class="upload" for="file-original">Importer un TXT<input type="file" id="file-original" accept=".txt,text/plain,text/markdown,.md"></label></div><textarea id="original" spellcheck="false" placeholder="Collez la première version du texte…" rows="11" maxlength="60000"></textarea></div>
+<div class="editor-column"><div class="editor-heading"><label for="revised">Version modifiée</label><label class="upload" for="file-revised">Importer un TXT<input type="file" id="file-revised" accept=".txt,text/plain,text/markdown,.md"></label></div><textarea id="revised" spellcheck="false" placeholder="Collez la nouvelle version du texte…" rows="11" maxlength="60000"></textarea></div>
+</div>
+<div class="toolbar"><div class="controls"><label for="mode">Granularité<select id="mode"><option value="lines" selected>Par ligne</option><option value="words">Par mot et espaces</option></select></label><label class="check"><input id="ignore-case" type="checkbox">Ignorer la casse</label><label class="check"><input id="ignore-whitespace" type="checkbox">Ignorer les espaces superflus</label></div>
+<div class="buttons"><button type="button" id="compare" class="primary">Comparer les textes</button><button type="button" id="swap" class="secondary">Inverser</button><button type="button" id="example" class="secondary">Exemple</button><button type="button" id="reset" class="subtle">Effacer</button></div></div>
+<p class="input-note">Maximum 60 000 caractères et 700 unités (lignes ou fragments de mots/espaces) par version. Pour les fichiers : 240 Ko maximum ; seuls les contenus textuels UTF-8 sont adaptés. Les fins de ligne CRLF/CR/LF sont normalisées pour la comparaison. Aucun changement n’est appliqué automatiquement.</p>
+<p id="feedback" role="status" aria-live="polite" class="feedback"></p>
+</section>
+<section class="panel results-panel" aria-labelledby="result-title">
+<div class="section-heading"><span>02</span><div><h2 id="result-title">Différences détectées</h2><p>Résultats recalculés uniquement après comparaison ; toute modification invalide l’ancienne analyse.</p></div></div>
+<div class="stats">
+<div><span>UNITÉS AVANT</span><strong id="stat-original">—</strong></div><div><span>UNITÉS APRÈS</span><strong id="stat-revised">—</strong></div>
+<div><span>AJOUTS</span><strong id="stat-add">—</strong></div><div><span>SUPPRESSIONS</span><strong id="stat-remove">—</strong></div>
+<div><span>BLOCS MODIFIÉS</span><strong id="stat-blocks">—</strong></div><div><span>SIMILARITÉ LCS</span><strong id="stat-similarity">—</strong></div>
+</div>
+<div class="legend"><span><i class="dot equal"></i> Identique</span><span><i class="dot delete"></i> Supprimé</span><span><i class="dot insert"></i> Ajouté</span></div>
+<p id="result-meta" class="result-meta">Lancez une comparaison pour afficher les modifications.</p>
+<div id="result" class="diff-results" aria-live="polite"></div>
+<div class="export-controls"><button id="export" class="primary" disabled>Télécharger le rapport TXT</button><button id="copy" class="secondary" disabled>Copier le rapport</button></div>
+<p class="input-note">Les changements sont alignés selon une plus longue sous-séquence commune (LCS). Plusieurs alignements peuvent être également valides, notamment pour des lignes répétées. Les changements de lignes affichent les numéros d’origine et d’arrivée. La similarité est une mesure fondée sur les unités sélectionnées, pas une évaluation du sens. Le TXT est un rapport de lecture, pas un patch Git applicable.</p>
+</section>
+</main>
+<footer>* Hors ligne après un premier chargement réussi et avec un navigateur compatible. L’application ne conserve aucun historique, n’utilise pas d’API distante et ne téléverse aucun texte. Les fichiers importés ne sont pas enregistrés.</footer>
+<script src="./core.js"></script><script src="./app.js"></script>
+</body></html>

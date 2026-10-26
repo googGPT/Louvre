@@ -1,7 +1,7 @@
 """ColorContrast v2: tests WCAG réels, palettes transactionnelles et PWA."""
 from http.server import ThreadingHTTPServer,SimpleHTTPRequestHandler
 from pathlib import Path
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, expect
 import functools,threading,json
 
 BASE=Path(__file__).resolve().parents[1]
@@ -77,7 +77,8 @@ try:
         page.locator('.saved .remove').click()
         assert page.locator('.saved').count()==0
         page.locator('#import-file').set_input_files({'name':'backup.json','mimeType':'application/json','buffer':backup})
-        assert page.locator('.saved').count()==1
+        # Import JSON async (await file.text()): wait for the rendered collection.
+        expect(page.locator('.saved')).to_have_count(1)
 
         # Quota simulé sur suppression : ne pas modifier la collection visible.
         page.evaluate("""() => {
@@ -101,6 +102,7 @@ try:
         with page.expect_download() as d:page.locator('#export-raw').click()
         assert Path(d.value.path()).read_text()=='INVALID_JSON'
         page.locator('#import-file').set_input_files({'name':'invalid.json','mimeType':'application/json','buffer':b'nope'})
+        expect(page.locator('#message')).to_contain_text('Import rejeté')
         assert page.locator('#warning').is_visible()
         assert page.evaluate("() => localStorage.getItem('louvre-wave2-colorcontrast-v1')")=='INVALID_JSON'
 
@@ -110,12 +112,13 @@ try:
           Storage.prototype.setItem=function(){throw new Error('quota simulated')};
         }""")
         page.locator('#import-file').set_input_files({'name':'backup.json','mimeType':'application/json','buffer':backup})
+        expect(page.locator('#message')).to_contain_text('Enregistrement impossible')
         assert page.locator('#warning').is_visible()
         assert page.evaluate("() => localStorage.getItem('louvre-wave2-colorcontrast-v1')")=='INVALID_JSON'
         page.evaluate('() => { Storage.prototype.setItem=window._setItem; }')
         page.locator('#import-file').set_input_files({'name':'backup.json','mimeType':'application/json','buffer':backup})
-        assert page.locator('.saved').count()==1
-        assert page.locator('#warning').is_hidden()
+        expect(page.locator('.saved')).to_have_count(1)
+        expect(page.locator('#warning')).to_be_hidden()
 
         # Mobile et mode hors ligne après chargement de la coquille.
         assert page.locator('body').evaluate('(e)=>e.scrollWidth<=window.innerWidth+2')
