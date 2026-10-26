@@ -1,28 +1,35 @@
-# WorldMeet — Louvre Technical Review
+# WorldMeet v2 — revue technique Louvre
 
-## Objectif vérifiable
-Afficher une réunion UTC dans plusieurs fuseaux horaires. Application autonome Web statique, sans serveur ni service facturable. La logique métier est dans `core.js` ; `app.js` n'enregistre et ne présente que des données validées. Aucun framework n'est installé artificiellement.
+## Périmètre
 
-## Cinq sources documentées effectivement consultées via les fiches GitHub Louvre
+Audit de la PR Louvre #31 (application 14). Version initiale : calcul correct d'un horaire UTC vers un fuseau IANA, mais présentation isolée par participant, risque de confusion avec la saisie locale, absence de comparaison commune, de proposition de créneau ou d'ICS. Version 2 : agrégation par réunion + instant UTC, validation des dates réelles, prévisualisation, offsets et bascule DST, plages de travail paramétrables, suggestion sans réseau, téléchargement ICS, sauvegardes JSON v1 compatibles, nouvelle PWA et suppression du lien « Louvre ↗ ».
 
-| Livre | Fiche exacte | Pages PDF **rapportées par la fiche** | Transposition originale vérifiable dans le code |
-| --- | --- | --- | --- |
-| *Total TypeScript: The Essentials* (`SRC-001`) | `technical-library/concepts/language-and-types/TS16-001-runtime-type-guards.md` | 396–400 | `core.js`: `normalizeRecord`, validation à l'exécution de chaque champ avant stockage et restitution. |
-| *The Complete Developer* (`SRC-002`) | `technical-library/concepts/testing/FULL08-001-tdd-and-test-doubles.md` | 160–174 | `tests/core.test.cjs` : scénarios nominaux, données malformées, frontières et tests purs ; `tests/browser.test.py` pour l'intégration. |
-| *Ultimate Next.js for Modern Web Applications* (`SRC-003`) | `technical-library/concepts/frontend/NEXT08-001-client-vs-server-state.md` | 212–226 | `core.js`/`app.js` : `compute` dérive les indicateurs du tableau courant sans enregistrer un état analytique supplémentaire. Aucun SSR nécessaire. |
-| *Building Real-World Web Applications with Vue.js 3* (`SRC-004`) | `technical-library/concepts/frontend/VUE07-001-multiplatform-quasar-supabase.md` | 186–202 | `core.js` expose des fonctions pures ; `app.js` isole le navigateur et le stockage, afin de faciliter un futur portage mobile. Pas de dépendance Quasar. |
-| *Learning GitHub Actions* (`SRC-005`) | `technical-library/concepts/security/GHA09-001-permissions-and-untrusted-input.md` | 210–220 | `.github/workflows/louvre-worldmeet-qa.yml` : `permissions: contents: read`, aucune interpolation de champs de PR dans des commandes shell, déploiement non autorisé par les tests. |
+**Traçabilité :** fiches Github Louvre réellement consultées via le dépôt. Les numéros de pages correspondent aux pages PDF **indiquées dans les fiches**, et non à une nouvelle lecture des cinq PDF lors de cette modification. Toutes les fonctions ici sont originales, pas des copies de code des auteurs.
 
-**Provenance :** références et pages issues des fiches Louvre lues dans le dépôt ; nous ne prétendons pas avoir relu chaque PDF dans cette exécution. Les principes attribués aux livres ne sont pas assimilés à des implémentations d'auteur ; tous les traitements des applications sont originaux.
+| Source | Fiche technique exacte | Pages du PDF rapportées | Application concrète (fichier) |
+|---|---|---|---|
+| `SRC-001`, *Total TypeScript: The Essentials* (2026) | `technical-library/concepts/language-and-types/TS16-001-runtime-type-guards.md` | Ch. 16, p. 396–400 | `core.js` : `validUTC`, `normalizeRecord`, `validZone`, `validateBackup` avant tout stockage ; aucun cast de données importées sans validation. |
+| `SRC-002`, *The Complete Developer* (2024) | `technical-library/concepts/testing/FULL08-001-tdd-and-test-doubles.md` | Ch. 8, p. 160–174 | `tests/core.test.cjs` : frontières DST et plages de travail, dates invalides, offsets non entiers, intégrité des sauvegardes ; `tests/browser.test.py` : vrai parcours Chromium, sauvegarde et hors ligne. |
+| `SRC-003`, *Ultimate Next.js for Modern Web Applications* (2026) | `technical-library/concepts/frontend/NEXT08-001-client-vs-server-state.md` | Ch. 8, p. 212–226 | `core.js` et `app.js` : état persistant limité aux correspondances ; regroupements, horaires et suggestions sont **dérivés** à chaque rendu. |
+| `SRC-004`, *Building Real-World Web Applications with Vue.js 3* (2024) | `technical-library/concepts/frontend/VUE07-001-multiplatform-quasar-supabase.md` | Ch. 7, p. 186–202 | `core.js` isole les conversions temporelles et l'algorithme de créneau d'une interface `app.js` et d'un navigateur statique, permettant un portage ultérieur sans framework forcé. |
+| `SRC-005`, *Learning GitHub Actions* (2023) | `technical-library/concepts/security/GHA09-001-permissions-and-untrusted-input.md` | Ch. 9, p. 210–220 | `.github/workflows/louvre-worldmeet-qa.yml` : workflow tests lecture seule, pas d'exécution d'une entrée de PR, tests métier et navigateur ; seules les modifications fusionnées peuvent être publiées par le workflow existant. |
 
-## Limites et compromis
-- Les calculs dépendent entièrement des entrées de l'utilisateur ; ils ne font pas intervenir de données externes en temps réel.
-- Données stockées dans `localStorage` sous la clé propre à l'application. Perte possible si le navigateur supprime son stockage ; sauvegarde JSON indispensable.
-- Maximum 500 enregistrements, export JSON limité à ~900 Ko ; rien n'est chiffré au repos dans le profil local.
-- Service Worker : cache des ressources statiques après première visite et hors ligne si installation autorisée. Pas de synchronisation multiappareil ni notifications push.
-- Certaines valeurs sont illustratives ou déclaratives ; **aucune garantie professionnelle, légale, financière ou de santé** n'est fournie.
+## Qualité et transparence
 
-## Vérifications prévues et observations
-- Commandes : `node --check core.js && node --check app.js && node --test tests/core.test.cjs` ; puis `python tests/browser.test.py` (Playwright Chromium).
-- Les résultats effectifs doivent être vérifiés dans les logs GitHub Actions de la Pull Request ; un code de test n'est pas une preuve d'exécution.
-- Ne pas fusionner en cas d'échec de CI. Aucune modification de `main` dans la branche proposée.
+- Critères temporels : UTC explicite sans conversion de la valeur de `datetime-local` par `Date` local ; `new Date(utc + ':00Z')` validée, `Intl.DateTimeFormat(timeZone=IANA)` pour l'affichage et les jours ; `localParts` pour l'heure et le décalage ; le moteur du navigateur fournit les règles de changement d'heure.
+- Les suggestions par tranches de 30 minutes sont **heuristiques** et ne recherchent pas les disponibilités véritables, les jours de weekend, les jours fériés ou des calendriers connectés. En cas d'absence de créneau commun, l'interface l'indique explicitement.
+- L'ICS encode les dates en UTC, utilise un UID local déterministe et échappe les caractères de séparation ; il ne crée pas de réservation extérieure.
+- Validation anti-doublon par réunion normalisée et instant, participant normalisé et fuseau, sans bloquer la restauration d'anciennes données qui possèdent des doublons logiques.
+- Protection contre l'injection de code : interface via `textContent`, pas de `innerHTML` ni d'exécution de fichiers importés.
+- Stockage navigateur sous la clé d'origine `louvre-factory:worldmeet:v1`, format JSON `app:worldmeet,version:1,records`; état corrompu protégé, import vérifié avant écriture, confirmation de remplacement, export brut de secours.
+- Service worker version v2 limité au `scope` et cache renouvelé ; pas de CDN ni de service payant.
+
+## Tests reproductibles
+
+Depuis la racine Louvre :
+```
+TZ=Europe/Paris node --test apps/worldmeet/tests/core.test.cjs
+node --check apps/worldmeet/app.js
+python apps/worldmeet/tests/browser.test.py
+```
+N'affirmer un test Chromium réussi que si le rapport GitHub Actions le confirme. Les tests unitaires valident aussi la compatibilité de `SPEC`, des formats JSON et de l'affichage « 15:00 » pour Paris en novembre 2026.
