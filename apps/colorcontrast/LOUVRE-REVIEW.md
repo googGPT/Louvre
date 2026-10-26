@@ -48,3 +48,32 @@ Architecture volontairement sans framework : `core.js` (fonctions métier vérif
 ## Limites
 
 Aucune application parmi les 27 ne calcule de luminance relative ni conformité AA/AAA. Les résultats sont locaux et ne reposent sur aucune donnée externe vérifiée. Les propriétés de stockage ou d'accessibilité ne sont pas certifiées pour tous les navigateurs.
+
+
+## Audit de fiabilisation — application globale 23, ColorContrast v2 (26 octobre 2026)
+
+### Problèmes observés dans la première version
+1. **Modification avant écriture** : ajout et suppression utilisaient `palette.pairs.push/splice` avant de vérifier `localStorage.setItem`, créant une incohérence possible après échec de quota. Correction : `save(next)` valide, écrit, puis remplace la source de vérité.
+2. **Restauration fragile** : `blocked=false` était défini avant d'assurer la réussite de l'écriture. Correction : verrou maintenu jusqu'au succès de la validation et de la sauvegarde.
+3. **Ambiguïté des seuils** : `ratio.toFixed(2)` pouvait afficher `4.50:1` pour un ratio légèrement inférieur à `4.5`, alors que `wcag` compare correctement le nombre non arrondi. Correction : quatre décimales, statut textuel et tests explicites, notamment `#707972` sur blanc (4.499795… : AA normal refusé).
+4. **Correction trop brutale** : seule l'alternative noir/blanc était proposée. Ajout d'un outil guidé vers le seuil 3, 4.5 ou 7 en conservant autant que possible la couleur de départ sur deux trajectoires RVB vers noir et blanc. Les cas de seuil inatteignable sur fond fixe sont signalés sans fausse promesse.
+5. **Favoris** : ajout automatique de doublons, absence de confirmation avant suppression, et pas de secours brut en cas de corruption. Correction : garde anti-doublons à la création, confirmation, export brut et sauvegardes JSON v1 strictement compatibles.
+6. **UI** : affichage peu détaillé et aucun extrait CSS ; désormais comparaisons chiffrées, état AA par favori, CSS prêt à copier et interface 390 px testée.
+
+### Standards officiels, indépendants des ouvrages Louvre
+
+- W3C, WCAG 2.2, SC 1.4.3 : texte courant 4.5:1, grand texte 3:1, non arrondis avant comparaison : https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html.
+- W3C, WCAG 2.2, SC 1.4.6 : AAA texte normal 7:1, grand texte 4.5:1 : https://www.w3.org/TR/WCAG22/.
+- Les recommandations et calculs techniques de cette version sont des **adaptations originales** Louvre, et non des algorithmes ou mesures attribuables aux cinq livres listés plus haut.
+
+### Testabilité et limites
+
+Moteur pur avec nouvelle méthode `suggestForeground`, `summarize`, `cssSnippet`, validation stricte des valeurs des entrées. Les tests vérifient les seuils mathématiques (y compris 4.4998:1), l'atteignabilité des suggestions, les données importées, les favoris, le blocage par échec du navigateur et la récupération après corruption.
+
+Le correcteur n'est **pas** une optimisation perceptuelle globale ; il minimise la distance euclidienne RVB entre deux recherches progressives seulement. Ne prétendre ni tester des couleurs alpha, des textes sur image, l'antialiasing ni l'accessibilité complète. Aucune correction sans contrôle WCAG réel sur la page cible.
+
+### Numérotation et protection du dépôt
+
+Dans le registre Louvre, **ColorContrast est n° 03/20 vague 2, donc n° 23 au total** ; le titre initial « 02/20 » de la PR #40 contredisait ce registre et entrait en collision avec ShiftLedger n° 22. Ce défaut d'étiquetage est corrigé dans la documentation et le titre de PR. Aucune ancienne application et aucun branche `main` modifiés pendant cette mission.
+
+Les sources/livres référencés à TS16-001, FULL08-001, NEXT10-001, VUE02-001 et GHA09-001 ont été consultés **par les fiches du dépôt**. Les numéros de pages appartiennent aux fiches techniques antérieures ; ne pas prétendre une relecture intégrale des PDF originaux dans ce contrôle.
