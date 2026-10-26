@@ -197,7 +197,7 @@ function emitBib(lib){
 function emitRis(lib){
  const {items}=validateLibrary(lib),lines=[];
  for(const r of items){
-  const add=(code,v)=>{if(v)lines.push(code+'  - '+v);};
+  const add=(code,v)=>{if(v){if(/[\r\n\u2028\u2029]/u.test(v))fail('RIS : champ multiligne non exportable sans perte ('+code+'). Utilisez BibTeX ou JSON.');lines.push(code+'  - '+v);}};
   add('TY',TO_RIS[r.type]);add('ID',r.id);
   for(const author of r.authors)add('AU',author);
   add('TI',r.title);add('PY',r.year);
