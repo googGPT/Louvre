@@ -1,0 +1,29 @@
+name: Wave 2 QA — ImageShrink
+on:
+  pull_request:
+    paths:
+      - 'apps/imageshrink/**'
+      - '.github/workflows/louvre-wave2-imageshrink-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Syntax, PWA manifest, tests métier
+        run: |
+          node --check apps/imageshrink/core.js
+          node --check apps/imageshrink/app.js
+          node --check apps/imageshrink/sw.js
+          node -e "JSON.parse(require('fs').readFileSync('apps/imageshrink/manifest.webmanifest','utf8'))"
+          cmp apps/imageshrink/index.html apps/imageshrink/index.htm
+          node --test apps/imageshrink/tests/core.test.cjs
+      - name: Installer le client Chromium Playwright gratuit
+        run: python -m pip install --disable-pip-version-check 'playwright>=1.45,<2'
+      - name: Vérifier compression réelle, tailles, vie privée et offline
+        run: python apps/imageshrink/tests/browser.test.py
