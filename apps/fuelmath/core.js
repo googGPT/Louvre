@@ -53,7 +53,7 @@ const AppLogic=(()=>{
   const fuel=details.reduce((s,x)=>s+x.fuelCents,0);
   const liters=details.reduce((s,x)=>s+x.fuelLiters,0);
   const distance=details.reduce((s,x)=>s+x.distance,0);
-  const rows=records.map((r,i)=>r.route+' : '+eur(details[i].totalCents)+' · '+details[i].distance.toFixed(1)+' km · '+details[i].fuelLiters.toFixed(2)+' L · '+splitLabel(details[i].split));
+  const rows=records.map((r,i)=>r.route+' : '+eur(details[i].totalCents)+' · '+details[i].distance.toFixed(1)+' km · '+details[i].fuelLiters.toFixed(2)+' L · partage entre passagers : '+splitLabel(details[i].split));
   return {kpis:[['Coût total estimé',eur(total)],['Carburant',eur(fuel)],['Carburant consommé',liters.toFixed(2)+' L'],['Distance totale',distance.toFixed(1)+' km'],['Coût moyen au km',distance?eur(Math.round(total/distance))+'/km':'—']],notes:['Le conducteur est inclus dans le nombre de personnes. La distance est doublée pour un aller-retour, pas les péages et frais de parking saisis.','Coût estimatif : hors entretien, assurance, usure, congestion et variations réelles de consommation.','La somme des contributions en centimes est exactement égale au coût estimé de chaque déplacement.'],rows:rows.slice(0,25)};
  }
  return Object.freeze({SPEC,MAX,STORAGE_LIMIT,dayKey,diffDays,addDays,eur,normalizeRecord,validateBackup,backup,compute,tripCostCents,splitCents,tripDetails});
