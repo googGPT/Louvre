@@ -89,6 +89,9 @@ def main():
 
             # Pointer drag uses true SVG user coordinates; drag to a free area.
             rect=page.locator('#plan-view g[data-id="'+chair_id+'"] rect')
+            # On a 390px viewport the canvas is below the tall editor: scroll to
+            # the actual target before using viewport-relative Playwright mouse coordinates.
+            rect.scroll_into_view_if_needed()
             bounds=rect.bounding_box()
             assert bounds is not None
             px=bounds['x']+bounds['width']/2
