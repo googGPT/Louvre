@@ -1,0 +1,17 @@
+const t=require('node:test'),a=require('node:assert/strict'),C=require('../core.js');
+t('détecte les virgules',()=>a.equal(C.inferDelimiter('a,b\n1,2'),','));
+t('détecte point virgule',()=>a.equal(C.inferDelimiter('a;b\n1;2'),';'));
+t('lit CSV ordinaire',()=>a.deepEqual(C.parse('a,b\n1,2',',').rows,[['a','b'],['1','2']]));
+t('lit champ cité avec virgule',()=>a.equal(C.parse('a,b\n"salut, toi",z',',').rows[1][0],'salut, toi'));
+t('lit quotes doublés',()=>a.equal(C.parse('a,b\n"x""y",z',',').rows[1][0],'x"y'));
+t('lit champ multiligne',()=>a.equal(C.parse('a,b\n"x\ny",z',',').rows[1][0],'x\ny'));
+t('rejette quotes non fermés',()=>a.throws(()=>C.parse('a,b\n"x,z',',')));
+t('rejette colonnes incohérentes',()=>a.throws(()=>C.parse('a,b\nx',',')));
+t('rejette trop de colonnes',()=>a.throws(()=>C.parse('a,b\n1,2,3',',')));
+t('nettoie espaces et doublons complets',()=>{let x=C.normalizeTable(C.parse('A,B\n x , y \nx,y\nz,t',','),{trim:true,dedupe:'full'});a.equal(x.after,2);a.equal(x.removed,1)});
+t('déduplique première colonne',()=>{let x=C.normalizeTable(C.parse('A,B\nx,y\nx,z',','),{trim:true,dedupe:'first'});a.equal(x.after,1)});
+t('sans déduplication conserve les doublons',()=>{let x=C.normalizeTable(C.parse('A\nx\nx',','),{trim:true,dedupe:'none'});a.equal(x.after,2)});
+t('refuse entêtes identiques',()=>a.throws(()=>C.normalizeTable(C.parse('a,a\n1,2',','),{trim:true,dedupe:'full'})));
+t('n’injecte pas formules Excel à l’export',()=>a.ok(C.stringify([['Cellule'],['=HYPERLINK(1)']],',').includes("'=HYPERLINK")));
+t('échappe virgule et quotes',()=>a.equal(C.quote('"salut,toi"',','),'"""salut,toi"""'));
+t('rejette options de déduplication inconnues',()=>a.throws(()=>C.normalizeTable(C.parse('a\nx',','),{trim:true,dedupe:'x'})));

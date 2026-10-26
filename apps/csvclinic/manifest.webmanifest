@@ -1,0 +1,1 @@
+{"name": "CSVClinic", "short_name": "CSVClinic", "start_url": "./", "scope": "./", "display": "standalone", "theme_color": "#38236a", "icons": [{"src": "icon.svg", "sizes": "any", "type": "image/svg+xml"}]}
