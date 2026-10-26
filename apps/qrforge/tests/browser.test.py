@@ -80,6 +80,11 @@ def run():
    # Wi-Fi special characters escaped exactly in payload.
    page.locator('#kind').select_option('wifi')
    page.locator('#ssid').fill('Reseau;Maison')
+   assert page.locator('#wifi-password').get_attribute('type')=='password'
+   page.locator('#toggle-password').click()
+   assert page.locator('#wifi-password').get_attribute('type')=='text'
+   page.locator('#toggle-password').click()
+   assert page.locator('#wifi-password').get_attribute('type')=='password'
    page.locator('#wifi-password').fill('mot;passe:123')
    wifi='WIFI:T:WPA;S:Reseau\\;Maison;P:mot\\;passe\\:123;;'
    assert decoded(download_png())==wifi
