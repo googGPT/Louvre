@@ -1,4 +1,4 @@
-name: QA Louvre App XX — QuizCraft
+name: QA Louvre App 20 — QuizCraft
 on:
   pull_request:
     paths:
