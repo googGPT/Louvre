@@ -65,7 +65,7 @@ test('rejet de format non valide',()=>{
   assert.throws(()=>C.validateState(value));
 });
 test('limite 200 notes',()=>{
- const grades=Array.from({length:200},(_,i)=>grade({id:'g_'+i}));
+ const grades=Array.from({length:200},(_,i)=>grade({id:'g_'+String(i).padStart(3,'0')}));
  assert.doesNotThrow(()=>C.validateState(saved(grades)));
  assert.throws(()=>C.validateState(saved([...grades,grade({id:'extra123'})])));
 });
