@@ -1,0 +1,5 @@
+const CACHE='louvre-travelday-shell-v2',PREFIX='louvre-travelday-';
+const ASSETS=['./','./index.html','./index.htm','./style.css','./core.js','./app.js','./manifest.webmanifest','./icon.svg'];
+self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
+self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x.startsWith(PREFIX)&&x!==CACHE).map(x=>caches.delete(x)))).then(()=>self.clients.claim())));
+self.addEventListener('fetch',event=>{const req=event.request;if(req.method!=='GET')return;const u=new URL(req.url),scope=new URL(self.registration.scope);if(u.origin!==scope.origin||!u.pathname.startsWith(scope.pathname))return;event.respondWith(caches.match(req).then(hit=>hit||fetch(req).catch(()=>new Response('Hors ligne',{status:503}))));});
