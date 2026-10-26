@@ -122,7 +122,7 @@ by('export-raw').addEventListener('click',()=>{
  }catch(e){status('Sauvegarde brute impossible : '+e.message,true);}
 });
 function importRequest(restoreOnly=false){
- if(restoreOnly)by('import-format').value='json';
+ if(restoreOnly){by('import-format').value='json';by('import-mode').value='replace';}
  by('import-file').click();
 }
 by('import-trigger').addEventListener('click',()=>importRequest(false));
@@ -134,6 +134,7 @@ by('import-file').addEventListener('change',async e=>{
   if(file.size>C.MAX_BYTES)throw Error('Fichier supérieur à 512 Ko');
   const raw=await file.text();if(token!==revision)return;
   const kind=by('import-format').value;
+  if(blocked&&(kind!=='json'||by('import-mode').value!=='replace'))throw Error('Stockage verrouillé : restauration JSON en mode remplacement uniquement');
   const parsed=kind==='bib'?C.readerBib(raw):kind==='ris'?C.readerRis(raw):
    {library:C.validateLibrary(JSON.parse(raw)),warnings:[]};
   const warnings=parsed.warnings;
@@ -146,6 +147,7 @@ by('import-file').addEventListener('change',async e=>{
 });
 window.addEventListener('storage',e=>{
  if(e.key!==KEY)return;
+ revision++;
  try{library=e.newValue?C.validateLibrary(JSON.parse(e.newValue)):EMPTY;blocked=false;resetForm();render();status('Bibliothèque actualisée depuis un autre onglet.');}
  catch(error){blocked=true;render();status('Stockage modifié et illisible : restaurer un JSON valide.',true);}
 });
