@@ -44,7 +44,7 @@ Statut des PR première vague au début de la mission : #18, #19, #21 fusionnée
 | 02 | ShiftLedger | Horaires, pauses, rémunération théorique | RoundPlan | reconstitution des pauses et durée | Piste évaluée ; non développée | — |
 | 03 | ColorContrast | Audit contrastes et palettes WCAG | aucune | luminance sRGB + AA/AAA | Code + tests Node réussis localement ; CI Chrome à confirmer | — |
 | 04 | ImageShrink | Compression locale d’images | ReceiptRescue (photos accessoires) | redimensionnement et qualité image | Application créée et auditée : compression/conversion locale, garde dimensions, 34 tests Node + Chromium mobile/offline réussis (PR #49) | [#49](https://github.com/googGPT/Louvre/pull/49) |
-| 05 | QRForge | QR codes locaux | aucune | encodage QR et masque | Application créée : encodeur MIT intégré, payloads URL/Wi-Fi, SVG/PNG et CI avec décodage ZXing-C++ ; validation CI finale à confirmer | [#50](https://github.com/googGPT/Louvre/pull/50) |
+| 05 | QRForge | QR codes locaux | aucune | encodage QR et masque | Application créée, auditée et testée : MIT QR Model 2, URL/Wi-Fi, SVG/PNG, 40/40 Node et décodage indépendant ZXing-C++ validés | [#50](https://github.com/googGPT/Louvre/pull/50) |
 | 06 | CSVClinic | Nettoyage CSV et doublons | aucune | parseur CSV quote/newlines et dédup | Piste évaluée ; non développée | — |
 | 07 | TextDiff | Comparaison textuelle | aucune | LCS et alignement de modifications | Piste évaluée ; non développée | — |
 | 08 | CitationCraft | Gestion bibliographique BibTeX/RIS | ReadTrail (livres personnels) | sérialisation de références structurées | Piste évaluée ; non développée | — |
