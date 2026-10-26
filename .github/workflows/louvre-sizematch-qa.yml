@@ -1,4 +1,4 @@
-name: QA Louvre App XX — SizeMatch
+name: QA Louvre App 18 — SizeMatch
 on:
   pull_request:
     paths:
