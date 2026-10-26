@@ -1,28 +1,28 @@
-# SizeMatch — Louvre Technical Review
+# SizeMatch v2 — Louvre Technical Review
 
-## Objectif vérifiable
-Convertir poids, distance et température hors ligne. Application autonome Web statique, sans serveur ni service facturable. La logique métier est dans `core.js` ; `app.js` n'enregistre et ne présente que des données validées. Aucun framework n'est installé artificiellement.
+## Audit source et correction originale
 
-## Cinq sources documentées effectivement consultées via les fiches GitHub Louvre
+1. `core.js` de la PR #35 refusait `value<0` sans tenir compte de la catégorie : les températures négatives valides ne pouvaient pas être sauvegardées. `convert()` corrige cette restriction avec vérification du zéro absolu.
+2. Les conversions étaient formatées systématiquement via `toFixed(3)` : des petites valeurs pouvaient apparaître nulles. `formatValue()` utilise une précision significative et la notation scientifique lorsque nécessaire.
+3. La première interface affichait seulement une liste. La v2 ajoute le résultat direct, des catégories sûres et un véritable historique filtrable.
+4. Les unités US sont distinguées des unités impériales ; les facteurs restent des constantes documentées. Les nombres JavaScript conservent leurs limitations de précision intrinsèques.
 
-| Livre | Fiche exacte | Pages PDF **rapportées par la fiche** | Transposition originale vérifiable dans le code |
-| --- | --- | --- | --- |
-| *Total TypeScript: The Essentials* (`SRC-001`) | `technical-library/concepts/language-and-types/TS16-001-runtime-type-guards.md` | 396–400 | `core.js`: `normalizeRecord`, validation à l'exécution de chaque champ avant stockage et restitution. |
-| *The Complete Developer* (`SRC-002`) | `technical-library/concepts/testing/FULL08-001-tdd-and-test-doubles.md` | 160–174 | `tests/core.test.cjs` : scénarios nominaux, données malformées, frontières et tests purs ; `tests/browser.test.py` pour l'intégration. |
-| *Ultimate Next.js for Modern Web Applications* (`SRC-003`) | `technical-library/concepts/frontend/NEXT08-001-client-vs-server-state.md` | 212–226 | `core.js`/`app.js` : `compute` dérive les indicateurs du tableau courant sans enregistrer un état analytique supplémentaire. Aucun SSR nécessaire. |
-| *Building Real-World Web Applications with Vue.js 3* (`SRC-004`) | `technical-library/concepts/frontend/VUE07-001-multiplatform-quasar-supabase.md` | 186–202 | `core.js` expose des fonctions pures ; `app.js` isole le navigateur et le stockage, afin de faciliter un futur portage mobile. Pas de dépendance Quasar. |
-| *Learning GitHub Actions* (`SRC-005`) | `technical-library/concepts/security/GHA09-001-permissions-and-untrusted-input.md` | 210–220 | `.github/workflows/louvre-sizematch-qa.yml` : `permissions: contents: read`, aucune interpolation de champs de PR dans des commandes shell, déploiement non autorisé par les tests. |
+## Cinq ouvrages : fiches effectivement lues dans la bibliothèque du dépôt
 
-**Provenance :** références et pages issues des fiches Louvre lues dans le dépôt ; nous ne prétendons pas avoir relu chaque PDF dans cette exécution. Les principes attribués aux livres ne sont pas assimilés à des implémentations d'auteur ; tous les traitements des applications sont originaux.
+| Source | Fiche et chemin vérifiés | Pages PDF **rapportées par la fiche** | Application originale |
+|---|---|---|---|
+| SRC-001 — *Total TypeScript: The Essentials* | `technical-library/concepts/language-and-types/TS16-001-runtime-type-guards.md` | chap. 16, 396–400 | `core.js` : normalisation des entrées/JSON et vérification des dimensions et nombres à l'exécution. Aucune compilation TypeScript revendiquée. |
+| SRC-002 — *The Complete Developer* | `technical-library/concepts/testing/FULL08-001-tdd-and-test-doubles.md` | chap. 8, 160–174 | `tests/core.test.cjs` vérifie les cas limites et constantes ; `tests/browser.test.py` vérifie les interactions et la sauvegarde réelle. |
+| SRC-003 — *Ultimate Next.js for Modern Web Applications* | `technical-library/concepts/frontend/NEXT08-001-client-vs-server-state.md` | chap. 8, 212–226 | Résultats dérivés par `compute()` et `refresh()` ; l'historique seul est persistant, pas le rendu. Pas de framework lourd imposé. |
+| SRC-004 — *Building Real-World Web Applications with Vue.js 3* | `technical-library/concepts/frontend/VUE07-001-multiplatform-quasar-supabase.md` | chap. 7, 186–202 | Cœur portable pur `core.js`, adaptation navigateur isolée dans `app.js`, stockage local sans serveur. Pas d'intégration Quasar fictive. |
+| SRC-005 — *Learning GitHub Actions* | `technical-library/concepts/security/GHA09-001-permissions-and-untrusted-input.md` | chap. 9, 210–220 | `.github/workflows/louvre-sizematch-qa.yml` limite `permissions: contents: read`, sans interpolation de titres de PR dans un script. |
 
-## Limites et compromis
-- Les calculs dépendent entièrement des entrées de l'utilisateur ; ils ne font pas intervenir de données externes en temps réel.
-- Données stockées dans `localStorage` sous la clé propre à l'application. Perte possible si le navigateur supprime son stockage ; sauvegarde JSON indispensable.
-- Maximum 500 enregistrements, export JSON limité à ~900 Ko ; rien n'est chiffré au repos dans le profil local.
-- Service Worker : cache des ressources statiques après première visite et hors ligne si installation autorisée. Pas de synchronisation multiappareil ni notifications push.
-- Certaines valeurs sont illustratives ou déclaratives ; **aucune garantie professionnelle, légale, financière ou de santé** n'est fournie.
+Les références et repères PDF proviennent des fiches Louvre consultées via GitHub. Les PDF originaux ne sont **pas** présentés comme relus dans ce cycle. Toutes les conversions et décisions UI sont des adaptations originales.
 
-## Vérifications prévues et observations
-- Commandes : `node --check core.js && node --check app.js && node --test tests/core.test.cjs` ; puis `python tests/browser.test.py` (Playwright Chromium).
-- Les résultats effectifs doivent être vérifiés dans les logs GitHub Actions de la Pull Request ; un code de test n'est pas une preuve d'exécution.
-- Ne pas fusionner en cas d'échec de CI. Aucune modification de `main` dans la branche proposée.
+## Tests et limites
+
+- Tests prévus : `node --check core.js`, `node --check app.js`, `node --test tests/core.test.cjs`, `python tests/browser.test.py` et CI globale du dépôt. Le succès d'un test doit être confirmé par le journal d'exécution.
+- Export CSV : neutralisation des formules dans les chaînes utilisateur, séparateur `;`, UTF-8 BOM ; **seul JSON restaure l'historique**.
+- Pas d'API, pas de réseau de mesure, pas de gestion de monnaie ; stockage navigateur effaçable et pas de chiffrement local. Maximum 500 fiches et JSON limité à 900 Ko.
+- Le calcul reste IEEE-754 `Number`, sans garantie métrologique ou comptable ; affichage à 9 chiffres significatifs, zéro absolu contrôlé avec tolérance d'arrondi numérique.
+- Le cache PWA `shell-v2` remplace l'ancien cache après activation du nouveau service worker.

@@ -1,18 +1,20 @@
-# SizeMatch
+# SizeMatch v2 — unités et conversions quotidiennes
 
-Convertir poids, distance et température hors ligne
-
-Application Louvre App Factory indépendante, statique, gratuite, fonctionnant sans API payante.
+Application statique sans inscription, sans API et sans clé. Conversion instantanée de **distance, masse, volume américain et température**. Peut fonctionner hors ligne après le premier chargement.
 
 ## Fonctions
-- Saisie et édition de fiches métier, recherche, suppression confirmée.
-- **Calcul métier local :** Convertir des mesures quotidiennes.
-- Tableaux de bord recalculés après chaque modification.
-- Export JSON et restauration contrôlée avant modification des fiches locales.
-- Installation Web progressive et hors ligne après le premier chargement valide.
 
-## Utilisation
-Ouvrir `index.html` sur un serveur local HTTP, ou accéder au chemin `apps/sizematch/` après fusion et publication GitHub Pages. Pour tests : `node --test tests/core.test.cjs` et `python tests/browser.test.py`.
+- 19 unités identifiées explicitement : distance (km, mile, m, ft, cm, mm, in, yd), masse (kg, lb, g, oz), volume (L, mL, gallon US, once liquide US), température (°C, °F, K).
+- Températures négatives permises, mais températures inférieures au zéro absolu refusées ; unités de catégories différentes refusées.
+- Affichage lisible à **neuf chiffres significatifs** ; les valeurs sous-jacentes ne sont pas tronquées à trois décimales. Les flottants JS restent des approximations binaires.
+- Inversion des unités, résultats instantanés, modèles de test, copie de résultat.
+- Historique local : création/édition/suppression/recherche/filtres, export CSV sécurisé contre interprétation de formules, sauvegarde/restauration JSON validées.
+- Compatibilité avec JSON v1 et avec la clé historique `louvre-factory:sizematch:v1` ; aucun effacement automatique.
 
-## Coûts, vie privée, limites
-Aucune API ni base serveur ni compte. Les données restent dans le navigateur. Exporter les fichiers JSON régulièrement, sans les publier. Les champs sont fournis par l'utilisateur, sans validation de sources officielles.
+## Exécution et tests
+
+Servir ce dossier via un serveur statique HTTP, puis ouvrir `index.html` ; sur GitHub Pages après **fusion** de la PR. `node --test tests/core.test.cjs` et `python tests/browser.test.py` (Playwright Chromium).
+
+## Limites
+
+Sans changement de monnaie ni taux de change, dimensions physiques seulement. Les unités de volume « US » sont **américaines**, pas impériales. Les résultats affichés sont arrondis et ne constituent ni une mesure certifiée ni une conversion légale. Le profil de navigateur conserve les données : export JSON nécessaire pour restaurer les fiches. Pas de synchronisation ni de partage des données avec un serveur.
