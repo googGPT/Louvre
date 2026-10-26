@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="fr"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#142b34">
+<meta name="description" content="ColorContrast : comparez le contraste WCAG 2.2, améliorez vos couleurs de texte et sauvegardez vos palettes localement.">
+<title>ColorContrast — Atelier de contrastes accessibles</title>
+<link rel="stylesheet" href="./style.css"><link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg">
+</head><body>
+<header><a class="identity" href="./"><span class="mark" aria-hidden="true">CC</span><span>ColorContrast <span class="version">v2</span><small>Laboratoire de couleurs</small></span></a><span class="pill">ACCESSIBILITÉ · 100 % LOCAL</span></header>
+<main>
+<section class="masthead"><p class="eyebrow">APPLICATION 23 · VAGUE 2 · COULEUR × INCLUSION</p>
+<h1>Des couleurs qui<br><i>fonctionnent pour tous.</i></h1>
+<p>Mesurez le contraste des textes, comparez les seuils WCAG AA/AAA et améliorez une couleur sans nécessairement repartir du noir ou du blanc.</p></section>
+<div class="studio">
+<section class="workspace" aria-labelledby="studio-title">
+<div class="controls"><div class="topline"><span id="studio-title">01 / SÉLECTION</span><span>Contraste recalculé immédiatement</span></div>
+<div class="color-inputs">
+<label>Couleur du texte<div class="colorfield"><input type="color" id="foreground-picker" value="#0c2430" aria-label="Sélecteur couleur texte"><input id="foreground" value="#0C2430" maxlength="7" spellcheck="false" aria-label="Couleur texte hexadécimale"></div></label>
+<button type="button" id="swap" aria-label="Inverser les couleurs du texte et du fond" title="Inverser les couleurs">⇄</button>
+<label>Couleur du fond<div class="colorfield"><input type="color" id="background-picker" value="#f5f4ea" aria-label="Sélecteur couleur fond"><input id="background" value="#F5F4EA" maxlength="7" spellcheck="false" aria-label="Couleur fond hexadécimale"></div></label>
+</div><p id="message" role="status" aria-live="polite" class="message"></p>
+<p id="warning" class="warning" hidden>Le stockage local est illisible : les palettes ne seront pas écrasées. Exportez la copie brute, puis restaurez un JSON valide.</p></div>
+<div id="sample" class="sample">
+<small>APERÇU TEXTE STANDARD ET TEXTE AGRANDI</small><h2>La clarté est un choix de design.</h2>
+<p>Un contraste élevé peut aider la lecture de nombreux contenus et parcours numériques.</p>
+<button type="button" id="sample-button">Exemple de bouton</button>
+<span class="micro">Aa Bb 0123456789 — caractères minuscules et majuscules</span></div>
+<div class="results"><div class="ratio"><span>RATIO DE CONTRASTE</span><output id="ratio" aria-live="polite">—</output><small id="ratio-exact">Tests réalisés sur la valeur non arrondie</small><small>Échelle théorique : 1:1 à 21:1</small></div>
+<div class="checks"><div class="check" id="aa-normal"><b>AA</b><span>Texte normal · ≥ 4,5:1</span><strong>—</strong></div>
+<div class="check" id="aaa-normal"><b>AAA</b><span>Texte normal · ≥ 7:1</span><strong>—</strong></div>
+<div class="check" id="aa-large"><b>AA</b><span>Grand texte · ≥ 3:1</span><strong>—</strong></div>
+<div class="check" id="aaa-large"><b>AAA</b><span>Grand texte · ≥ 4,5:1</span><strong>—</strong></div></div></div>
+<p class="method-note">Ces quatre badges concernent le contraste du texte WCAG 2.2, pas les critères pour icônes, composants, focus ou contrastes sur image. Les comparaisons ne sont jamais faites sur le ratio arrondi.</p>
+</section>
+<aside class="side">
+<section aria-labelledby="suggest-title"><span class="topline">02 / CORRECTION</span><h2 id="suggest-title">Améliorer le contraste</h2>
+<p>Découvrez la meilleure option noir/blanc, ou ajustez progressivement le texte actuel vers un seuil cible.</p>
+<p class="subheading">Meilleur noir ou blanc</p>
+<div class="suggest"><div id="suggested-swatch" class="mini">Aa</div><div><strong id="suggested">—</strong><small id="suggested-ratio">—</small></div></div>
+<button type="button" id="use-suggestion" class="dark">Utiliser noir ou blanc</button>
+<div class="adjust-section">
+<label for="target-ratio">Seuil du texte à viser</label>
+<select id="target-ratio"><option value="3">AA, grand texte · 3:1</option><option value="4.5" selected>AA, texte normal · 4,5:1</option><option value="7">AAA, texte normal · 7:1</option></select>
+<div class="suggest"><div id="adjusted-swatch" class="mini">Aa</div><div><strong id="adjusted">—</strong><small id="adjusted-ratio">—</small></div></div>
+<p id="adjusted-reason" class="muted"></p>
+<button type="button" id="use-adjusted" class="dark">Appliquer le texte ajusté</button>
+</div>
+</section>
+<section aria-labelledby="css-title"><span class="topline">03 / EXPORT</span><h2 id="css-title">Votre CSS prêt à copier</h2>
+<textarea id="css-output" rows="2" readonly spellcheck="false" aria-label="Déclarations CSS pour les couleurs"></textarea>
+<button type="button" id="copy-css" class="dark">Copier le CSS</button></section>
+<section aria-labelledby="saved-title"><span class="topline">04 / COLLECTION</span><h2 id="saved-title">Combinaisons sauvegardées</h2>
+<div class="saved-stats"><span id="saved-count">0 / 100 combinaisons</span><span id="saved-aa">0 conformes AA standard</span></div>
+<p>Vos combinaisons restent sur cet appareil. Conservez régulièrement une sauvegarde JSON.</p>
+<button type="button" id="save-pair" class="dark">Enregistrer cette combinaison</button>
+<div id="saved-list" class="saved-list"></div>
+<div class="actions"><button id="export" type="button">Sauvegarder JSON</button><button id="import-trigger" type="button">Restaurer JSON</button><input id="import-file" type="file" accept="application/json,.json" hidden><button id="export-raw" type="button">Copie brute</button></div>
+</section></aside></div>
+</main>
+<footer>ColorContrast · Calcul de luminance relative et ratio WCAG 2.2 pour couleurs HEX opaques. Pas de test des transparences, dégradés, images de fond ou de l'accessibilité complète. Données locales, sans synchronisation.</footer>
+<script src="./core.js"></script><script src="./app.js"></script></body></html>
