@@ -82,7 +82,7 @@ function readerBib(s){
   }else{
    // Bare values permitted only for numeric years; @string/macros not interpreted.
    const start=i;
-   while(i<value.length&&!/[\s,}]/.test(value[i]))i++;
+   while(i<value.length&&!/[\s,})]/.test(value[i]))i++;
    out=value.slice(start,i);
    if(!/^\d{4}$/.test(out))fail('Macro BibTeX non prise en charge : '+out);
   }
