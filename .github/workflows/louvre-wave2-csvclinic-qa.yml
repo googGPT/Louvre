@@ -20,6 +20,8 @@ jobs:
           node --check apps/csvclinic/core.js
           node --check apps/csvclinic/app.js
           node --check apps/csvclinic/sw.js
+          node -e "JSON.parse(require('fs').readFileSync('apps/csvclinic/manifest.webmanifest','utf8'))"
+          cmp apps/csvclinic/index.html apps/csvclinic/index.htm
           node --test apps/csvclinic/tests/core.test.cjs
       - name: Install free Playwright test client
         run: python -m pip install --disable-pip-version-check 'playwright>=1.45,<2'
