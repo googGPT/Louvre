@@ -98,6 +98,7 @@ by('cancel-edit').addEventListener('click',resetForm);
 for(const id of ['target','nextweight','whatif-score'])by(id).addEventListener('input',forecast);
 by('search').addEventListener('input',render);
 by('export').addEventListener('click',()=>{
+ if(blocked){say('Sauvegarde illisible : exportez la copie brute, pas un JSON vide.',true);return;}
  try{download('gradepilot-backup.json',JSON.stringify(C.validateState(state),null,2));say('Sauvegarde JSON exportée.');}
  catch(error){say(error.message,true);}
 });
