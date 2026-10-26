@@ -13,3 +13,26 @@ test('dates réelles et changement d’heure',()=>{assert.equal(L.diffDays('2026
 test('entrée non fiable ne peut générer HTML dans les vues',()=>{assert.equal(typeof L.normalizeRecord(mk({[L.SPEC.fields.find(f=>f.type==='text')?.key || 'id']:'<script>alert(1)</script>'})).id,'string')});
 
 test('résultat métier concret',()=>{const m=L.compute([base],today);assert.equal(m.kpis[1][1],'8.00/10');assert.ok(m.rows[0].includes('Option A'))});
+
+test('classe équitablement avec la même grille de critères et de poids',()=>{
+ const rows=[
+  mk({id:'optionA1',option:'A',criterion:'Prix',score:8,weight:3}),
+  mk({id:'optionA2',option:'A',criterion:'Qualité',score:9,weight:2}),
+  mk({id:'optionB1',option:'B',criterion:'Prix',score:9,weight:3}),
+  mk({id:'optionB2',option:'B',criterion:'Qualité',score:6,weight:2})
+ ];
+ const m=L.compute(rows,today);assert.equal(m.kpis[1][1],'8.40/10');assert.equal(m.rows[0],'1. A : 8.40/10');assert.equal(m.rows[1],'2. B : 7.80/10');
+});
+test('suspend le classement si une option manque un critère',()=>{
+ const a=mk({id:'optA1',option:'A',criterion:'Prix',score:10,weight:1});
+ const b=mk({id:'optB1',option:'B',criterion:'Prix',score:9,weight:1});
+ const c=mk({id:'optB2',option:'B',criterion:'Qualité',score:8,weight:1});
+ const m=L.compute([a,b,c],today);assert.equal(m.rows.length,0);assert.equal(m.kpis[1][1],'—');assert.ok(m.notes.some(x=>x.includes('critères manquants')));
+});
+test('suspend le classement si les poids diffèrent sur un même critère',()=>{
+ const m=L.compute([mk({id:'aaa111',option:'A',criterion:'Prix',score:10,weight:2}),mk({id:'bbb222',option:'B',criterion:'Prix',score:9,weight:8})],today);
+ assert.equal(m.rows.length,0);assert.ok(m.notes.some(x=>x.includes('Poids incohérents')));
+});
+test('suspend le classement si le même critère est saisi deux fois pour une option',()=>{
+ const m=L.compute([base,mk({id:'other111',score:3})],today);assert.equal(m.rows.length,0);assert.ok(m.notes.some(x=>x.includes('Doublon')));
+});

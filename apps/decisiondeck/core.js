@@ -14,7 +14,38 @@ const AppLogic=(()=>{
  function validateBackup(data){if(!data||typeof data!=='object'||data.app!==SPEC.slug||data.version!==1||!Array.isArray(data.records)||data.records.length>MAX)throw Error('Sauvegarde incompatible ou trop volumineuse');const ids=new Set();const items=data.records.map(o=>{const item=normalizeRecord(o);if(ids.has(item.id))throw Error('Identifiant dupliqué');ids.add(item.id);return item});if(JSON.stringify(data).length>STORAGE_LIMIT)throw Error('Sauvegarde trop grande');return items;}
  function backup(records){const valid=validateBackup({app:SPEC.slug,version:1,records});return JSON.stringify({app:SPEC.slug,version:1,exportedAt:new Date().toISOString(),records:valid},null,2);}
  function compute(records,today=dayKey()){if(!validDate(today))throw Error('Date du jour invalide');const data=records.map(normalizeRecord);return summarize(data,today);}
- function summarize(records,today){const all={};for(const r of records){const x=all[r.option]??={sum:0,w:0};x.sum+=r.score*r.weight;x.w+=r.weight;}const ranking=Object.entries(all).map(([name,x])=>({name,score:x.w?x.sum/x.w:0})).sort((a,b)=>b.score-a.score);return{kpis:[['Options',String(ranking.length)],['Meilleure note',ranking.length?ranking[0].score.toFixed(2)+'/10':'—']],notes:['Chaque ligne représente un critère pondéré : les options ne sont comparables que si leurs critères sont cohérents.'],rows:ranking.map((x,i)=>(i+1)+'. '+x.name+' : '+x.score.toFixed(2)+'/10')};}
+ function summarize(records,today){
+  const matrix=new Map(), criteria=new Map(), allCriteria=new Set();
+  const messages=[];
+  for(const r of records){
+   allCriteria.add(r.criterion);
+   let group=matrix.get(r.option);
+   if(!group){group=new Map();matrix.set(r.option,group)}
+   if(group.has(r.criterion)){messages.push('Doublon : '+r.option+' / '+r.criterion);continue}
+   group.set(r.criterion,r);
+   if(!criteria.has(r.criterion))criteria.set(r.criterion,r.weight);
+   else if(criteria.get(r.criterion)!==r.weight)messages.push('Poids incohérents pour « '+r.criterion+' » : utilisez le même poids pour chaque option.');
+  }
+  const required=[...allCriteria];
+  for(const [name,group] of matrix){
+   const missing=required.filter(c=>!group.has(c));
+   if(missing.length)messages.push('« '+name+' » : critères manquants : '+missing.join(', ')+'.');
+  }
+  const comparable=messages.length===0;
+  const ranking=comparable?[...matrix].map(([name,group])=>{
+   let sum=0,w=0;
+   for(const criterion of required){const r=group.get(criterion);sum+=r.score*r.weight;w+=r.weight}
+   return{name,score:w?sum/w:0}
+  }).sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name,'fr')):[];
+  return {
+   kpis:[['Options',String(matrix.size)],['Meilleure note',ranking.length?ranking[0].score.toFixed(2)+'/10':'—']],
+   notes: comparable?['Classement comparable : chaque option possède les mêmes critères et chaque critère conserve le même poids.']:[
+    'Classement suspendu : les options doivent être notées sur les mêmes critères, avec des poids identiques par critère.',
+    ...[...new Set(messages)]
+   ],
+   rows:ranking.map((x,i)=>(i+1)+'. '+x.name+' : '+x.score.toFixed(2)+'/10')
+  };
+ }
  return Object.freeze({SPEC,MAX,STORAGE_LIMIT,dayKey,diffDays,addDays,eur,normalizeRecord,validateBackup,backup,compute});
 })();
 if(typeof module!=='undefined'&&module.exports)module.exports=AppLogic;

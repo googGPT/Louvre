@@ -26,3 +26,7 @@ Décider avec scores pondérés et transparents. Application autonome Web statiq
 - Commandes : `node --check core.js && node --check app.js && node --test tests/core.test.cjs` ; puis `python tests/browser.test.py` (Playwright Chromium).
 - Les résultats effectifs doivent être vérifiés dans les logs GitHub Actions de la Pull Request ; un code de test n'est pas une preuve d'exécution.
 - Ne pas fusionner en cas d'échec de CI. Aucune modification de `main` dans la branche proposée.
+
+## Contrôle de comparabilité — correctif
+
+Le classement n'est désormais affiché que si **chaque option** possède exactement la même grille de critères (absence de doublons) et si le **poids de chaque critère** est identique pour toutes les options. Dans le cas contraire, le tableau de bord suspend le classement et explicite les éléments manquants ou incohérents, au lieu de produire une moyenne trompeuse. Le score pondéré est `somme(score × poids)/somme(poids)` ; les égalités sont départagées alphabétiquement pour la stabilité. Cette règle est une décision métier originale Louvre, pas une proposition attribuée directement à un ouvrage. Les tests dédiés se trouvent dans `tests/core.test.cjs` ; consulter la CI correspondant au commit corrigé pour leur résultat réel.
