@@ -1,0 +1,43 @@
+/* Browser interface: no external requests or remote user data. */
+'use strict';
+(()=>{
+  const L=AppLogic, SPEC=L.SPEC,KEY='louvre-factory:mileagebook:v1';
+  const $=id=>document.getElementById(id),form=$('record-form');
+  let records=[],activeId=null,readOnly=false;
+  function node(tag,cls){const e=document.createElement(tag);if(cls)e.className=cls;return e}
+  function put(el,value){el.textContent=String(value);return el}
+  function tell(s,err=false){put($('status'),s);$('status').className=err?'status error':'status'}
+  function download(filename,content,mime){const url=URL.createObjectURL(new Blob([content],{type:mime}));const a=node('a');a.href=url;a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000)}
+  function save(next){if(readOnly){tell('Sauvegarde locale corrompue : restaurez un fichier JSON valide.',true);return false}try{const b=L.backup(next);localStorage.setItem(KEY,b);records=L.validateBackup(JSON.parse(b));return true}catch(e){tell('Enregistrement impossible : '+e.message,true);return false}}
+  function fields(){for(const f of SPEC.fields){const label=node('label','field');put(node('span'),f.label);label.append(put(node('span'),f.label));let input;if(f.type==='select'){input=node('select');for(const o of f.options){const option=node('option');option.value=o;put(option,o);input.append(option)}if(f.optional)input.value='Non précisé';}else{input=node('input');input.type=f.type;if(f.type==='number'){input.step=f.key==='km'?'0.001':'0.0001';input.min='0';input.max=f.key==='km'?'100000':'1000'}else if(f.type==='text')input.maxLength=160;}input.name=f.key;input.required=!f.optional;input.autocomplete='off';if(f.type==='date')input.value=L.dayKey();label.append(input);$('fields').append(label)}form.addEventListener('input',preview);form.addEventListener('change',preview)}
+  function formData(){const d={id:activeId||'preview001'};for(const f of SPEC.fields){const val=form.elements.namedItem(f.key).value;d[f.key]=f.type==='number'?(val===''?NaN:Number(val)):val;}return L.normalizeRecord(d)}
+  function preview(){try{const r=formData();put($('live-preview'),'Estimation : '+L.eur(L.tripCents(r))+' pour '+r.km.toLocaleString('fr-FR',{maximumFractionDigits:3})+' km à '+r.rate+' €/km.')}catch(e){put($('live-preview'),'Complétez le motif, la distance et le taux pour afficher l’estimation.')}}
+  function reset(){activeId=null;form.reset();form.elements.namedItem('day').value=L.dayKey();form.elements.namedItem('category').value='Non précisé';form.elements.namedItem('paid').value='non';put($('save-button'),'Enregistrer ce trajet');$('cancel-edit').hidden=true;preview()}
+  function edit(r){activeId=r.id;for(const f of SPEC.fields)form.elements.namedItem(f.key).value=r[f.key]??'';put($('save-button'),'Mettre à jour');$('cancel-edit').hidden=false;preview();form.scrollIntoView({block:'start',behavior:'smooth'})}
+  function filters(){return {year:$('year').value,month:$('month').value,status:$('paid-filter').value,query:$('search').value}}
+  function refreshYears(){const previous=$('year').value,years=[...new Set(records.map(r=>r.day.slice(0,4)))].sort().reverse(),el=$('year');el.replaceChildren();const all=node('option');all.value='';put(all,'Toutes');el.append(all);for(const y of years){const x=node('option');x.value=y;put(x,y);el.append(x)}el.value=years.includes(previous)?previous:'';}
+  function render(){const data=L.compute(records,filters());$('summary').replaceChildren();for(const [title,val]of data.kpis){const card=node('div','stat');card.append(put(node('span'),title),put(node('strong'),val));$('summary').append(card)}
+    const months=$('monthly');months.replaceChildren();if(!data.monthly.length)months.append(put(node('p','footnote'),'Aucun trajet dans cette période.'));else{const max=Math.max(1,...data.monthly.map(x=>x.totalCents));for(const m of data.monthly.slice(0,12)){const row=node('div','month-row'),date=put(node('span'),m.month),track=node('div','track'),fill=node('div','fill');fill.style.width=(m.totalCents/max*100).toFixed(1)+'%';track.append(fill);row.append(date,track,put(node('strong'),L.eur(m.totalCents)));months.append(row)}}
+    put($('counter'),data.rows.length+' trajet'+(data.rows.length>1?'s':''));const list=$('items');list.replaceChildren();if(!data.rows.length)list.append(put(node('div','empty'),'Aucun trajet ne correspond aux filtres. Ajoutez-en un ou effacez les filtres.'));
+    for(const r of data.rows){const card=node('article','item');card.dataset.recordId=r.id;const h=put(node('h3'),r.purpose),info=node('div','item-info');for(const v of [r.day,r.km+' km',r.category,r.vehicle,r.origin&&r.destination?r.origin+' → '+r.destination:r.origin||r.destination].filter(Boolean))info.append(put(node('span','tag'),v));card.append(h,info);
+      const amount=node('div','amount');amount.append(put(node('strong'),L.eur(L.tripCents(r))),put(node('span',r.paid==='oui'?'paid':'unpaid'),r.paid==='oui'?'Remboursé':'À rembourser'));card.append(amount);
+      const bar=node('div','item-buttons'),paid=node('button','outline small'),editB=node('button','outline small'),del=node('button','outline small');
+      for(const b of [paid,editB,del])b.type='button';put(paid,r.paid==='oui'?'Marquer non remboursé':'Marquer remboursé');put(editB,'Modifier');put(del,'Supprimer');
+      paid.disabled=readOnly;editB.disabled=readOnly;del.disabled=readOnly;
+      paid.addEventListener('click',()=>{if(save(records.map(x=>x.id===r.id?L.setPaid(x,r.paid==='oui'?'non':'oui'):x))){refreshYears();render();tell('Statut de remboursement actualisé.')}});
+      editB.addEventListener('click',()=>edit(r));del.addEventListener('click',()=>{if(confirm('Supprimer ce trajet ? Cette action est irréversible sans sauvegarde.')&&save(records.filter(x=>x.id!==r.id))){refreshYears();render();tell('Trajet supprimé.')}});
+      bar.append(paid,editB,del);card.append(bar);list.append(card);
+    }
+  }
+  fields();form.addEventListener('submit',e=>{e.preventDefault();if(readOnly){tell('Importez d’abord une sauvegarde valide.',true);return}try{const obj=formData();if(!activeId&&records.length>=L.MAX)throw Error('500 trajets maximum');const duplicate=L.findDuplicates(records,obj,activeId);if(duplicate.length&&!confirm('Un trajet similaire existe déjà le même jour. Enregistrer quand même ?'))return;const valid={...obj,id:activeId||crypto.randomUUID().replaceAll('-','')};const next=activeId?records.map(r=>r.id===activeId?valid:r):[...records,valid];if(save(next)){reset();refreshYears();render();tell('Trajet enregistré localement.')}}catch(err){tell(err.message,true)}});
+  $('cancel-edit').addEventListener('click',reset);
+  for(const id of ['search','year','month','paid-filter'])$(id).addEventListener(id==='search'||id==='month'?'input':'change',render);
+  $('clear-filters').addEventListener('click',()=>{$('search').value='';$('year').value='';$('month').value='';$('paid-filter').value='tous';render()});
+  $('export-csv').addEventListener('click',()=>{try{const arr=L.compute(records,filters()).rows;download('mileagebook-releve.csv',L.toCSV(arr),'text/csv;charset=utf-8');tell(arr.length+' trajet(s) exporté(s) en CSV.')}catch(e){tell(e.message,true)}});
+  $('export').addEventListener('click',()=>{try{download('mileagebook-sauvegarde.json',L.backup(records),'application/json');tell('Sauvegarde JSON complète téléchargée.')}catch(e){tell(e.message,true)}});
+  $('export-raw').addEventListener('click',()=>{download('mileagebook-donnees-brutes.txt',localStorage.getItem(KEY)||'','text/plain');tell('Copie brute téléchargée. Ne la publiez pas.')});
+  $('import').addEventListener('change',async e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;try{if(file.size>L.STORAGE_LIMIT)throw Error('Fichier trop volumineux');const valid=L.validateBackup(JSON.parse(await file.text()));if(!confirm('Remplacer les '+records.length+' trajets présents par '+valid.length+' trajets importés ?'))return;const oldReadOnly=readOnly;readOnly=false;if(save(valid)){reset();refreshYears();$('search').value='';$('month').value='';$('paid-filter').value='tous';render();$('warning').hidden=true;tell('Sauvegarde validée et restaurée.')}else readOnly=oldReadOnly;}catch(err){tell('Import refusé : '+err.message,true)}});
+  try{const existing=localStorage.getItem(KEY);if(existing)records=L.validateBackup(JSON.parse(existing))}catch(e){readOnly=true;$('warning').hidden=false;tell('Stockage local illisible : aucune modification autorisée avant restauration.',true)}
+  reset();refreshYears();render();
+  if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+})();
