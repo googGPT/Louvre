@@ -67,7 +67,7 @@
         kind = 'insert'; value = right[j]; newIndex = ++j; added++;
       }
       if (kind !== 'equal' && !changing) { changeBlocks++; changing = true; }
-      ops.push({ kind, text: value, oldIndex, newIndex });
+      ops.push({ kind, text: value, newText: kind === 'equal' ? right[j - 1] : null, oldIndex, newIndex });
     }
     const total = n + m;
     return {
