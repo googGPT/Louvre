@@ -55,7 +55,7 @@
         tr.append(node('td','number',op.oldIndex === null ? '' : op.oldIndex));
         tr.append(node('td','cell-text',op.kind === 'insert' ? '' : op.text));
         tr.append(node('td','number',op.newIndex === null ? '' : op.newIndex));
-        tr.append(node('td','cell-text',op.kind === 'delete' ? '' : op.text));
+        tr.append(node('td','cell-text',op.kind === 'delete' ? '' : op.kind === 'equal' ? op.newText : op.text));
         body.append(tr);
       }
       table.append(body);box.append(table);
@@ -68,7 +68,7 @@
         for (const op of result.ops) {
           if (side === 'before' && op.kind === 'insert') continue;
           if (side === 'after' && op.kind === 'delete') continue;
-          pre.append(node('span','diff-'+op.kind,op.text));
+          pre.append(node('span','diff-'+op.kind,side === 'after' && op.kind === 'equal' ? op.newText : op.text));
         }
         panel.append(pre);wrap.append(panel);
       }
