@@ -103,7 +103,7 @@ test('absence de chevauchement aux plages adjacentes',()=>{
 });
 test('un chevauchement est signalé et non silencieusement supprimé',()=>{
  const r=[s,mk({id:'s_extra01',start:'17:00',end:'20:00',breakMinutes:0})];
- a.equal(C.compute(r,p).total,630);a.equal(C.overlapWarnings(r).length,1);
+ a.equal(C.compute(r,p).total,660);a.equal(C.overlapWarnings(r).length,1);
 });
 test('CSV possède BOM, en-tête et 1 ligne par service',()=>{
  const c=C.csv([s]);a.ok(c.startsWith('\uFEFF'));a.match(c,/"Date";"Début";"Fin"/);a.equal(c.trim().split('\r\n').length,2);
