@@ -1,0 +1,16 @@
+const test=require('node:test'),a=require('node:assert/strict'),C=require('../core.js');
+const one={id:'abcd',label:'Finance',score:16,coefficient:2};
+test('moyenne pondérée et coefficient',()=>a.equal(C.weightedAverage([one,{...one,id:'defg',score:10,coefficient:1}]),14));
+test('aucune note => moyenne absente',()=>a.equal(C.weightedAverage([]),null));
+test('objectif 12 après note 10 coef 2, prochain coef 2 => 14',()=>a.equal(C.requirement([{...one,score:10}],12,2).required,14));
+test('objectif impossible signalé',()=>a.equal(C.requirement([{...one,score:0}],20,1).status,'impossible'));
+test('objectif déjà acquis signalé',()=>a.equal(C.requirement([{...one,score:20}],5,1).status,'already'));
+test('borne score invalide',()=>a.throws(()=>C.grade({...one,score:21})));
+test('rejet coefficient nul',()=>a.throws(()=>C.grade({...one,coefficient:0})));
+test('rejet score non numérique',()=>a.throws(()=>C.grade({...one,score:NaN})));
+test('rejet champ inconnu',()=>a.throws(()=>C.grade({...one,script:'x'})));
+test('rejet doublon sauvegarde',()=>a.throws(()=>C.validateState({version:1,grades:[one,one]})));
+test('rejet version différente',()=>a.throws(()=>C.validateState({version:2,grades:[one]})));
+test('backup vide valide',()=>a.deepEqual(C.validateState({version:1,grades:[]}),{version:1,grades:[]}));
+test('rejet objectif au delà de 20',()=>a.throws(()=>C.requirement([one],21,2)));
+test('rejet coefficient non fini',()=>a.throws(()=>C.requirement([one],12,Infinity)));

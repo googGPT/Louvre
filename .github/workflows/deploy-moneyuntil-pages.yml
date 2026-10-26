@@ -37,7 +37,7 @@ jobs:
   test:
     name: Verify MoneyUntil without paid dependencies
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 25
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -96,6 +96,17 @@ jobs:
           node -e "JSON.parse(require('fs').readFileSync('apps/findmystuff/manifest.webmanifest','utf8'))"
           TZ=Europe/Paris node --test apps/findmystuff/tests/core.test.cjs
 
+      - name: Test any newly merged Louvre Wave 2 business logic
+        run: |
+          set -euo pipefail
+          for slug in gradepilot shiftledger colorcontrast imageshrink qrforge csvclinic textdiff citationcraft invoicecanvas roomsketch keyboardcoach laundrydecoder pollbox fileintegrity seatarrange careermatch loansim markdowndesk logiclab timelinebuilder; do
+            if [ ! -f "apps/$slug/index.html" ]; then continue; fi
+            node --check "apps/$slug/core.js"
+            node --check "apps/$slug/app.js"
+            node --check "apps/$slug/sw.js"
+            node --test "apps/$slug/tests/core.test.cjs"
+          done
+
       - name: Install free browser test harness
         run: python -m pip install --disable-pip-version-check 'playwright>=1.45,<2'
 
@@ -129,11 +140,19 @@ jobs:
             python "apps/$slug/tests/browser.test.py"
           done
 
+      - name: Test any newly merged Louvre Wave 2 browser experiences
+        run: |
+          set -euo pipefail
+          for slug in gradepilot shiftledger colorcontrast imageshrink qrforge csvclinic textdiff citationcraft invoicecanvas roomsketch keyboardcoach laundrydecoder pollbox fileintegrity seatarrange careermatch loansim markdowndesk logiclab timelinebuilder; do
+            if [ ! -f "apps/$slug/index.html" ]; then continue; fi
+            python "apps/$slug/tests/browser.test.py"
+          done
+
   deploy:
     if: github.event_name != 'pull_request'
     needs: [test]
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 25
     permissions:
       contents: read
       pages: write
@@ -236,6 +255,22 @@ jobs:
             mkdir -p "_site/apps/$slug"
             for file in index.html index.htm core.js app.js style.css sw.js manifest.webmanifest icon.svg sitemap.xml; do
               test -f "apps/$slug/$file"
+              cp "apps/$slug/$file" "_site/apps/$slug/$file"
+            done
+            cmp "_site/apps/$slug/index.html" "_site/apps/$slug/index.htm"
+          done
+          for slug in moneyuntil receiptrescue snapaction fridgefirst homepulse parkwise findmystuff; do
+            test -s "_site/apps/$slug/index.html"
+          done
+
+      - name: Include independently merged Louvre Wave 2 apps in Pages artifact
+        run: |
+          set -euo pipefail
+          for slug in gradepilot shiftledger colorcontrast imageshrink qrforge csvclinic textdiff citationcraft invoicecanvas roomsketch keyboardcoach laundrydecoder pollbox fileintegrity seatarrange careermatch loansim markdowndesk logiclab timelinebuilder; do
+            if [ ! -f "apps/$slug/index.html" ]; then continue; fi
+            mkdir -p "_site/apps/$slug"
+            for file in index.html index.htm core.js app.js style.css sw.js manifest.webmanifest icon.svg sitemap.xml; do
+              test -s "apps/$slug/$file"
               cp "apps/$slug/$file" "_site/apps/$slug/$file"
             done
             cmp "_site/apps/$slug/index.html" "_site/apps/$slug/index.htm"
@@ -409,4 +444,24 @@ jobs:
               sleep 5
             done
             test "$found" -eq 1
+          done
+
+      - name: Verify published Wave 2 app pages after merging
+        run: |
+          set -euo pipefail
+          for slug in gradepilot shiftledger colorcontrast imageshrink qrforge csvclinic textdiff citationcraft invoicecanvas roomsketch keyboardcoach laundrydecoder pollbox fileintegrity seatarrange careermatch loansim markdowndesk logiclab timelinebuilder; do
+            if [ ! -f "apps/$slug/index.html" ]; then continue; fi
+            site="https://googgpt.github.io/Louvre/apps/$slug/"
+            live=0
+            for check in $(seq 1 18); do
+              if curl -fsSL --max-time 12 "$site" -o /tmp/louvre-wave2-live.html \
+                 && grep -q '<main' /tmp/louvre-wave2-live.html \
+                 && curl -fsSL --max-time 12 "${site}core.js" -o /tmp/louvre-wave2-core.js; then
+                echo "PUBLIC_SMOKE_PASS $site"
+                live=1
+                break
+              fi
+              sleep 5
+            done
+            test "$live" -eq 1
           done
