@@ -1,28 +1,26 @@
-# MileageBook — Louvre Technical Review
+# MileageBook v2 — revue technique Louvre
 
-## Objectif vérifiable
-Suivre les déplacements et leur indemnisation estimée. Application autonome Web statique, sans serveur ni service facturable. La logique métier est dans `core.js` ; `app.js` n'enregistre et ne présente que des données validées. Aucun framework n'est installé artificiellement.
+## Audit et changements
+L'application 16 originale (PR #33) avait une somme des montants en virgule flottante avant un arrondi global, un tableau non filtrable et un champ « Remboursé ? » nécessitant l'édition complète de la fiche. La nouvelle version effectue le calcul et l'arrondi **trajet par trajet** avec des centimes entiers ; elle fournit un tableau de bord filtré, un suivi des mois et la mise à jour des statuts en un clic. Les dates impossibles, taux non finis ou nombres décimaux aux précisions déraisonnables sont rejetés, sans appliquer de règle fiscale inventée.
 
-## Cinq sources documentées effectivement consultées via les fiches GitHub Louvre
-
-| Livre | Fiche exacte | Pages PDF **rapportées par la fiche** | Transposition originale vérifiable dans le code |
+## Les cinq fiches Louvre utilisées
+| Ouvrage | Fiche vérifiée dans le dépôt | Pages indiquées dans la fiche | Application originale |
 | --- | --- | --- | --- |
-| *Total TypeScript: The Essentials* (`SRC-001`) | `technical-library/concepts/language-and-types/TS16-001-runtime-type-guards.md` | 396–400 | `core.js`: `normalizeRecord`, validation à l'exécution de chaque champ avant stockage et restitution. |
-| *The Complete Developer* (`SRC-002`) | `technical-library/concepts/testing/FULL08-001-tdd-and-test-doubles.md` | 160–174 | `tests/core.test.cjs` : scénarios nominaux, données malformées, frontières et tests purs ; `tests/browser.test.py` pour l'intégration. |
-| *Ultimate Next.js for Modern Web Applications* (`SRC-003`) | `technical-library/concepts/frontend/NEXT08-001-client-vs-server-state.md` | 212–226 | `core.js`/`app.js` : `compute` dérive les indicateurs du tableau courant sans enregistrer un état analytique supplémentaire. Aucun SSR nécessaire. |
-| *Building Real-World Web Applications with Vue.js 3* (`SRC-004`) | `technical-library/concepts/frontend/VUE07-001-multiplatform-quasar-supabase.md` | 186–202 | `core.js` expose des fonctions pures ; `app.js` isole le navigateur et le stockage, afin de faciliter un futur portage mobile. Pas de dépendance Quasar. |
-| *Learning GitHub Actions* (`SRC-005`) | `technical-library/concepts/security/GHA09-001-permissions-and-untrusted-input.md` | 210–220 | `.github/workflows/louvre-mileagebook-qa.yml` : `permissions: contents: read`, aucune interpolation de champs de PR dans des commandes shell, déploiement non autorisé par les tests. |
+| *Total TypeScript: The Essentials* (SRC-001) | `technical-library/concepts/language-and-types/TS16-001-runtime-type-guards.md` | ch. 16, PDF 396–400 | `core.js`: `normalizeRecord` rejette types, dates, identifiants et montants incompatibles avant persistance ; les propriétés supplémentaires des archives v1 sont normalisées. |
+| *The Complete Developer* (SRC-002) | `technical-library/concepts/testing/FULL08-001-tdd-and-test-doubles.md` | ch. 8, PDF 160–174 | Tests du calcul, des dates, filtrages, arrondis, CSV, archives et scénarios Chromium dans `tests/`. |
+| *Ultimate Next.js for Modern Web Applications* (SRC-003) | `technical-library/concepts/frontend/NEXT08-001-client-vs-server-state.md` | ch. 8, PDF 212–226 | État persistant = fiches ; `compute` dérive les indicateurs et séries mensuelles sans écrire des doublons d'état côté serveur. Pas de SSR inutile. |
+| *Building Real-World Web Applications with Vue.js 3* (SRC-004) | `technical-library/concepts/frontend/VUE07-001-multiplatform-quasar-supabase.md` | ch. 7, PDF 186–202 | `core.js` pur portable ; `app.js` isolé du stockage/navigateur, possibilité de portage sans imposer Vue ou Quasar. |
+| *Learning GitHub Actions* (SRC-005) | `technical-library/concepts/security/GHA09-001-permissions-and-untrusted-input.md` | ch. 9, PDF 210–220 | `.github/workflows/louvre-mileagebook-qa.yml` : job QA avec `permissions: contents: read`, entrées PR non interpolées dans les commandes, pas de secrets ou déploiement direct. |
 
-**Provenance :** références et pages issues des fiches Louvre lues dans le dépôt ; nous ne prétendons pas avoir relu chaque PDF dans cette exécution. Les principes attribués aux livres ne sont pas assimilés à des implémentations d'auteur ; tous les traitements des applications sont originaux.
+**Limite de provenance :** fiches techniques du dépôt inspectées ; les pages sont rapportées par ces fiches. Aucune relecture intégrale des PDF n'est prétendue. Les implémentations sont originales, inspirées des principes pertinents.
 
-## Limites et compromis
-- Les calculs dépendent entièrement des entrées de l'utilisateur ; ils ne font pas intervenir de données externes en temps réel.
-- Données stockées dans `localStorage` sous la clé propre à l'application. Perte possible si le navigateur supprime son stockage ; sauvegarde JSON indispensable.
-- Maximum 500 enregistrements, export JSON limité à ~900 Ko ; rien n'est chiffré au repos dans le profil local.
-- Service Worker : cache des ressources statiques après première visite et hors ligne si installation autorisée. Pas de synchronisation multiappareil ni notifications push.
-- Certaines valeurs sont illustratives ou déclaratives ; **aucune garantie professionnelle, légale, financière ou de santé** n'est fournie.
+## Vie privée, risques et compromis
+- Pas d'API payante, pas de tracking, pas de compte, pas de backend.
+- CSV et sauvegardes JSON peuvent contenir des lieux et motifs privés. Conserver hors accès public.
+- Neutralisation de colonnes CSV susceptibles de déclencher des formules chez certains tableurs (ne garantit pas la sécurité de tous les importeurs).
+- Import JSON strictement vérifié avant remplacement, avec confirmation. En cas de stockage local corrompu, édition verrouillée et copie brute disponible.
+- L'utilisateur doit entrer les taux corrects et le kilométrage réel ; aucun barème officiel, aucune qualification du caractère professionnel des trajets, aucun paiement effectif n'est vérifié.
+- La progression PWA hors ligne dépend de l'installation du service worker et d'une première visite connectée. La suppression des données de site peut détruire le journal.
 
-## Vérifications prévues et observations
-- Commandes : `node --check core.js && node --check app.js && node --test tests/core.test.cjs` ; puis `python tests/browser.test.py` (Playwright Chromium).
-- Les résultats effectifs doivent être vérifiés dans les logs GitHub Actions de la Pull Request ; un code de test n'est pas une preuve d'exécution.
-- Ne pas fusionner en cas d'échec de CI. Aucune modification de `main` dans la branche proposée.
+## Contrôle qualité
+Commandes `node --check` sur chaque script, `node --test apps/mileagebook/tests/core.test.cjs`, `python apps/mileagebook/tests/browser.test.py`. **Ne pas considérer un test navigateur vert avant vérification réelle du log GitHub Actions**. Fusion interdite en cas d'échec. Le workflow général doit conserver toutes les applications déjà publiées.
