@@ -84,12 +84,14 @@
       'Identiques : ' + result.counts.unchanged +
         ' | Ajouts : ' + result.counts.added + ' | Suppressions : ' + result.counts.removed +
         ' | Blocs de changement : ' + result.counts.changeBlocks,
-      'Préfixes : espace = identique ; - = suppression ; + = ajout', '---'];
+      'Préfixes : espace = identique ; - = suppression ; + = ajout ; ~ = différence ignorée par les options', '---'];
     for (const op of result.ops) {
       if (!op || !['equal','delete','insert'].includes(op.kind) || typeof op.text !== 'string') fail('Opération invalide');
       const prefix = op.kind === 'insert' ? '+' : op.kind === 'delete' ? '-' : ' ';
       // JSON quoting guarantees that embedded newlines cannot impersonate report prefixes.
-      h.push(prefix + ' ' + JSON.stringify(op.text));
+      if (op.kind === 'equal' && op.newText !== op.text)
+        h.push('~ ' + JSON.stringify(op.text) + ' => ' + JSON.stringify(op.newText));
+      else h.push(prefix + ' ' + JSON.stringify(op.text));
     }
     return h.join('\n') + '\n';
   }
