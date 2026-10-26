@@ -69,7 +69,9 @@ try:
         try:
             legacy.write_text(json.dumps({'app':'chorewheel','version':1,'records':[{'id':'legacy0001','chore':'Ancienne tâche','person':'Bob','last':'2026-10-20','every':7,'minutes':15}]}),encoding='utf-8')
             page.locator('#import').set_input_files(str(legacy))
-            page.get_by_text('Ancienne tâche',exact=True).wait_for(timeout=10000)
+            # A persisted search filter must not be mistaken for a failed restore.
+            page.locator('#search').fill('')
+            page.locator('.task h3').filter(has_text='Ancienne tâche').wait_for(timeout=10000)
             assert page.locator('#count').inner_text()=='1'
         finally:legacy.unlink(missing_ok=True)
         page.wait_for_function('navigator.serviceWorker.ready')
