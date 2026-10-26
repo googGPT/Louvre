@@ -1,42 +1,103 @@
+"""End-to-end travel planning on actual Chromium; designed for GitHub Actions."""
 from playwright.sync_api import sync_playwright
-from http.server import ThreadingHTTPServer,SimpleHTTPRequestHandler
+from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
-import threading,os,contextlib
-ROOT=Path(__file__).parents[1]
-class H(SimpleHTTPRequestHandler):
- def __init__(self,*a,**k):super().__init__(*a,directory=str(ROOT),**k)
- def log_message(self,*args):pass
-server=ThreadingHTTPServer(('127.0.0.1',0),H);port=server.server_port;threading.Thread(target=server.serve_forever,daemon=True).start()
+from tempfile import TemporaryDirectory
+import os, threading, json
+ROOT = Path(__file__).resolve().parents[1]
+class Server(SimpleHTTPRequestHandler):
+    def __init__(self, *args, **kwargs): super().__init__(*args, directory=str(ROOT), **kwargs)
+    def log_message(self, *args): pass
+server = ThreadingHTTPServer(('127.0.0.1', 0), Server)
+threading.Thread(target=server.serve_forever, daemon=True).start()
 try:
- with sync_playwright() as p:
-  exe='/usr/bin/chromium' if os.path.exists('/usr/bin/chromium') else '/usr/bin/google-chrome' if os.path.exists('/usr/bin/google-chrome') else None
-  browser=p.chromium.launch(executable_path=exe,headless=True,args=['--no-sandbox'])
-  page=browser.new_page(viewport={'width':390,'height':844},accept_downloads=True)
-  errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
-  page.goto(f'http://127.0.0.1:{port}/',wait_until='domcontentloaded')
-  page.wait_for_selector('#record-form input')
-  fields=[{'key': 'day', 'label': 'Jour', 'type': 'date', 'sample': '2026-11-10'}, {'key': 'place', 'label': 'Lieu ou activité', 'type': 'text', 'sample': 'Exemple'}, {'key': 'start', 'label': 'Début', 'type': 'time', 'sample': '09:00'}, {'key': 'end', 'label': 'Fin', 'type': 'time', 'sample': '10:30'}, {'key': 'cost', 'label': 'Coût prévu (€)', 'type': 'number', 'sample': 15}]
-  for fld in fields:
-   typ=fld['type'];v=fld.get('sample')
-   if typ=='select':page.locator('[name="'+fld['key']+'"]').select_option(str(v))
-   else:page.locator('[name="'+fld['key']+'"]').fill(str(v))
-  page.locator('#save-button').click();page.wait_for_function('document.querySelectorAll("#items .item").length===1')
-  page.reload();page.wait_for_function('document.querySelectorAll("#items .item").length===1')
-  assert not errors, errors
-  assert page.locator('body').evaluate('(e)=>e.scrollWidth <= innerWidth+2')
-  with page.expect_download(timeout=10000) as d:page.locator('#export').click()
-  backup=d.value.path();assert backup is not None
-  page.locator('#search').fill('mot-absent-zz');assert page.locator('#items .item').count()==0
-  page.locator('#search').fill('');assert page.locator('#items .item').count()==1
-  page.locator('#items .item .item-actions button').first.click();assert page.locator('#save-button').inner_text()=='Mettre à jour'
-  page.locator('#cancel-edit').click()
-  page.on('dialog',lambda x:x.accept())
-  page.locator('#items .item .item-actions button').nth(1).click();page.wait_for_function('document.querySelectorAll("#items .item").length===0')
-  page.locator('#import').set_input_files(backup);page.wait_for_function('document.querySelectorAll("#items .item").length===1')
-  page.wait_for_function('navigator.serviceWorker.controller !== null',{ 'timeout':15000}) if False else None
-  page.wait_for_timeout(1200);page.reload();page.wait_for_timeout(450)
-  page.context.set_offline(True);page.reload(wait_until='domcontentloaded');page.wait_for_selector('#record-form input')
-  assert page.locator('#items .item').count()==1
-  browser.close()
- print('BROWSER PASS: create, reload, search, edit, delete, JSON export/import, offline reload, 390px mobile; app=travelday')
-finally:server.shutdown();server.server_close()
+    with sync_playwright() as p, TemporaryDirectory() as temp:
+        exe='/usr/bin/chromium' if os.path.exists('/usr/bin/chromium') else '/usr/bin/google-chrome' if os.path.exists('/usr/bin/google-chrome') else None
+        browser=p.chromium.launch(executable_path=exe, headless=True, args=['--no-sandbox'])
+        page=browser.new_page(viewport={'width':390,'height':844},accept_downloads=True)
+        errors=[]
+        page.on('pageerror',lambda e:errors.append(str(e)))
+        def fill(day,place,start,end,cost):
+            page.locator('[name="day"]').fill(day)
+            page.locator('[name="place"]').fill(place)
+            page.locator('[name="start"]').fill(start)
+            page.locator('[name="end"]').fill(end)
+            page.locator('[name="cost"]').fill(str(cost))
+            page.locator('[name="category"]').select_option('Visite')
+        base=f'http://127.0.0.1:{server.server_port}/'
+        page.goto(base,wait_until='domcontentloaded')
+        page.locator('#record-form').wait_for()
+        assert page.get_by_role('heading',name='TravelDay').count()==1
+        assert page.locator('a[href="../../"]').count()==0, 'Unexpected Louvre link'
+        assert page.locator('body').evaluate('(b)=>b.scrollWidth<=innerWidth+2'), 'Mobile overflow'
+        fill('2026-11-10','Grande visite','08:00','18:00',19.99)
+        assert '10 h 00' in page.locator('#preview').inner_text()
+        page.locator('#save-button').click()
+        page.locator('.item').first.wait_for()
+        assert page.locator('.item').count()==1
+        fill('2026-11-10','Petit musée','09:00','10:00',2.35)
+        page.locator('#save-button').click()
+        fill('2026-11-10','Déjeuner','13:00','14:00',12.10)
+        page.locator('#save-button').click()
+        assert page.locator('.item').count()==3
+        assert page.locator('#conflicts li').count()==2, 'Missed nested non-adjacent overlap'
+        assert '34,44' in page.locator('#summary').inner_text() or '34.44' in page.locator('#summary').inner_text()
+        page.reload(wait_until='domcontentloaded')
+        assert page.locator('.item').count()==3
+        assert page.locator('#conflicts li').count()==2
+        page.locator('#day-filter').select_option('2026-11-10')
+        assert page.locator('.item').count()==3
+        page.locator('#search').fill('dejeuner')
+        assert page.locator('.item').count()==1, 'Accent-insensitive search'
+        page.locator('#search').fill('')
+        page.locator('.item').filter(has_text='Grande visite').get_by_role('button',name='Modifier').click()
+        assert page.locator('#save-button').inner_text()=='Enregistrer les modifications'
+        page.locator('[name="place"]').fill('Visite panoramique')
+        page.locator('#save-button').click()
+        assert page.locator('.item').filter(has_text='Visite panoramique').count()==1
+        # Regression: two partial export formats and full JSON backup.
+        with page.expect_download() as dl:page.locator('#csv').click()
+        csv=Path(dl.value.path()).read_bytes().decode('utf-8-sig')
+        assert 'Visite panoramique' in csv and '34' not in csv[:20]
+        with page.expect_download() as dl:page.locator('#ics').click()
+        ics=Path(dl.value.path()).read_text('utf-8')
+        assert 'BEGIN:VCALENDAR' in ics and 'DTSTART:20261110T080000' in ics
+        with page.expect_download() as dl:page.locator('#export').click()
+        backup_path=dl.value.path()
+        backup=json.loads(Path(backup_path).read_text('utf-8'))
+        assert backup['version']==1 and len(backup['records'])==3
+        # Invalid import must never destroy the old store.
+        invalid=Path(temp)/'invalid.json';invalid.write_text('{not-json',encoding='utf-8')
+        page.locator('#import').set_input_files(str(invalid))
+        assert 'Import refusé' in page.locator('#status').inner_text()
+        assert page.locator('.item').count()==3
+        page.once('dialog',lambda d:d.accept())
+        page.locator('.item').filter(has_text='Petit musée').get_by_role('button',name='Supprimer').click()
+        assert page.locator('.item').count()==2
+        page.once('dialog',lambda d:d.accept())
+        page.locator('#import').set_input_files(str(backup_path))
+        assert page.locator('.item').count()==3
+        # Legacy version-1 backup with only historical fields.
+        old=Path(temp)/'old.json';old.write_text(json.dumps({'app':'travelday','version':1,'records':[{'id':'legacy0001','day':'2026-11-11','place':'Ancienne visite','start':'10:00','end':'11:00','cost':5}]}),encoding='utf-8')
+        page.once('dialog',lambda d:d.accept())
+        page.locator('#import').set_input_files(str(old))
+        assert page.locator('.item').count()==1
+        assert page.locator('.item').first.get_by_text('Ancienne visite').count()==1
+        # Overnight: following-day intersection flagged in itinerary.
+        page.locator('#day-filter').select_option('all')
+        fill('2026-11-10','Train de nuit','23:30','00:30',50)
+        page.locator('#save-button').click()
+        assert '(+1 jour)' in page.locator('.item').filter(has_text='Train de nuit').inner_text()
+        page.reload(wait_until='domcontentloaded')
+        assert page.locator('.item').count()==2
+        page.wait_for_function("navigator.serviceWorker.controller !== null",timeout=15000)
+        page.context.set_offline(True)
+        page.reload(wait_until='domcontentloaded')
+        page.locator('.item').first.wait_for()
+        assert page.locator('.item').count()==2
+        assert page.locator('body').evaluate('(b)=>b.scrollWidth<=innerWidth+2')
+        assert not errors,errors
+        browser.close()
+    print('BROWSER PASS: nested overlaps, cent-safe budgets, daily filters, edits, CSV/ICS/JSON, legacy restore, invalid import, overnight, mobile 390px, offline PWA')
+finally:
+    server.shutdown();server.server_close()
