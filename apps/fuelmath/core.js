@@ -1,7 +1,7 @@
 /* FuelMath — moteur pur, indépendant du navigateur. */
 'use strict';
 const AppLogic=(()=>{
- const SPEC={"slug":"fuelmath","title":"FuelMath","subtitle":"Estimer un trajet automobile","fields":[{"key":"route","label":"Trajet","type":"text","sample":"Exemple"},{"key":"km","label":"Distance (km)","type":"number","sample":180},{"key":"litres","label":"Consommation (L/100 km)","type":"number","sample":6.2},{"key":"price","label":"Prix du litre (€)","type":"number","sample":1.8},{"key":"people","label":"Passagers","type":"number","sample":2}],"description":"Estimer carburant et partage entre passagers"};
+ const SPEC={"slug":"fuelmath","title":"FuelMath","subtitle":"Estimer un trajet automobile","fields":[{"key":"route","label":"Trajet","type":"text","sample":"Exemple"},{"key":"km","label":"Distance (km)","type":"number","sample":180},{"key":"litres","label":"Consommation (L/100 km)","type":"number","sample":6.2},{"key":"price","label":"Prix du litre (€)","type":"number","sample":1.8},{"key":"people","label":"Personnes qui partagent (conducteur compris)","type":"number","sample":2}],"description":"Estimer carburant et partage entre passagers"};
  const MAX=500,STORAGE_LIMIT=900000;
  function dayKey(d=new Date()){const z=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())}
  function validDate(s){if(typeof s!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(s))return false;const [y,m,d]=s.split('-').map(Number);const z=new Date(y,m-1,d,12);return z.getFullYear()===y&&z.getMonth()+1===m&&z.getDate()===d}
@@ -41,7 +41,7 @@ const AppLogic=(()=>{
    return r.route+' : '+eur(cents)+' · partage entre passagers : '+splitLabel(parts);
   });
   const sum=records.reduce((s,r)=>s+tripCostCents(r),0);
-  return {kpis:[['Coût estimé',eur(sum)],['Distance totale',records.reduce((s,r)=>s+r.km,0).toFixed(1)+' km']],notes:['Estimation carburant seulement : hors péages, usure, circulation et stationnement.','Répartition en centimes : les éventuels centimes restants sont attribués à certains passagers.'],rows:rows.slice(0,15)};
+  return {kpis:[['Coût estimé',eur(sum)],['Distance totale',records.reduce((s,r)=>s+r.km,0).toFixed(1)+' km']],notes:['Estimation carburant seulement : hors péages, usure, circulation et stationnement.','La répartition inclut toutes les personnes indiquées, conducteur compris. Les centimes restants sont attribués à certaines personnes.'],rows:rows.slice(0,15)};
  }
  return Object.freeze({SPEC,MAX,STORAGE_LIMIT,dayKey,diffDays,addDays,eur,normalizeRecord,validateBackup,backup,compute,tripCostCents,splitCents});
 })();

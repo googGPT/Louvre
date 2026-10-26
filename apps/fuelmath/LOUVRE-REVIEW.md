@@ -31,3 +31,11 @@ Estimer carburant et partage entre passagers. Application autonome Web statique,
 - `core.js`: `tripCostCents` arrondit le coût de chaque trajet en centimes ; `splitCents` attribue le reliquat d'arrondi aux passagers afin que la somme des parts soit égale au coût du trajet.
 - `tests/core.test.cjs`: vérifie le reliquat pour deux et trois passagers, la somme des coûts et les bornes numériques.
 - Fait vérifié via GitHub Actions seulement après réussite du workflow déclenché par ce commit ; la description ne vaut pas validation automatique.
+
+## Audit correctif FuelMath (26 octobre 2026)
+- **Défaut constaté dans le code** : le gestionnaire d'import basculait `readOnly=false` avant de savoir si `localStorage.setItem` avait réussi ; en cas d'échec, le stockage pouvait perdre sa protection logique. Le correctif restaure le mode précédent si l'écriture échoue et masque la bannière d'erreur après une restauration effectivement réussie.
+- **Ergonomie** : calcul immédiat pendant la saisie, arrondi au centime cohérent avec `tripCostCents`/`splitCents` ; explicitation « conducteur compris » sans changer la clé `people` des sauvegardes.
+- **Fichiers concernés** : `index.html`, `index.htm`, `app.js`, `core.js`, `tests/browser.test.py`.
+- **Références** : principes de validation TS16-001, séparation état UI/données NEXT08-001, tests positifs/erreurs FULL08-001, cœur réutilisable VUE07-001, CI minimale GHA09-001, fiches liées ci-dessus.
+- **Scénario de non-régression** : estimation à 20,09 €, navigateur mobile, historique conservé après rechargement, stockage corrompu détecté puis restauré, avertissement effacé, hors ligne.
+- L'échec précis rencontré par l'utilisateur n'a pas été communiqué : le correctif cible deux défauts observables et ne prouve pas à lui seul résoudre un autre problème local.

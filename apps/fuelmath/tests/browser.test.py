@@ -20,6 +20,8 @@ try:
    typ=fld['type'];v=fld.get('sample')
    if typ=='select':page.locator('[name="'+fld['key']+'"]').select_option(str(v))
    else:page.locator('[name="'+fld['key']+'"]').fill(str(v))
+  page.wait_for_function("document.querySelector('#live-estimate').textContent.includes('20,09')")
+  assert 'conducteur compris' in page.locator('#live-estimate').inner_text()
   page.locator('#save-button').click();page.wait_for_function('document.querySelectorAll("#items .item").length===1')
   page.reload();page.wait_for_function('document.querySelectorAll("#items .item").length===1')
   assert not errors, errors
@@ -33,6 +35,13 @@ try:
   page.on('dialog',lambda x:x.accept())
   page.locator('#items .item .item-actions button').nth(1).click();page.wait_for_function('document.querySelectorAll("#items .item").length===0')
   page.locator('#import').set_input_files(backup);page.wait_for_function('document.querySelectorAll("#items .item").length===1')
+  page.evaluate("localStorage.setItem('louvre-factory:fuelmath:v1','{broken-json')")
+  page.reload()
+  assert page.locator('#warning').is_visible(), 'corrupted storage must remain recoverable'
+  page.locator('#import').set_input_files(backup)
+  page.wait_for_function('document.querySelectorAll("#items .item").length===1')
+  assert page.locator('#warning').is_hidden(), 'restore must clear error warning'
+  assert '20,09' in page.locator('#insights').inner_text()
   page.wait_for_function('navigator.serviceWorker.controller !== null',{ 'timeout':15000}) if False else None
   page.wait_for_timeout(1200);page.reload();page.wait_for_timeout(450)
   page.context.set_offline(True);page.reload(wait_until='domcontentloaded');page.wait_for_selector('#record-form input')
