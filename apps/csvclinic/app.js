@@ -39,11 +39,11 @@ function draw(res){
   'Évitez la suppression par première colonne lorsque cet identifiant n’est pas unique.';
  by('download').disabled=false;
 }
-by('source').addEventListener('input',()=>{importing=false;invalidate();});
+by('source').addEventListener('input',()=>{importing=false;by('run').disabled=false;invalidate();});
 for(const id of ['delimiter','dedupe','trim'])by(id).addEventListener('change',invalidate);
 by('source-file').addEventListener('change',async e=>{
  const file=e.target.files[0];e.target.value='';if(!file)return;
- const token=++revision;importing=true;blank();
+ const token=++revision;importing=true;by('run').disabled=true;blank();
  try{
   if(file.size>C.MAX_SOURCE_BYTES)throw Error('Fichier trop volumineux (1 Mo maximum)');
   const data=await file.text();
