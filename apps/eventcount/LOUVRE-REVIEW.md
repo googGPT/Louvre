@@ -1,28 +1,37 @@
-# EventCount — Louvre Technical Review
+# EventCount v2 — revue technique fondée sur les cinq livres Louvre
 
-## Objectif vérifiable
-Centraliser les réponses et chiffrer le nombre de convives. Application autonome Web statique, sans serveur ni service facturable. La logique métier est dans `core.js` ; `app.js` n'enregistre et ne présente que des données validées. Aucun framework n'est installé artificiellement.
+**Provenance :** inspection du code EventCount de la PR #29, puis consultation des cinq références documentées dans le dépôt Louvre. Les pages indiquées sont les pages physiques PDF **rapportées dans ces fiches**, pas une nouvelle vérification des PDF originaux. Le code de la présente application est original.
 
-## Cinq sources documentées effectivement consultées via les fiches GitHub Louvre
+| Livre Louvre | Fiche et pages documentées | Implémentation effectivement vérifiable | Limite |
+|---|---|---|---|
+| *Total TypeScript: The Essentials* (`SRC-001`) | `technical-library/concepts/language-and-types/TS16-001-runtime-type-guards.md`, chapitre 16, p. 396–400 | `core.js` : `normalizeRecord`, `validateBackup` validant la forme, l'ID, la réponse, les quantités et le montant en centimes à l'exécution avant tout stockage | JavaScript vanilla, pas de compilateur TypeScript utilisé ici |
+| *The Complete Developer* (`SRC-002`) | `technical-library/concepts/testing/FULL08-001-tdd-and-test-doubles.md`, chapitre 8, p. 160–174 | `tests/core.test.cjs` : budget, arrondis, invités, doublons, CSV malveillant et sauvegardes ; `tests/browser.test.py` : parcours création et restauration dans Chromium | Tests logiciels ; ne garantissent pas l'absence de défauts dans tout navigateur |
+| *Ultimate Next.js for Modern Web Applications* (`SRC-003`) | `technical-library/concepts/frontend/NEXT08-001-client-vs-server-state.md`, chapitre 8, p. 212–226 | `core.js` : `compute()` dérive synthèses, groupe et budget depuis les invitations ; `app.js` ne persiste pas de totaux susceptibles de devenir incohérents | Aucun besoin de Next.js, SSR ou serveur dans ce site local |
+| *Building Real-World Web Applications with Vue.js 3* (`SRC-004`) | `technical-library/concepts/frontend/VUE07-001-multiplatform-quasar-supabase.md`, chapitre 7, p. 186–202 | `core.js` expose algorithmes purs sans DOM ; `app.js` traite seulement affichage, formulaires et persistance, facilitant une enveloppe mobile future | Aucun usage revendiqué de Vue, Quasar ou Supabase |
+| *Learning GitHub Actions* (`SRC-005`) | `technical-library/concepts/security/GHA09-001-permissions-and-untrusted-input.md`, chapitre 9, p. 210–220 | `.github/workflows/louvre-eventcount-qa.yml` : droits `contents: read`, aucun secret/API, `node --test` puis test Chromium de bout en bout ; aucune publication directe de PR | CI exécutée dans GitHub à vérifier explicitement avant fusion |
 
-| Livre | Fiche exacte | Pages PDF **rapportées par la fiche** | Transposition originale vérifiable dans le code |
-| --- | --- | --- | --- |
-| *Total TypeScript: The Essentials* (`SRC-001`) | `technical-library/concepts/language-and-types/TS16-001-runtime-type-guards.md` | 396–400 | `core.js`: `normalizeRecord`, validation à l'exécution de chaque champ avant stockage et restitution. |
-| *The Complete Developer* (`SRC-002`) | `technical-library/concepts/testing/FULL08-001-tdd-and-test-doubles.md` | 160–174 | `tests/core.test.cjs` : scénarios nominaux, données malformées, frontières et tests purs ; `tests/browser.test.py` pour l'intégration. |
-| *Ultimate Next.js for Modern Web Applications* (`SRC-003`) | `technical-library/concepts/frontend/NEXT08-001-client-vs-server-state.md` | 212–226 | `core.js`/`app.js` : `compute` dérive les indicateurs du tableau courant sans enregistrer un état analytique supplémentaire. Aucun SSR nécessaire. |
-| *Building Real-World Web Applications with Vue.js 3* (`SRC-004`) | `technical-library/concepts/frontend/VUE07-001-multiplatform-quasar-supabase.md` | 186–202 | `core.js` expose des fonctions pures ; `app.js` isole le navigateur et le stockage, afin de faciliter un futur portage mobile. Pas de dépendance Quasar. |
-| *Learning GitHub Actions* (`SRC-005`) | `technical-library/concepts/security/GHA09-001-permissions-and-untrusted-input.md` | 210–220 | `.github/workflows/louvre-eventcount-qa.yml` : `permissions: contents: read`, aucune interpolation de champs de PR dans des commandes shell, déploiement non autorisé par les tests. |
+## Audit : défauts identifiés dans EventCount v1
 
-**Provenance :** références et pages issues des fiches Louvre lues dans le dépôt ; nous ne prétendons pas avoir relu chaque PDF dans cette exécution. Les principes attribués aux livres ne sont pas assimilés à des implémentations d'auteur ; tous les traitements des applications sont originaux.
+1. Un seul compteur additionnait les réponses de **plusieurs événements**, sans possibilité de voir les budgets isolément.
+2. Les « peut-être » étaient comptabilisés en personnes mais **ignorés du budget maximal possible**.
+3. Aucune détection de doublons de personnes au sein d'un événement, ni de rapprochement des variantes typographiques de son titre.
+4. Affichage générique : pas de statut rapide, pas de ventilation par événement, pas de CSV, pas d'exemple.
+5. L'en-tête contenait un lien de retour « Louvre ↗ » sans rapport nécessaire avec la fonction utilisateur : retiré.
 
-## Limites et compromis
-- Les calculs dépendent entièrement des entrées de l'utilisateur ; ils ne font pas intervenir de données externes en temps réel.
-- Données stockées dans `localStorage` sous la clé propre à l'application. Perte possible si le navigateur supprime son stockage ; sauvegarde JSON indispensable.
-- Maximum 500 enregistrements, export JSON limité à ~900 Ko ; rien n'est chiffré au repos dans le profil local.
-- Service Worker : cache des ressources statiques après première visite et hors ligne si installation autorisée. Pas de synchronisation multiappareil ni notifications push.
-- Certaines valeurs sont illustratives ou déclaratives ; **aucune garantie professionnelle, légale, financière ou de santé** n'est fournie.
+## Corrections et compromis
 
-## Vérifications prévues et observations
-- Commandes : `node --check core.js && node --check app.js && node --test tests/core.test.cjs` ; puis `python tests/browser.test.py` (Playwright Chromium).
-- Les résultats effectifs doivent être vérifiés dans les logs GitHub Actions de la Pull Request ; un code de test n'est pas une preuve d'exécution.
-- Ne pas fusionner en cas d'échec de CI. Aucune modification de `main` dans la branche proposée.
+- Modèle de stockage **v1 inchangé** (`app: eventcount`, `version:1`, `records:[{id,event,guest,reply,seats,cost}]`) pour ne pas casser les sauvegardes historiques.
+- Les montants unitaires sont validés à **deux décimales maximum**, puis convertis en centimes **avant multiplication par le nombre de personnes**.
+- Budget minimum = groupes « oui », maximum = « oui » + « peut-être ». Les invités ayant répondu « non » n'engagent aucun coût dans les projections.
+- Détection par `key()` (normalisation Unicode NFD, accents/casse, espaces multiples). Les doublons déjà présents dans une ancienne sauvegarde sont **signalés** mais pas effacés ou fusionnés sans consentement.
+- Export CSV depuis le filtre courant avec neutralisation basique des préfixes de formule : la compatibilité des tableurs et la protection complète ne peuvent pas être garanties.
+- Les champs d'import sont validés avant toute modification ; remplacement seulement après confirmation. En cas de stockage initial corrompu, export brut toujours possible et import valide explicitement autorisé.
+- Service Worker versionné `shell-v2`, limité au répertoire de l'application ; offline disponible seulement après mise en cache valide.
+
+## Vérifications
+
+- Tests métier et syntaxiques à exécuter localement et dans GitHub Actions ; rapporter uniquement leurs résultats réellement observés.
+- Tester Chromium réel : filtres, RSVP rapide, exemple, doublons, CSV, export/import, persistance, offline, largeur mobile 390px.
+- Ne pas fusionner dans `main` si le test du workflow GitHub échoue.
+
+**Aucune API payante, aucun hébergement nouveau ni bibliothèque runtime externe.**
