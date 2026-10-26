@@ -70,7 +70,7 @@ const AppLogic = (() => {
     if(!Number.isFinite(value))throw Error('Valeur à afficher invalide');
     if(value===0)return '0';
     const a=Math.abs(value);
-    if(a<0.00000001||a>=1000000000)return value.toExponential(6).replace('e+','e');
+    if(a<0.00000001||a>=1000000000)return value.toExponential(8).replace('e+','e');
     return new Intl.NumberFormat('fr-FR',{maximumSignificantDigits:9,useGrouping:true}).format(value);
   }
   function normalizeRecord(raw){
@@ -96,7 +96,17 @@ const AppLogic = (() => {
       notes:['Calculs hors ligne. Facteurs internationaux ou unités américaines explicitement identifiées ; les affichages sont arrondis, pas les valeurs enregistrées.'],
       rows:r.slice(-20).reverse().map(x=>x.name+' : '+formatValue(x.value)+' '+x.from+' → '+formatValue(convert(x.value,x.from,x.to))+' '+x.to)};
   }
-  function csvCell(v){const s=String(v);const safe=/^[\s]*[=+@\-\t\r]/.test(s)?"'"+s:s;return '"'+safe.replaceAll('"','""')+'"';}
+  // Les mesures numériques demeurent des nombres dans Excel (y compris les négatives).
+  // Seules les chaînes peuvent contenir une formule hostile ; elles sont protégées.
+  function csvCell(v){
+    if(typeof v==='number'){
+      if(!Number.isFinite(v))throw Error('Nombre CSV invalide');
+      return String(v).replace('.',','); // décimale française, séparateur CSV « ; »
+    }
+    const value=String(v);
+    const safe=/^[\s]*[=+@\-\t\r]/.test(value)?"'"+value:value;
+    return '"'+safe.replaceAll('"','""')+'"';
+  }
   function toCSV(records){const r=validateBackup({app:'sizematch',version:1,records});let rows=[['Nom','Valeur initiale','Unité initiale','Valeur convertie','Unité cible','Catégorie']];for(const item of r){rows.push([item.name,item.value,item.from,convert(item.value,item.from,item.to),item.to,category(item.from)])}return '\uFEFF'+rows.map(row=>row.map(csvCell).join(';')).join('\r\n');}
   return Object.freeze({SPEC,MAX,STORAGE_LIMIT,UNITS,GROUPS,dayKey,validDate,diffDays,addDays,eur,category,convert,formatValue,normalizeRecord,validateBackup,backup,compute,toCSV});
 })();
