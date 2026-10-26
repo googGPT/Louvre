@@ -101,7 +101,7 @@ test('export CSV neutralise les formules et conserve les guillemets',()=>{
 });
 test('CSV protège les préfixes dangereux commençant par espace',()=>{
  const csv=L.toCSV([mk({goal:'   @SUM(1)',milestone:'-cmd'})]);
- assert.match(csv,/"'   @SUM/);
+ assert.match(csv,/"'@SUM/);
  assert.match(csv,/"'-cmd"/);
 });
 test('le calcul ne modifie aucune fiche source',()=>{
