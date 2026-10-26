@@ -1,6 +1,6 @@
-const test=require('node:test'),assert=require('node:assert/strict');const L=require('../core.js'),base={"id":"sample0001","route":"Exemple","km":180,"litres":6.2,"price":1.8,"people":2},today='2026-11-01';
+const test=require('node:test'),assert=require('node:assert/strict');const L=require('../core.js'),base={"id":"sample0001","route":"Exemple","km":180,"litres":6.2,"price":1.8,"people":2,"tolls":0,"parking":0,"returnTrip":"Aller simple"},today='2026-11-01';
 const mk=(changes={})=>({...base,...changes});
-test('application correcte et indépendante',()=>{assert.equal(L.SPEC.slug,'fuelmath');assert.equal(L.SPEC.fields.length,5)});
+test('application correcte et indépendante',()=>{assert.equal(L.SPEC.slug,'fuelmath');assert.equal(L.SPEC.fields.length,8)});
 test('accepte une fiche conforme',()=>{assert.deepEqual(L.normalizeRecord(base),base)});
 test('refuse null, array, champ absent',()=>{assert.throws(()=>L.normalizeRecord(null));assert.throws(()=>L.normalizeRecord([]));for(const f of L.SPEC.fields){const x=mk();delete x[f.key];assert.throws(()=>L.normalizeRecord(x),f.key)}});
 test('refuse injection de nombres invalides',()=>{for(const f of L.SPEC.fields.filter(x=>x.type==='number'))for(const bad of [NaN,Infinity,-1,'42'])assert.throws(()=>L.normalizeRecord(mk({[f.key]:bad})));});
