@@ -26,3 +26,20 @@ Visualiser les jalons terminés et les échéances. Application autonome Web sta
 - Commandes : `node --check core.js && node --check app.js && node --test tests/core.test.cjs` ; puis `python tests/browser.test.py` (Playwright Chromium).
 - Les résultats effectifs doivent être vérifiés dans les logs GitHub Actions de la Pull Request ; un code de test n'est pas une preuve d'exécution.
 - Ne pas fusionner en cas d'échec de CI. Aucune modification de `main` dans la branche proposée.
+
+
+## Audit v2 — 26 octobre 2026 : constats et modifications
+
+- **Bogue de statistiques** : un objet littéral indexé directement par le nom d'objectif (`goals[r.goal]`) entrait en collision avec le prototype JavaScript sur `__proto__`, `constructor` ou `toString`. Le regroupement métier utilise désormais `Map`, et les tests contrôlent ces noms.
+- **Bogue d'échéance** : l'ancien `diffDays(due,today)<=7` comptait également toutes les étapes dépassées parmi celles "sous 7 jours". Les indicateurs séparent aujourd'hui les dates antérieures de la fenêtre [0 ; 7] jours.
+- **Bogue de protection des données** : l'ancien import basculait `readOnly=false` **avant** de confirmer une écriture réussie ; une restauration échouée pouvait laisser le stockage corrompu déverrouillé. Le déverrouillage a désormais lieu uniquement après validation et succès de `localStorage.setItem`.
+- **Nouvelle interface** : progression par objectif (tâches terminées / total), état des échéances et prochaine échéance ouverte, filtres et recherche sans accent, tris, passage rapide terminé/réouvert, export CSV contre les formules. Le rendu des données utilisateur utilise uniquement `textContent`.
+- **Compatibilité de sauvegarde** : `app=goalladder`, `version=1`, mêmes champs métier et même clé LocalStorage ; pas de migration destructive.
+- **Fiabilité des dates** : validation stricte des jours calendaires et calcul jour à jour en UTC pour les dates sans heures ; distinction explicite des étapes déjà terminées.
+- **PWA** : mise à jour du nom de cache `louvre-goalladder-shell-v2` afin que les utilisateurs ayant chargé la v1 puissent obtenir les fichiers v2.
+
+Les propositions algorithmiques et UX ci-dessus sont des développements **originaux de Louvre**, pas des affirmations attribuées directement aux cinq livres cités plus haut.
+
+### Critères de validation de la v2
+
+Vérifier dans le dernier job GitHub Actions : syntaxe JavaScript, contrôle du manifeste, scénarios Node, test Chromium du parcours complet, stockage corrompu, sauvegarde et restauration, affichage mobile 390 px, et chargement hors ligne. Toute étape en échec nécessite une correction avant fusion. Le succès observé doit être daté et rattaché au SHA effectivement testé.
