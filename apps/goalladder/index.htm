@@ -1,1 +1,51 @@
-<!doctype html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#101827"><meta name="description" content="Visualiser les jalons terminés et les échéances"><title>GoalLadder — Louvre App Factory</title><link rel="stylesheet" href="./style.css"><link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icon.svg" type="image/svg+xml"></head><body><header><nav><span class="eyebrow">LOUVRE APP FACTORY · WEB 01</span><a href="../../">Louvre ↗</a></nav><h1>GoalLadder</h1><p>Découper un objectif en étapes</p><p>Application gratuite, privée et locale. Aucun compte ni service payant. Vos données restent dans ce navigateur.</p></header><main><section class="panel"><h2>Nouvelle fiche</h2><form id="record-form"><div id="fields"></div><div class="two"><button id="save-button" type="submit">Enregistrer</button><button class="outline" type="button" id="cancel-edit" hidden>Annuler</button></div></form><p id="status" class="status" role="status" aria-live="polite"></p><p id="warning" class="warning" hidden>Restaurez un fichier JSON valide pour débloquer la modification. La sauvegarde brute reste téléchargeable.</p><div class="files"><button class="outline small" id="export" type="button">Exporter JSON</button><label class="upload small">Restaurer JSON<input id="import" type="file" accept=".json,application/json" aria-label="Importer une sauvegarde JSON"></label><button class="outline small" id="export-raw" type="button">Copie brute</button></div></section><div><section class="panel"><h2>Tableau de bord</h2><div id="summary" class="stats"></div><div id="notes"></div><h2>Détails calculés</h2><ul id="insights"></ul></section><section class="panel" style="margin-top:20px"><div class="toolbar"><h2>Mes fiches <span id="counter"></span></h2><input id="search" style="max-width:260px" placeholder="Rechercher…" aria-label="Rechercher dans les fiches"></div><div id="items"></div></section></div></main><footer>GoalLadder • LocalStorage sur cet appareil, capacité 500 fiches. Exportez régulièrement votre JSON. Mode hors ligne après première ouverture réussie. Les résultats sont calculés à partir de vos saisies ; aucune donnée officielle n'est vérifiée automatiquement.</footer><script src="./core.js"></script><script src="./app.js"></script></body></html>
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101827">
+<meta name="description" content="GoalLadder : planifier vos objectifs, suivre les étapes et les échéances, gratuitement et hors ligne.">
+<title>GoalLadder — Objectifs et étapes</title>
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<header class="hero">
+  <div class="brand"><span class="brand-icon" aria-hidden="true">▤</span><strong>GoalLadder <span class="tag">v2</span></strong><span class="privacy">100 % local</span></div>
+  <p class="eyebrow">Planification personnelle · sans inscription</p>
+  <h1>Vos ambitions deviennent<br><span>des étapes concrètes.</span></h1>
+  <p class="intro">Fixez un objectif, découpez-le en jalons et suivez votre progression. Vos données restent sur cet appareil, sans service payant.</p>
+</header>
+<main>
+  <section class="panel editor" aria-labelledby="editor-title">
+    <div class="section-top"><h2 id="editor-title">Créer une étape</h2><span class="hint">Un jalon à la fois</span></div>
+    <form id="record-form" autocomplete="off">
+      <div id="fields"></div>
+      <div class="actions"><button type="submit" id="save-button">Ajouter cette étape</button><button class="outline" type="button" id="cancel-edit" hidden>Annuler</button></div>
+    </form>
+    <p id="status" class="status" role="status" aria-live="polite"></p>
+    <p id="warning" class="warning" hidden>Le stockage est illisible. Téléchargez d'abord la copie brute, puis restaurez un JSON valide. Rien ne sera écrasé automatiquement.</p>
+    <div class="files"><button class="outline small" id="export" type="button">Sauvegarder JSON</button><button class="outline small" id="export-csv" type="button">Exporter CSV</button><label class="upload small">Restaurer JSON<input id="import" type="file" accept=".json,application/json" aria-label="Restaurer une sauvegarde JSON"></label><button class="outline small" id="export-raw" type="button">Copie brute</button></div>
+    <p class="fine">Les fichiers JSON permettent de restaurer les étapes ; le CSV sert à les consulter dans un tableur.</p>
+  </section>
+  <div class="workspace">
+    <section class="panel" aria-labelledby="overview-title">
+      <div class="section-top"><h2 id="overview-title">Vue d'ensemble</h2><span class="hint">Recalcul en direct</span></div>
+      <div id="summary" class="stats"></div>
+      <h3 class="subheading">Progression par objectif</h3>
+      <div id="goal-progress" class="goals"></div>
+    </section>
+    <section class="panel history" aria-labelledby="history-title">
+      <div class="section-top"><div><h2 id="history-title">Vos étapes</h2><p class="fine">Les tâches en retard sont distinctes des tâches à venir.</p></div><strong class="counter" id="counter">0 / 0 étapes</strong></div>
+      <div class="toolbar">
+        <label class="tool" for="search"><span>Rechercher</span><input type="search" id="search" placeholder="Objectif, étape, priorité…"></label>
+        <label class="tool" for="filter-status"><span>Statut</span><select id="filter-status"><option value="all">Toutes</option><option value="todo">À faire</option><option value="soon">Sous 7 jours</option><option value="overdue">En retard</option><option value="done">Terminées</option></select></label>
+        <label class="tool" for="sort"><span>Ordre</span><select id="sort"><option value="due">Échéance proche</option><option value="priority">Priorité</option><option value="recent">Ajout récent</option></select></label>
+      </div>
+      <div id="items" class="items"></div>
+    </section>
+  </div>
+</main>
+<footer>GoalLadder · Sans compte ni API. Jusqu'à 500 étapes dans le navigateur. Exportez régulièrement votre sauvegarde JSON. Le mode hors ligne nécessite une première ouverture réussie. Aucune synchronisation entre appareils.</footer>
+<script src="./core.js"></script><script src="./app.js"></script>
+</body></html>
