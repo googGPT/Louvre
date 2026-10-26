@@ -1,0 +1,12 @@
+{
+  "name":"ChoreWheel — Planifier et répartir les tâches ménagères",
+  "short_name":"ChoreWheel",
+  "lang":"fr",
+  "description":"Tâches récurrentes, réalisations et répartition hebdomadaire locale, sans serveur ni API payante.",
+  "start_url":"./",
+  "scope":"./",
+  "display":"standalone",
+  "theme_color":"#102822",
+  "background_color":"#f5f8f3",
+  "icons":[{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
