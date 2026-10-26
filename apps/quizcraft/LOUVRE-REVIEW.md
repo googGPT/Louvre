@@ -26,3 +26,18 @@ Mémoriser des questions et suivre ses réponses. Application autonome Web stati
 - Commandes : `node --check core.js && node --check app.js && node --test tests/core.test.cjs` ; puis `python tests/browser.test.py` (Playwright Chromium).
 - Les résultats effectifs doivent être vérifiés dans les logs GitHub Actions de la Pull Request ; un code de test n'est pas une preuve d'exécution.
 - Ne pas fusionner en cas d'échec de CI. Aucune modification de `main` dans la branche proposée.
+
+
+## Audit complémentaire v2 — 26 octobre 2026
+
+**Défauts repérés par lecture du code initial :**
+1. Agrégation par thème effectuée sur l'objet `by={}` en utilisant `by[r.category]`. Des entrées `constructor`, `toString` ou `__proto__` pouvaient provoquer des collisions avec le prototype et des agrégats faux. Correction : `Map` et contrôles ciblés.
+2. Un simple bouton « Révéler la réponse » n'était pas équivalent à une véritable session de quiz : aucun deck, score ni progression de session. Correction : génération d'une séquence mélangée, réponse initialement masquée, auto-évaluation conditionnée à la révélation, tableau de bord mis à jour.
+3. Lors de la restauration, `readOnly=false` était appliqué **avant** d'assurer la réussite de `localStorage.setItem`. Correction : déverrouillage après validation et écriture réussies uniquement ; copie brute toujours disponible.
+4. Documentation et workflow numéroté « WEB 01 » / « App XX » malgré la position 20, UI générique peu orientée quiz ; interface spécifique, mobile et accessible, et workflow renommé « App 20 ».
+
+**Nouvelle portée :** cartes avec réponses masquées, filtre par thème/difficulté/maîtrise, recherche insensible aux accents, score de session, progression par thème, CSV protégé, validation stricte des imports. Compatibilité intégrale du format v1, sans migration destructive.
+
+**Limites :** la « réussite » dépend de l'auto-déclaration de l'apprenant ; aucune correction automatique ou validité pédagogique externe garantie. Scores de session volatils ; seules les marques de maîtrise sont persistées. Les nouvelles fonctions et tests sont des travaux originaux et ne sont pas attribués aux ouvrages de la bibliothèque Louvre. Le cache PWA est passé à `louvre-quizcraft-shell-v2`.
+
+**Vérifications requises :** syntaxe JS, tests Node, Playwright/Chromium, mobilité à 390 px, export/import et reprise après stockage corrompu, service worker hors ligne. Ne déclarer leur succès qu'après consultation du job correspondant au dernier SHA.
