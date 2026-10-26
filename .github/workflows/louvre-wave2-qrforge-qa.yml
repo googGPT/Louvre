@@ -1,0 +1,30 @@
+name: Wave 2 QA — QRForge
+on:
+  pull_request:
+    paths:
+      - 'apps/qrforge/**'
+      - '.github/workflows/louvre-wave2-qrforge-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify scripts, manifest, HTML and QR core
+        run: |
+          node --check apps/qrforge/vendor/qrcode.js
+          node --check apps/qrforge/core.js
+          node --check apps/qrforge/app.js
+          node --check apps/qrforge/sw.js
+          node -e "JSON.parse(require('fs').readFileSync('apps/qrforge/manifest.webmanifest','utf8'))"
+          cmp apps/qrforge/index.html apps/qrforge/index.htm
+          node --test apps/qrforge/tests/core.test.cjs
+      - name: Install open-source Chromium and independent QR decoder dependencies
+        run: python -m pip install --disable-pip-version-check 'playwright>=1.45,<2' 'zxing-cpp>=2.2,<4' 'Pillow>=10,<13'
+      - name: Decode QR outputs and check mobile/offline privacy
+        run: python apps/qrforge/tests/browser.test.py
