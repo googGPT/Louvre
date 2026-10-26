@@ -1,0 +1,1 @@
+{"name": "ShiftLedger", "short_name": "ShiftLedger", "start_url": "./", "scope": "./", "display": "standalone", "theme_color": "#28203c", "icons": [{"src": "icon.svg", "sizes": "any", "type": "image/svg+xml"}]}

@@ -1,0 +1,15 @@
+const t=require('node:test'),a=require('node:assert/strict'),C=require('../core.js');const s={id:'s_abcdefgh',date:'2026-10-26',start:'09:00',end:'17:30',breakMinutes:30,label:'Test'};const p={rate:15,threshold:8,multiplier:1.25};
+t('service 9h-17h30 avec pause = 8h',()=>a.equal(C.shift(s).minutes,480));
+t('travail passant minuit',()=>a.equal(C.shift({...s,start:'22:00',end:'06:00',breakMinutes:0}).minutes,480));
+t('service 10h avec majoration',()=>a.equal(C.compute([{...s,end:'19:00',breakMinutes:0}],p).overtime,120));
+t('rémunération normale exacte',()=>a.equal(C.compute([s],p).grossCents,12000));
+t('rémunération majorée exacte',()=>a.equal(C.compute([{...s,end:'19:00',breakMinutes:0}],p).grossCents,15750));
+t('refuse pause supérieure au temps',()=>a.throws(()=>C.shift({...s,breakMinutes:600})));
+t('refuse heure impossible',()=>a.throws(()=>C.minutes('25:12')));
+t('refuse jour impossible',()=>a.throws(()=>C.date('2026-02-30')));
+t('refuse taux négatif',()=>a.throws(()=>C.params({...p,rate:-1})));
+t('refuse seuil zéro',()=>a.throws(()=>C.params({...p,threshold:0})));
+t('refuse ID doublons dans backup',()=>a.throws(()=>C.backup({version:1,shifts:[s,s],params:p})));
+t('restitution sauvegarde valide',()=>a.equal(C.backup({version:1,shifts:[s],params:p}).shifts.length,1));
+t('CSV a en-tête',()=>a.ok(C.csv([s]).startsWith('Date,Début')));
+t('refuse champs supplémentaires service',()=>a.throws(()=>C.shift({...s,html:'x'})));
