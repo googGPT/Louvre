@@ -1,38 +1,34 @@
-const test=require('node:test'),assert=require('node:assert/strict');const L=require('../core.js'),base={"id":"sample0001","option":"Option A","criterion":"Prix","weight":3,"score":8},today='2026-11-01';
-const mk=(changes={})=>({...base,...changes});
-test('application correcte et indépendante',()=>{assert.equal(L.SPEC.slug,'decisiondeck');assert.equal(L.SPEC.fields.length,4)});
-test('accepte une fiche conforme',()=>{assert.deepEqual(L.normalizeRecord(base),base)});
-test('refuse null, array, champ absent',()=>{assert.throws(()=>L.normalizeRecord(null));assert.throws(()=>L.normalizeRecord([]));for(const f of L.SPEC.fields){const x=mk();delete x[f.key];assert.throws(()=>L.normalizeRecord(x),f.key)}});
-test('refuse injection de nombres invalides',()=>{for(const f of L.SPEC.fields.filter(x=>x.type==='number'))for(const bad of [NaN,Infinity,-1,'42'])assert.throws(()=>L.normalizeRecord(mk({[f.key]:bad})));});
-test('export/import JSON et version',()=>{const b=L.backup([base]);const arr=L.validateBackup(JSON.parse(b));assert.equal(arr.length,1);assert.equal(arr[0].id,base.id);assert.throws(()=>L.validateBackup({...JSON.parse(b),version:8}))});
-test('import d’une autre application refusé',()=>{assert.throws(()=>L.validateBackup({app:'invalid',version:1,records:[base]}))});
-test('identifiants uniques et maximum 500',()=>{assert.throws(()=>L.validateBackup({app:L.SPEC.slug,version:1,records:[base,base]}));assert.throws(()=>L.validateBackup({app:L.SPEC.slug,version:1,records:Array(501).fill(base)}))});
-test('métriques métier calculables sans réseau',()=>{const r=L.compute([base],today);assert.ok(Array.isArray(r.kpis));assert.ok(r.kpis.length>0);assert.ok(Array.isArray(r.rows));assert.ok(r.notes.length>0)});
-test('calcul stable et source intacte',()=>{const before=JSON.stringify(base),a=L.compute([base],today),b=L.compute([base],today);assert.deepEqual(a,b);assert.equal(JSON.stringify(base),before)});
-test('dates réelles et changement d’heure',()=>{assert.equal(L.diffDays('2026-03-30','2026-03-29'),1);assert.equal(L.addDays('2026-03-28',2),'2026-03-30')});
-test('entrée non fiable ne peut générer HTML dans les vues',()=>{assert.equal(typeof L.normalizeRecord(mk({[L.SPEC.fields.find(f=>f.type==='text')?.key || 'id']:'<script>alert(1)</script>'})).id,'string')});
-
-test('résultat métier concret',()=>{const m=L.compute([base],today);assert.equal(m.kpis[1][1],'8.00/10');assert.ok(m.rows[0].includes('Option A'))});
-
-test('classe équitablement avec la même grille de critères et de poids',()=>{
- const rows=[
-  mk({id:'optionA1',option:'A',criterion:'Prix',score:8,weight:3}),
-  mk({id:'optionA2',option:'A',criterion:'Qualité',score:9,weight:2}),
-  mk({id:'optionB1',option:'B',criterion:'Prix',score:9,weight:3}),
-  mk({id:'optionB2',option:'B',criterion:'Qualité',score:6,weight:2})
- ];
- const m=L.compute(rows,today);assert.equal(m.kpis[1][1],'8.40/10');assert.equal(m.rows[0],'1. A : 8.40/10');assert.equal(m.rows[1],'2. B : 7.80/10');
-});
-test('suspend le classement si une option manque un critère',()=>{
- const a=mk({id:'optA1',option:'A',criterion:'Prix',score:10,weight:1});
- const b=mk({id:'optB1',option:'B',criterion:'Prix',score:9,weight:1});
- const c=mk({id:'optB2',option:'B',criterion:'Qualité',score:8,weight:1});
- const m=L.compute([a,b,c],today);assert.equal(m.rows.length,0);assert.equal(m.kpis[1][1],'—');assert.ok(m.notes.some(x=>x.includes('critères manquants')));
-});
-test('suspend le classement si les poids diffèrent sur un même critère',()=>{
- const m=L.compute([mk({id:'aaa111',option:'A',criterion:'Prix',score:10,weight:2}),mk({id:'bbb222',option:'B',criterion:'Prix',score:9,weight:8})],today);
- assert.equal(m.rows.length,0);assert.ok(m.notes.some(x=>x.includes('Poids incohérents')));
-});
-test('suspend le classement si le même critère est saisi deux fois pour une option',()=>{
- const m=L.compute([base,mk({id:'other111',score:3})],today);assert.equal(m.rows.length,0);assert.ok(m.notes.some(x=>x.includes('Doublon')));
-});
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict'),L=require('../core.js');
+const today='2026-11-01';
+const base={id:'sample0001',option:'Option A',criterion:'Prix',weight:3,score:8};
+const mk=(extra={})=>({...base,...extra});
+const grid=[mk({id:'a111',option:'A',criterion:'Prix',score:8,weight:3}),mk({id:'a121',option:'A',criterion:'Qualité',score:9,weight:2}),mk({id:'b111',option:'B',criterion:'Prix',score:9,weight:3}),mk({id:'b121',option:'B',criterion:'Qualité',score:6,weight:2})];
+test('application et champs',()=>{assert.equal(L.SPEC.slug,'decisiondeck');assert.equal(L.SPEC.fields.length,4)});
+test('accepte la fiche existante',()=>assert.deepEqual(L.normalizeRecord(base),base));
+test('refuse null, tableau et champs absents',()=>{assert.throws(()=>L.normalizeRecord(null));assert.throws(()=>L.normalizeRecord([]));for(const f of L.SPEC.fields){const x=mk();delete x[f.key];assert.throws(()=>L.normalizeRecord(x),f.key)}});
+test('refuse NaN, infini, texte et valeurs négatives',()=>{for(const f of ['score','weight'])for(const n of [NaN,Infinity,-1,'42'])assert.throws(()=>L.normalizeRecord(mk({[f]:n})));});
+test('refuse un score supérieur à 10',()=>assert.throws(()=>L.normalizeRecord(mk({score:10.01}))));
+test('refuse un poids nul ou trop grand',()=>{assert.throws(()=>L.normalizeRecord(mk({weight:0})));assert.throws(()=>L.normalizeRecord(mk({weight:1001})));});
+test('accepte les notes 0 et 10',()=>{assert.equal(L.normalizeRecord(mk({score:0})).score,0);assert.equal(L.normalizeRecord(mk({score:10})).score,10)});
+test('export JSON v1 lisible et import',()=>{const old=JSON.parse(L.backup([base]));assert.deepEqual(L.validateBackup(old),[base]);assert.throws(()=>L.validateBackup({...old,version:2}));});
+test('refuse format autre application',()=>assert.throws(()=>L.validateBackup({app:'x',version:1,records:[base]})));
+test('refuse identifiants dupliqués et plus de 500',()=>{assert.throws(()=>L.validateBackup({app:'decisiondeck',version:1,records:[base,base]}));assert.throws(()=>L.validateBackup({app:'decisiondeck',version:1,records:Array(501).fill(base)}));});
+test('calcul stable sans mutation',()=>{const data=structuredClone(grid);assert.deepEqual(L.compute(data,today),L.compute(data,today));assert.deepEqual(data,grid);});
+test('dates et changement heure',()=>{assert.equal(L.diffDays('2026-03-30','2026-03-29'),1);assert.equal(L.addDays('2026-03-28',2),'2026-03-30');});
+test('nom qui ressemble HTML reste chaîne inerte',()=>assert.equal(typeof L.normalizeRecord(mk({option:'<script>alert(1)</script>'})).id,'string'));
+test('résultat métier pour une option',()=>{const r=L.compute([base],today);assert.equal(r.kpis[1][1],'8.00/10');assert.ok(r.rows[0].includes('Option A'));});
+test('classement pondéré exact et identique avant amélioration',()=>{const r=L.compute(grid,today);assert.equal(r.rows[0],'1. A : 8.40/10');assert.equal(r.rows[1],'2. B : 7.80/10');assert.equal(r.comparable,true)});
+test('classement suspendu pour critère manquant',()=>{const r=L.compute([grid[0],grid[2],grid[3]],today);assert.equal(r.rows.length,0);assert.ok(r.notes.some(x=>x.includes('critères manquants')));});
+test('classement suspendu pour poids incohérents',()=>{const r=L.compute([mk({id:'x1111',option:'A',weight:2}),mk({id:'x2222',option:'B',weight:8})],today);assert.equal(r.rows.length,0);assert.ok(r.notes.some(x=>x.includes('Poids incohérents')));});
+test('classement suspendu pour doublon',()=>{const r=L.compute([base,mk({id:'new001',score:2})],today);assert.equal(r.rows.length,0);assert.ok(r.notes.some(x=>x.includes('Doublon')));});
+test('variantes accents, espaces et casse identifiées comme même critère',()=>{const r=L.compute([mk({id:'c111',option:'A',criterion:'Coût',score:8}),mk({id:'c121',option:' B  ',criterion:'  cout  ',score:7})],today);assert.equal(r.comparable,true);assert.equal(r.criteria.length,1);assert.equal(r.ranking[0].name,'A');});
+test('doublon détecté malgré accents et casse',()=>{const r=L.compute([mk({id:'abc01',option:'OPTION A',criterion:'Coût'}),mk({id:'abc02',option:'option a',criterion:'cout'})],today);assert.equal(r.comparable,false);assert.ok(r.issues.some(x=>x.includes('Doublon')))});
+test('matrice indique contributions et poids',()=>{const r=L.compute(grid,today);assert.equal(r.matrix.length,2);assert.equal(r.matrix[0].entries.length,2);assert.equal(r.matrix[0].entries[0].contribution,8*3/5)});
+test('sensibilité change de leader quand les poids sont modifiés',()=>{const g=[mk({id:'s011',option:'A',criterion:'Rapidité',weight:2,score:10}),mk({id:'s021',option:'A',criterion:'Prix',weight:1,score:0}),mk({id:'s031',option:'B',criterion:'Rapidité',weight:2,score:2}),mk({id:'s041',option:'B',criterion:'Prix',weight:1,score:10})];const r=L.compute(g,today);assert.ok(r.sensitivity.some(x=>x.includes('Prix')&&x.includes('B')))});
+test('sensibilité sans leader changé explicitement vide',()=>{const g=[mk({id:'t011',option:'A',criterion:'Prix',weight:2,score:10}),mk({id:'t021',option:'B',criterion:'Prix',weight:2,score:0})];assert.equal(L.compute(g,today).sensitivity.length,0)});
+test('classement ex aequo déterministe par nom',()=>{const r=L.compute([mk({id:'g011',option:'Z',score:5}),mk({id:'g021',option:'A',score:5})],today);assert.equal(r.ranking[0].name,'A')});
+test('CSV expose poids et contributions',()=>{const csv=L.reportCSV(grid);assert.match(csv,/Contribution pondérée/);assert.match(csv,/"A";"Prix";"3";"8"/);});
+test('CSV neutralise injection de formule tableur',()=>{const csv=L.reportCSV([mk({option:'=HYPERLINK("x")'})]);assert.match(csv,/"'=HYPERLINK\(""x""\)"/)});
+test('sauvegarde initiale conservée sans ajout de champ',()=>{const old={app:'decisiondeck',version:1,records:[base]};assert.deepEqual(L.validateBackup(old),[base]);});
+test('refuse poids NaN dès les données externes',()=>assert.throws(()=>L.compute([mk({weight:NaN})],today)));
