@@ -1,0 +1,27 @@
+name: Wave 2 QA — FileIntegrity
+on:
+  pull_request:
+    paths:
+      - 'apps/fileintegrity/**'
+      - '.github/workflows/louvre-wave2-fileintegrity-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Test domain engine and script syntax
+        run: |
+          node --check apps/fileintegrity/core.js
+          node --check apps/fileintegrity/app.js
+          node --check apps/fileintegrity/sw.js
+          node --test apps/fileintegrity/tests/core.test.cjs
+      - name: Install free Playwright test client
+        run: python -m pip install --disable-pip-version-check 'playwright>=1.45,<2'
+      - name: Chrome end-to-end and mobile offline test
+        run: python apps/fileintegrity/tests/browser.test.py
