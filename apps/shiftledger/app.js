@@ -94,7 +94,7 @@ by('form').addEventListener('submit',event=>{
    start:by('start').value,end:by('end').value,breakMinutes:Number(by('break').value),label:by('label').value};
   const {minutes,grossMinutes,overnight,...s}=C.shift(raw);
   const next={...state,shifts:editing?state.shifts.map(v=>v.id===editing?s:v):[...state.shifts,s]};
-  if(commit(next)){resetForm();render();feedback(editing?'Service modifié.':'Service enregistré.');}
+  if(commit(next)){const wasEditing=Boolean(editing);resetForm();render();feedback(wasEditing?'Service modifié.':'Service enregistré.');}
  }catch(error){feedback(error.message,true);}
 });
 by('cancel-edit').addEventListener('click',resetForm);
