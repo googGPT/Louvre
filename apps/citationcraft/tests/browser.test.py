@@ -23,7 +23,11 @@ def main():
             page.on('pageerror',lambda e:errors.append(str(e)))
             page.on('request',lambda req:external.append(req.url)
                 if req.url.startswith('http') and not req.url.startswith(origin) else None)
-            page.on('dialog',lambda d:d.accept())
+            dialogs=[]
+            def capture(dialog):
+                dialogs.append(dialog.message)
+                dialog.accept()
+            page.on('dialog',capture)
             page.goto(origin,wait_until='domcontentloaded')
             page.locator('#ref-id').wait_for()
             assert page.title().startswith('CitationCraft')
@@ -115,12 +119,7 @@ def main():
             new_ris=('TY  - JOUR\nID  - TestRIS\nAU  - Smith, Anne\n'
                      'TI  - Économie et IA\nPY  - 2025\n'
                      'DO  - 10.1234/ris.2025\nAB  - Ignored abstract\nER  - \n').encode('utf-8')
-            dialogs=[]
-            page.remove_all_listeners('dialog')
-            def capture(dialog):
-                dialogs.append(dialog.message)
-                dialog.accept()
-            page.on('dialog',capture)
+            dialogs.clear()
             page.locator('#import-file').set_input_files({
                 'name':'references.ris','mimeType':'text/plain','buffer':new_ris})
             expect(page.locator('.reference-card')).to_have_count(1)
