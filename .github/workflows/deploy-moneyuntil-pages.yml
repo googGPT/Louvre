@@ -10,6 +10,7 @@ on:
       - 'apps/homepulse/**'
       - 'apps/parkwise/**'
       - 'apps/findmystuff/**'
+      - 'apps/**'
       - '.github/workflows/deploy-moneyuntil-pages.yml'
   push:
     branches: [main]
@@ -21,6 +22,7 @@ on:
       - 'apps/homepulse/**'
       - 'apps/parkwise/**'
       - 'apps/findmystuff/**'
+      - 'apps/**'
       - '.github/workflows/deploy-moneyuntil-pages.yml'
   workflow_dispatch:
 
@@ -114,6 +116,18 @@ jobs:
 
       - name: Test FindMyStuff photos, loans, local backups and offline mobile browser
         run: python apps/findmystuff/tests/browser.test.py
+
+      - name: Test all present Louvre Factory apps before any publication
+        run: |
+          set -euo pipefail
+          for slug in splitfair focusforge studyrecall trippack pricelens billcalendar habitsteps giftnest readtrail fuelmath decisiondeck eventcount roundplan worldmeet chorewheel mileagebook travelday sizematch goalladder quizcraft; do
+            if [ ! -f "apps/$slug/index.html" ]; then continue; fi
+            node --check "apps/$slug/core.js"
+            node --check "apps/$slug/app.js"
+            node --check "apps/$slug/sw.js"
+            node --test "apps/$slug/tests/core.test.cjs"
+            python "apps/$slug/tests/browser.test.py"
+          done
 
   deploy:
     if: github.event_name != 'pull_request'
@@ -212,6 +226,22 @@ jobs:
           test -s _site/apps/findmystuff/core.js
           for app in moneyuntil receiptrescue snapaction fridgefirst homepulse parkwise; do
             test -s "_site/apps/$app/index.html"
+          done
+
+      - name: Prepare any merged Louvre Factory applications (without removing legacy apps)
+        run: |
+          set -euo pipefail
+          for slug in splitfair focusforge studyrecall trippack pricelens billcalendar habitsteps giftnest readtrail fuelmath decisiondeck eventcount roundplan worldmeet chorewheel mileagebook travelday sizematch goalladder quizcraft; do
+            if [ ! -f "apps/$slug/index.html" ]; then continue; fi
+            mkdir -p "_site/apps/$slug"
+            for file in index.html index.htm core.js app.js style.css sw.js manifest.webmanifest icon.svg sitemap.xml; do
+              test -f "apps/$slug/$file"
+              cp "apps/$slug/$file" "_site/apps/$slug/$file"
+            done
+            cmp "_site/apps/$slug/index.html" "_site/apps/$slug/index.htm"
+          done
+          for slug in moneyuntil receiptrescue snapaction fridgefirst homepulse parkwise findmystuff; do
+            test -s "_site/apps/$slug/index.html"
           done
 
       - name: Configure GitHub Pages
@@ -360,3 +390,23 @@ jobs:
           done
           echo "PUBLIC_SMOKE_FAIL $SITE" >&2
           exit 1
+
+      - name: Verify every merged Louvre Factory public site
+        run: |
+          set -euo pipefail
+          for slug in splitfair focusforge studyrecall trippack pricelens billcalendar habitsteps giftnest readtrail fuelmath decisiondeck eventcount roundplan worldmeet chorewheel mileagebook travelday sizematch goalladder quizcraft; do
+            if [ ! -f "apps/$slug/index.html" ]; then continue; fi
+            site="https://googgpt.github.io/Louvre/apps/$slug/"
+            found=0
+            for attempt in $(seq 1 16); do
+              if curl --fail --location --silent --show-error --max-time 12 "$site" -o /tmp/louvre-factory-public.html \
+                && grep -q 'Louvre App Factory' /tmp/louvre-factory-public.html \
+                && curl --fail --silent --show-error --max-time 12 "${site}core.js" -o /tmp/louvre-factory-core.js; then
+                echo "PUBLIC_SMOKE_PASS $site"
+                found=1
+                break
+              fi
+              sleep 5
+            done
+            test "$found" -eq 1
+          done
