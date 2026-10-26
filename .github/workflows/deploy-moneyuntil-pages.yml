@@ -107,8 +107,14 @@ jobs:
             node --test "apps/$slug/tests/core.test.cjs"
           done
 
-      - name: Install free browser test harness
-        run: python -m pip install --disable-pip-version-check 'playwright>=1.45,<2'
+      - name: Install free browser test harness and required QR decoder
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check 'playwright>=1.45,<2'
+          # Only QRForge's independent PNG/SVG decoding checks require these.
+          if [ -f apps/qrforge/tests/browser.test.py ]; then
+            python -m pip install --disable-pip-version-check 'zxing-cpp>=2.2,<4' 'Pillow>=10,<13'
+          fi
 
       - name: Test receipt storage, backup and mobile layout in Chrome
         run: python apps/receiptrescue/tests/browser.test.py
