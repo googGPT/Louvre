@@ -33,7 +33,7 @@ function suggestForeground(fg,bg,target=4.5){
  const source=rgb(fg),background=normalize(bg);
  if(![3,4.5,7].includes(target))throw Error('Seuil inconnu');
  const original=fromRgb(source),originalRatio=contrast(original,background);
- if(originalRatio>=target)return {hex:original,ratio:originalRatio,changed:false,target};
+ if(originalRatio>=target)return {hex:original,ratio:originalRatio,changed:false,target,reachable:true};
  const options=[];
  for(const end of [0,255]){
   const endpoint=fromRgb([end,end,end]);
@@ -50,9 +50,12 @@ function suggestForeground(fg,bg,target=4.5){
   const distance=channels.reduce((sum,v,i)=>sum+(v-source[i])**2,0);
   options.push({hex,ratio:contrast(hex,background),changed:true,target,distance});
  }
- if(!options.length)throw Error('Seuil inaccessible pour ce fond');
+ if(!options.length){
+  const candidate=bestOn(background);
+  return {hex:candidate.hex,ratio:candidate.ratio,changed:candidate.hex!==original,target,reachable:false};
+ }
  options.sort((a,b)=>a.distance-b.distance||b.ratio-a.ratio);
- const {distance,...result}=options[0];return result;
+ const {distance,...result}=options[0];return {...result,reachable:true};
 }
 function validateBackup(data){
  if(!data||typeof data!=='object'||Array.isArray(data)||data.version!==1||
