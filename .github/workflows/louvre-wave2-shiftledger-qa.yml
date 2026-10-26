@@ -20,6 +20,7 @@ jobs:
           node --check apps/shiftledger/core.js
           node --check apps/shiftledger/app.js
           node --check apps/shiftledger/sw.js
+          node -e "JSON.parse(require('fs').readFileSync('apps/shiftledger/manifest.webmanifest','utf8'))"
           node --test apps/shiftledger/tests/core.test.cjs
       - name: Install Playwright client
         run: python -m pip install --disable-pip-version-check 'playwright>=1.45,<2'
