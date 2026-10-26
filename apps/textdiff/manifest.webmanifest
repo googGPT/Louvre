@@ -1,0 +1,18 @@
+{
+  "name": "TextDiff — Comparaison privée de textes",
+  "short_name": "TextDiff",
+  "description": "Comparer localement deux textes par ligne ou mot et exporter les modifications",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f7f8",
+  "theme_color": "#142c3a",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
