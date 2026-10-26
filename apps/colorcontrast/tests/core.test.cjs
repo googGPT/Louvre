@@ -1,0 +1,17 @@
+const t=require('node:test'),a=require('node:assert/strict'),C=require('../core.js');
+t('noir-blanc 21:1',()=>a.ok(Math.abs(C.contrast('#000000','#FFFFFF')-21)<1e-8));
+t('même couleur 1:1',()=>a.equal(C.contrast('#abcdef','#abcdef'),1));
+t('HEX court normalisé',()=>a.equal(C.normalize('#aBc'),'#AABBCC'));
+t('HEX long normalisé',()=>a.equal(C.normalize('123abc'),'#123ABC'));
+t('HEX invalide refusé',()=>a.throws(()=>C.normalize('#xyz')));
+t('injection CSS refusée',()=>a.throws(()=>C.normalize('red; background:url(x)')));
+t('luminance noir',()=>a.equal(C.luminance('#000'),0));
+t('luminance blanc',()=>a.equal(C.luminance('#fff'),1));
+t('fond blanc préfère noir',()=>a.equal(C.bestOn('#fff').hex,'#000000'));
+t('fond noir préfère blanc',()=>a.equal(C.bestOn('#000').hex,'#FFFFFF'));
+t('AA standard noir et blanc',()=>a.equal(C.wcag('#000','#fff').aaNormal,true));
+t('AAA grand non applicable au gris faible',()=>a.equal(C.wcag('#777777','#888888').aaaLarge,false));
+t('AA normal échec contraste faible',()=>a.equal(C.wcag('#eee','#fff').aaNormal,false));
+t('backup palette normalisée',()=>a.deepEqual(C.validateBackup({version:1,pairs:[{fg:'#fff',bg:'#000'}]}).pairs,[{fg:'#FFFFFF',bg:'#000000'}]));
+t('backup rejette version',()=>a.throws(()=>C.validateBackup({version:2,pairs:[]})));
+t('backup rejette champ additionnel',()=>a.throws(()=>C.validateBackup({version:1,pairs:[{fg:'#fff',bg:'#000',html:'x'}]})));
