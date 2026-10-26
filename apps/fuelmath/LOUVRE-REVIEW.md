@@ -26,3 +26,8 @@ Estimer carburant et partage entre passagers. Application autonome Web statique,
 - Commandes : `node --check core.js && node --check app.js && node --test tests/core.test.cjs` ; puis `python tests/browser.test.py` (Playwright Chromium).
 - Les résultats effectifs doivent être vérifiés dans les logs GitHub Actions de la Pull Request ; un code de test n'est pas une preuve d'exécution.
 - Ne pas fusionner en cas d'échec de CI. Aucune modification de `main` dans la branche proposée.
+
+## Correctif de répartition des passagers
+- `core.js`: `tripCostCents` arrondit le coût de chaque trajet en centimes ; `splitCents` attribue le reliquat d'arrondi aux passagers afin que la somme des parts soit égale au coût du trajet.
+- `tests/core.test.cjs`: vérifie le reliquat pour deux et trois passagers, la somme des coûts et les bornes numériques.
+- Fait vérifié via GitHub Actions seulement après réussite du workflow déclenché par ce commit ; la description ne vaut pas validation automatique.
