@@ -92,4 +92,4 @@ t('export multi-colonne supporte séparateur tabulation',()=>{
  a.deepEqual(C.parse(csv,'\t').rows,[['A','B'],['one','two']]);
 });
 t('rejette export avec données incohérentes',()=>{for(const table of [[],[['a'],[4]],[['a'],['x','y']]])a.throws(()=>C.stringify(table,','));});
-t('nombre d’octets UTF-8 exact',()=>a.equal(C.utf8Size('Été 🍀'),9));
+t('nombre d’octets UTF-8 exact',()=>a.equal(C.utf8Size('Été 🍀'),10));
