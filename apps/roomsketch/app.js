@@ -60,7 +60,16 @@ function paint(){
   g.addEventListener('pointerdown',ev=>{
    if(ev.button!==0||blocked)return;
    drag={id:o.id,pointerId:ev.pointerId,start:coordinates(ev),before:state,item:o,moved:false};
-   selected=o.id;render();svg.setPointerCapture(ev.pointerId);svg.focus({preventScroll:true});ev.preventDefault();
+   selected=o.id;
+   // Do not replace the pointerdown target while the pointer is pressed:
+   // detaching an SVG group can cause lost capture and pointercancel in Chromium.
+   fields();controls();
+   for(const group of svg.querySelectorAll('g[data-id]')){
+    const rect=group.querySelector('rect'),active=group.getAttribute('data-id')===selected;
+    if(rect){rect.setAttribute('stroke',active?'#147bb5':'#476577');rect.setAttribute('stroke-width',active?'5':'2');}
+   }
+   svg.setPointerCapture(ev.pointerId);
+   svg.focus({preventScroll:true});ev.preventDefault();
   });
   all.push(g);
  }
