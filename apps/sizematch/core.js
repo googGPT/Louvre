@@ -56,7 +56,13 @@ const AppLogic = (() => {
       let kelvin=toKelvin(value,from);
       if(kelvin < -1e-10)throw Error('Température sous le zéro absolu');
       if(kelvin<0)kelvin=0;
-      answer=fromKelvin(kelvin,to);
+      // Celsius ↔ Fahrenheit utilise une transformation affine directe :
+      // évite l'erreur flottante d'un aller-retour artificiel via Kelvin
+      // (par exemple −20 °C doit produire exactement −4 °F dans le CSV).
+      if(from==='°C'&&to==='°F')answer=value*9/5+32;
+      else if(from==='°F'&&to==='°C')answer=(value-32)*5/9;
+      else if(from===to)answer=value;
+      else answer=fromKelvin(kelvin,to);
       // Corrige les artefacts arithmétiques près de zéro sans modifier les valeurs physiques.
       if(Math.abs(answer)<1e-12)answer=0;
     } else {
