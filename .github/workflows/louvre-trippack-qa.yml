@@ -1,0 +1,29 @@
+name: QA Louvre App XX — TripPack
+on:
+  pull_request:
+    paths:
+      - 'apps/trippack/**'
+      - '.github/workflows/louvre-trippack-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Static security and schemas
+        run: |
+          node --check apps/trippack/core.js
+          node --check apps/trippack/app.js
+          node --check apps/trippack/sw.js
+          node -e "JSON.parse(require('fs').readFileSync('apps/trippack/manifest.webmanifest','utf8'))"
+      - name: Run independent business tests
+        run: node --test apps/trippack/tests/core.test.cjs
+      - name: Chromium browser integration tests
+        run: |
+          python -m pip install --disable-pip-version-check 'playwright>=1.45,<2'
+          python apps/trippack/tests/browser.test.py

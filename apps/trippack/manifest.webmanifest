@@ -1,0 +1,18 @@
+{
+  "name": "TripPack",
+  "short_name": "TripPack",
+  "description": "Gérer une liste par bagage avec progression pondérée",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "theme_color": "#101827",
+  "background_color": "#0b111d",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
