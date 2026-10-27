@@ -1,0 +1,12 @@
+{
+  "name": "GiftNest — idées de cadeaux et budgets",
+  "short_name": "GiftNest",
+  "description": "Idées de cadeaux par personne et par occasion, budgets et compte à rebours, sans compte ni serveur.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#a61e4d",
+  "background_color": "#f3f7f8",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

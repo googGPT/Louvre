@@ -280,6 +280,13 @@
       "domain": "Bien-être",
       "description": "Suit des habitudes quotidiennes ou hebdomadaires : pointage, séries et régularité.",
       "family": "Maison et quotidien"
+    },
+    {
+      "slug": "giftnest",
+      "name": "GiftNest",
+      "domain": "Organisation",
+      "description": "Organise idées de cadeaux, budgets par personne et compte à rebours des occasions.",
+      "family": "Maison et quotidien"
     }
   ]
 }
