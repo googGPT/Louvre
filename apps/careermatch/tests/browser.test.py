@@ -91,6 +91,8 @@ def main():
             # Sauvegarde, stockage corrompu, restauration.
             backup = download_text(page, '#export')
             assert len(json.loads(backup)['comparisons']) == 2
+            # L'appli enregistre la saisie après 250 ms : attendre cet enregistrement avant de corrompre le stockage.
+            page.wait_for_function(f"() => (localStorage.getItem('{KEY}') || '').includes('Data analyst Excel Python')")
             page.evaluate(f"() => localStorage.setItem('{KEY}', '[[[')")
             page.reload()
             expect(page.locator('#warning')).to_be_visible()

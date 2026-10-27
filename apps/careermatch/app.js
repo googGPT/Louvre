@@ -45,7 +45,7 @@
     return { id: newId(), name: t('cmp.defaultName', { n: list.length + 1 }), lang: $('text-lang').value };
   }
   let timer = null;
-  function onEdit() { clearTimeout(timer); timer = setTimeout(commit, 250); }
+  function onEdit() { clearTimeout(timer); timer = setTimeout(() => { timer = null; commit(); }, 250); }
   function commit() {
     let c;
     try { const base = current(); c = C.makeComparison(readForm(base), base.id); say('form-status', ''); }
@@ -111,7 +111,10 @@
     $('rename-cmp').disabled = $('delete-cmp').disabled = !active();
   }
   function render() { renderSelects(); renderList(); analyzeNow(); }
-  function select(id) { activeId = id; if (id) safeSet(ACTIVE, id); fillForm(); render(); }
+  // Enregistre tout de suite une saisie encore en attente (changement de comparaison, fermeture de la page).
+  function flush() { if (timer) { clearTimeout(timer); timer = null; commit(); } }
+  window.addEventListener('pagehide', flush);
+  function select(id) { flush(); activeId = id; if (id) safeSet(ACTIVE, id); fillForm(); render(); }
 
   $('cmp-select').addEventListener('change', (e) => select(e.target.value));
   $('new-cmp').addEventListener('click', () => {
