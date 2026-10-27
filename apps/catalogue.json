@@ -287,6 +287,146 @@
       "domain": "Organisation",
       "description": "Organise idées de cadeaux, budgets par personne et compte à rebours des occasions.",
       "family": "Maison et quotidien"
+    },
+    {
+      "slug": "careermatch",
+      "name": "CareerMatch",
+      "domain": "Travail",
+      "description": "Compare les mots d’un CV et d’une offre d’emploi : termes présents, absents et couverture, hors ligne.",
+      "family": "Travail et organisation"
+    },
+    {
+      "slug": "cashenvelope",
+      "name": "CashEnvelope",
+      "domain": "Finance",
+      "description": "Répartit le budget du mois en enveloppes et suit soldes, reports et dépassements.",
+      "family": "Argent et achats"
+    },
+    {
+      "slug": "classrubric",
+      "name": "ClassRubric",
+      "domain": "Éducation",
+      "description": "Crée des grilles critériées et calcule la note de chaque copie sur le barème choisi.",
+      "family": "Études et recherche"
+    },
+    {
+      "slug": "courseplanner",
+      "name": "CoursePlanner",
+      "domain": "Éducation",
+      "description": "Découpe un cours en séances, contrôle le volume horaire et date les séances selon le calendrier.",
+      "family": "Études et recherche"
+    },
+    {
+      "slug": "debtstrategy",
+      "name": "DebtStrategy",
+      "domain": "Finance",
+      "description": "Compare l’avalanche et la boule de neige pour rembourser plusieurs dettes avec un budget mensuel.",
+      "family": "Argent et achats"
+    },
+    {
+      "slug": "descriptivestats",
+      "name": "DescriptiveStats",
+      "domain": "Données",
+      "description": "Calcule moyenne, écarts-types, quartiles, asymétrie et histogramme d’une série collée ou importée.",
+      "family": "Études et recherche"
+    },
+    {
+      "slug": "expenseclassifier",
+      "name": "ExpenseClassifier",
+      "domain": "Finance",
+      "description": "Classe un relevé bancaire CSV avec vos règles et totalise par catégorie et par mois.",
+      "family": "Argent et achats"
+    },
+    {
+      "slug": "freelancerate",
+      "name": "FreelanceRate",
+      "domain": "Travail",
+      "description": "Estime un tarif journalier ou horaire cible à partir de vos charges, revenu visé et taux saisis.",
+      "family": "Travail et organisation"
+    },
+    {
+      "slug": "groupallocator",
+      "name": "GroupAllocator",
+      "domain": "Éducation",
+      "description": "Constitue des groupes d'étudiants selon vos règles (séparer, réunir, équilibrer), tirage reproductible.",
+      "family": "Études et recherche"
+    },
+    {
+      "slug": "homeenergylog",
+      "name": "HomeEnergyLog",
+      "domain": "Maison",
+      "description": "Suit les relevés d’électricité, de gaz et d’eau : consommation par jour, par mois et coût estimé.",
+      "family": "Maison et quotidien"
+    },
+    {
+      "slug": "literaturematrix",
+      "name": "LiteratureMatrix",
+      "domain": "Recherche",
+      "description": "Organise une revue de littérature en matrice articles × colonnes, repère les cases vides, exporte en CSV.",
+      "family": "Études et recherche"
+    },
+    {
+      "slug": "markdowndesk",
+      "name": "MarkdownDesk",
+      "domain": "Texte",
+      "description": "Éditeur Markdown local avec aperçu sûr, plusieurs documents et export .md ou .html.",
+      "family": "Outils numériques"
+    },
+    {
+      "slug": "mealcalendar",
+      "name": "MealCalendar",
+      "domain": "Alimentation",
+      "description": "Planifie les menus de la semaine et additionne la liste de courses à cocher.",
+      "family": "Maison et quotidien"
+    },
+    {
+      "slug": "movebox",
+      "name": "MoveBox",
+      "domain": "Maison",
+      "description": "Inventorie les cartons d’un déménagement, retrouve un objet et imprime les étiquettes.",
+      "family": "Maison et quotidien"
+    },
+    {
+      "slug": "paintestimator",
+      "name": "PaintEstimator",
+      "domain": "Maison",
+      "description": "Calcule la surface à peindre, les litres et la combinaison de pots la moins chère.",
+      "family": "Maison et quotidien"
+    },
+    {
+      "slug": "recipescaler",
+      "name": "RecipeScaler",
+      "domain": "Alimentation",
+      "description": "Recalcule une recette selon le nombre de portions, avec conversions et arrondis lisibles.",
+      "family": "Maison et quotidien"
+    },
+    {
+      "slug": "researchquestionlab",
+      "name": "ResearchQuestionLab",
+      "domain": "Recherche",
+      "description": "Structure problème, lacune, questions et hypothèses de recherche avec une liste de contrôle.",
+      "family": "Études et recherche"
+    },
+    {
+      "slug": "savingsprojection",
+      "name": "SavingsProjection",
+      "domain": "Finance",
+      "description": "Projette une épargne avec versements réguliers et taux hypothétiques saisis, scénarios comparés.",
+      "family": "Argent et achats"
+    },
+    {
+      "slug": "teachingattendance",
+      "name": "TeachingAttendance",
+      "domain": "Éducation",
+      "description": "Fait l'appel par séance, calcule l'assiduité de chaque étudiant et signale ceux sous le seuil choisi.",
+      "family": "Études et recherche"
+    },
+    {
+      "slug": "travelpackingweight",
+      "name": "TravelPackingWeight",
+      "domain": "Voyage",
+      "description": "Pèse les bagages objet par objet, signale les dépassements et propose quoi déplacer.",
+      "family": "Déplacements"
     }
   ]
 }

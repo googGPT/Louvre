@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GroupAllocator — Groupes d'étudiants sous contraintes</title>
+<meta name="description" content="GroupAllocator : constituez des groupes d'étudiants (taille ou nombre de groupes) en respectant vos contraintes (séparer, réunir, équilibrer un attribut). Tirage reproductible, export CSV. Sans compte, hors ligne.">
+<meta name="theme-color" content="#c2410c">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/groupallocator/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>GroupAllocator</strong><small data-i18n="brand.tagline">Groupes d'étudiants sous contraintes</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Des groupes équilibrés, sans casse-tête.</h1>
+  <p data-i18n="hero.text">Collez votre liste, indiquez qui séparer, qui réunir et quel attribut équilibrer : GroupAllocator propose des groupes et signale ce qui est impossible. Même graine, mêmes groupes.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les données enregistrées sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-class">
+  <div class="row between">
+    <h2 id="h-class" class="flat" data-i18n="class.title">Classe</h2>
+    <div class="row">
+      <label class="visually-hidden" for="class-select" data-i18n="class.select">Classe affichée</label>
+      <select id="class-select" class="auto"></select>
+      <button class="btn" id="new-class" type="button" data-i18n="btn.new">Nouvelle</button>
+      <button class="btn" id="rename-class" type="button" data-i18n="btn.rename">Renommer</button>
+      <button class="btn" id="delete-class" type="button" data-i18n="btn.delete">Supprimer</button>
+      <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+    </div>
+  </div>
+  <p class="status" id="class-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-students">
+  <h2 id="h-students" data-i18n="students.title">Étudiants</h2>
+  <form id="student-form" class="student-form" novalidate>
+    <label class="field grow"><span data-i18n="f.name">Nom</span><input name="name" maxlength="80" data-keep="st-name" data-i18n-attr="placeholder:f.namePh"></label>
+    <label class="field"><span id="attr-label-form">Attribut</span><input name="attr" maxlength="40" data-keep="st-attr" data-i18n-attr="placeholder:f.attrPh"></label>
+    <button class="btn primary" type="submit" data-i18n="btn.addStudent">Ajouter</button>
+  </form>
+  <details class="import" id="import-box">
+    <summary data-i18n="import.title">Coller une liste ou importer un CSV</summary>
+    <p class="hint" data-i18n="import.hint">Une ligne par étudiant : « Nom » ou « Nom;Attribut » (séparateur ; , ou tabulation).</p>
+    <label class="field"><span data-i18n="f.roster">Liste</span><textarea id="roster-text" data-keep="roster" rows="5"></textarea></label>
+    <div class="row">
+      <label class="check-label"><input type="checkbox" id="roster-header" data-keep="roster-header"><span data-i18n="f.header">La première ligne contient les en-têtes</span></label>
+      <label class="btn" for="roster-file" data-i18n="btn.file">Choisir un fichier CSV</label>
+      <input id="roster-file" type="file" accept=".csv,.txt,text/csv,text/plain" class="visually-hidden">
+      <button class="btn primary" id="roster-import" type="button" data-i18n="btn.importList">Ajouter la liste</button>
+    </div>
+  </details>
+  <label class="field attr-name"><span data-i18n="f.attrName">Nom de l'attribut (facultatif)</span><input id="attr-name" maxlength="40" data-keep="attr-name" data-i18n-attr="placeholder:f.attrNamePh"></label>
+  <p class="status" id="student-status" role="status" aria-live="polite"></p>
+  <div class="row between"><p id="student-count" class="muted"></p><button class="btn small" id="clear-students" type="button" data-i18n="btn.clear">Vider la liste</button></div>
+  <ul id="students" class="chips"></ul>
+</section>
+
+<section class="panel" aria-labelledby="h-constraints">
+  <h2 id="h-constraints" data-i18n="cons.title">Contraintes</h2>
+  <form id="constraint-form" class="constraint-form" novalidate>
+    <label class="field"><span data-i18n="f.type">Règle</span><select name="type" data-keep="c-type"><option value="apart" data-i18n="type.apart">Séparer</option><option value="together" data-i18n="type.together">Réunir</option></select></label>
+    <label class="field"><span data-i18n="f.a">Étudiant A</span><select name="a" data-keep="c-a"></select></label>
+    <label class="field"><span data-i18n="f.b">Étudiant B</span><select name="b" data-keep="c-b"></select></label>
+    <button class="btn primary" type="submit" data-i18n="btn.addConstraint">Ajouter la règle</button>
+  </form>
+  <p class="status" id="constraint-status" role="status" aria-live="polite"></p>
+  <ul id="constraints" class="list"></ul>
+</section>
+
+<section class="panel" aria-labelledby="h-groups">
+  <h2 id="h-groups" data-i18n="groups.title">Groupes</h2>
+  <div class="settings">
+    <fieldset class="mode"><legend data-i18n="f.mode">Constituer</legend>
+      <label class="check-label"><input type="radio" name="mode" value="size" id="mode-size"><span data-i18n="mode.size">des groupes de taille…</span></label>
+      <label class="check-label"><input type="radio" name="mode" value="count" id="mode-count"><span data-i18n="mode.count">un nombre de groupes…</span></label>
+    </fieldset>
+    <label class="field"><span id="value-label">Taille cible</span><input id="group-value" data-keep="group-value" inputmode="numeric" maxlength="3"></label>
+    <div class="field">
+      <label class="check-label"><input type="checkbox" id="balance"><span id="balance-label">Équilibrer l'attribut entre les groupes</span></label>
+    </div>
+    <div class="seed-row">
+      <label class="field grow"><span data-i18n="f.seed">Graine du tirage</span><input id="seed" data-keep="seed" maxlength="40" aria-describedby="seed-hint"></label>
+      <button class="btn" id="reseed" type="button" data-i18n="btn.reseed">Nouveau tirage</button>
+    </div>
+  </div>
+  <p class="hint" id="seed-hint" data-i18n="hint.seed">La graine rend le tirage reproductible : même liste, mêmes règles, même graine, mêmes groupes.</p>
+  <p class="status" id="settings-status" role="status" aria-live="polite"></p>
+  <div id="report" class="report" aria-live="polite"></div>
+  <div id="groups" class="groups"></div>
+  <div class="row"><button class="btn" id="export-csv" type="button" data-i18n="btn.csv">Exporter les groupes (CSV)</button></div>
+  <p class="status" id="groups-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <label class="btn" for="import" data-i18n="btn.import">Restaurer…</label>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">Les règles sont celles que vous saisissez ; l'algorithme cherche une bonne répartition, pas forcément la meilleure possible. Vos données restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

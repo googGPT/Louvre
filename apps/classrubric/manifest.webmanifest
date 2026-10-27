@@ -1,0 +1,12 @@
+{
+  "name": "ClassRubric — grilles de notation critériées",
+  "short_name": "ClassRubric",
+  "description": "Crée des grilles de notation (critères, niveaux, pondérations) et calcule la note de chaque copie sur le barème choisi.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#5f3dc4",
+  "background_color": "#f6f4fb",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

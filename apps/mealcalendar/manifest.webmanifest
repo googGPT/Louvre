@@ -1,0 +1,12 @@
+{
+  "name": "MealCalendar — menus de la semaine et liste de courses",
+  "short_name": "MealCalendar",
+  "description": "Planifie les repas de la semaine à partir de vos plats et produit une liste de courses additionnée.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#2f7d4f",
+  "background_color": "#f3f8f4",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

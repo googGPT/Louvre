@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MealCalendar — Menus de la semaine et liste de courses</title>
+<meta name="description" content="MealCalendar : planifiez les repas de la semaine à partir de vos plats et obtenez une liste de courses additionnée, à cocher et à exporter. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#2f7d4f">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/mealcalendar/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top no-print">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>MealCalendar</strong><small data-i18n="brand.tagline">Menus de la semaine</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero no-print">
+  <h1 data-i18n="hero.title">Une semaine de repas, une seule liste de courses.</h1>
+  <p data-i18n="hero.text">Enregistrez vos plats avec leurs ingrédients, placez-les sur les repas de la semaine : MealCalendar additionne les quantités et prépare la liste de courses.</p>
+</section>
+<p id="warning" class="warning no-print" hidden data-i18n="warning">Les données enregistrées sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="week-label">
+  <div class="week-nav">
+    <button class="btn icon no-print" id="prev" type="button" data-i18n-attr="aria-label:week.prev;title:week.prev"><span class="flip" aria-hidden="true">‹</span></button>
+    <h2 id="week-label">Semaine</h2>
+    <button class="btn icon no-print" id="next" type="button" data-i18n-attr="aria-label:week.next;title:week.next"><span class="flip" aria-hidden="true">›</span></button>
+  </div>
+  <div class="row no-print center">
+    <button class="btn" id="today" type="button" data-i18n="week.today">Cette semaine</button>
+    <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+    <button class="btn" id="clear-week" type="button" data-i18n="week.clear">Vider la semaine</button>
+  </div>
+  <p class="status no-print" id="week-status" role="status" aria-live="polite"></p>
+  <p class="empty" id="no-dish" hidden data-i18n="week.noDish">Enregistrez d'abord un plat (plus bas) pour le placer dans la semaine.</p>
+  <div class="days" id="days"></div>
+</section>
+
+<section class="panel" aria-labelledby="h-shop">
+  <div class="row between">
+    <h2 id="h-shop" class="flush" data-i18n="shop.title">Liste de courses</h2>
+    <span class="count" id="shop-count"></span>
+  </div>
+  <ul class="shop" id="shop"></ul>
+  <div class="row top-gap no-print">
+    <button class="btn" id="export-csv" type="button" data-i18n="btn.exportCsv">Exporter (CSV)</button>
+    <button class="btn" id="print" type="button" data-i18n="btn.print">Imprimer</button>
+    <button class="btn" id="uncheck" type="button" data-i18n="btn.uncheck">Tout décocher</button>
+  </div>
+  <p class="hint" data-i18n="shop.hint">Les ingrédients de même nom sont additionnés quand leurs unités sont compatibles.</p>
+  <p class="status no-print" id="shop-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel no-print" aria-labelledby="h-dish">
+  <h2 id="h-dish" data-i18n="dish.title">Mes plats</h2>
+  <form id="dish-form" novalidate>
+    <div class="form-grid dish-head">
+      <label class="field"><span data-i18n="dish.name">Nom du plat</span><input name="name" maxlength="60" data-i18n-attr="placeholder:dish.namePh"></label>
+      <label class="field"><span data-i18n="dish.servings">Portions de la recette</span><input name="servings" inputmode="numeric" value="4"></label>
+    </div>
+    <fieldset class="ings">
+      <legend data-i18n="dish.ingredients">Ingrédients</legend>
+      <div id="ing-rows"></div>
+      <button class="btn" id="add-ing" type="button" data-i18n="btn.addIng">+ Ingrédient</button>
+    </fieldset>
+    <p class="hint" data-i18n="dish.hint">Quantités pour le nombre de portions indiqué.</p>
+    <div class="row">
+      <button class="btn primary" id="save-dish" type="submit" data-i18n="btn.saveDish">Enregistrer le plat</button>
+      <button class="btn" id="cancel-edit" type="button" hidden data-i18n="btn.cancel">Annuler</button>
+    </div>
+    <p class="status" id="dish-status" role="status" aria-live="polite"></p>
+  </form>
+  <ul class="list" id="dishes"></ul>
+</section>
+
+<section class="panel no-print" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <button class="btn" id="pick-backup" type="button" data-i18n="btn.restore">Restaurer…</button>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden" tabindex="-1" aria-hidden="true">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer class="no-print" data-i18n="footer">Vos plats et menus restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "MoveBox — cartons de déménagement",
+  "short_name": "MoveBox",
+  "description": "Inventorie les cartons d'un déménagement, retrouve un objet, imprime les étiquettes et suit chaque carton.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#8a5a14",
+  "background_color": "#f8f5ef",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

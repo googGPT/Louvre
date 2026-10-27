@@ -1,0 +1,93 @@
+/* CoursePlanner — styles. Thème clair/sombre automatique, mêmes bases que les autres applis Louvre (accent vert). */
+:root{--bg:#f2f7f5;--surface:#fff;--ink:#16302a;--muted:#55706a;--line:#d7e6e1;--accent:#087f5b;--accent-soft:#e3f5ee;--accent-ink:#fff;--good:#2b8a3e;--good-soft:#e6f4ea;--bad:#c92a2a;--bad-soft:#fdecec;--warn:#9c5700;--warn-soft:#fff3db;--focus:#38b98a;--radius:16px;
+font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg)}
+@media (prefers-color-scheme:dark){:root{--bg:#0b1513;--surface:#12211e;--ink:#e4f2ee;--muted:#9bb8b0;--line:#21382f;--accent:#63e6be;--accent-soft:#123128;--accent-ink:#0b1513;--good:#69db7c;--good-soft:#14301d;--bad:#ff8787;--bad-soft:#3a1717;--warn:#ffc078;--warn-soft:#3a2a10;--focus:#96f2d7}}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--bg);line-height:1.45}
+button,input,select,textarea{font:inherit;color:inherit}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,label.btn:focus-within{outline:3px solid var(--focus);outline-offset:2px}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.wrap{max-width:1120px;margin:0 auto;padding:0 16px}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:22px 0 8px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}.brand img{width:44px;height:44px;border-radius:12px}
+.brand strong{display:block;font-size:20px;letter-spacing:-.02em}.brand small{color:var(--muted);font-size:13px}
+.badge{font-size:12px;font-weight:700;padding:6px 11px;border-radius:999px;background:var(--good-soft);color:var(--good);white-space:nowrap}
+.hero h1{margin:18px 0 6px;font-size:clamp(26px,4.5vw,38px);line-height:1.1;letter-spacing:-.03em}
+.hero p{margin:0 0 18px;color:var(--muted);max-width:680px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;min-width:0;margin-bottom:16px}
+.panel h2{margin:0 0 12px;font-size:18px;letter-spacing:-.01em}.panel h2.flat{margin:0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.row>*{max-width:100%}.row.tight{gap:8px}.row.between{justify-content:space-between}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 16px;font-weight:650;cursor:pointer;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.small{min-height:36px;padding:6px 12px;font-size:13px}
+.btn.icon{min-height:40px;min-width:40px;padding:4px 10px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+label.field{display:grid;gap:6px;font-size:14px;font-weight:600;margin-bottom:12px;min-width:0}
+input,select,textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg);min-height:44px;min-width:0}
+select.auto{width:auto;max-width:100%;min-width:180px}
+textarea{min-height:64px;resize:vertical}
+[aria-invalid="true"]{border-color:var(--bad);background:var(--bad-soft)}
+.status{min-height:22px;font-size:14px;margin:8px 0 0;color:var(--muted)}.status.error{color:var(--bad)}.status.ok{color:var(--good)}
+.hint{font-size:13px;color:var(--muted);margin:0 0 14px}
+.warning{background:var(--bad-soft);color:var(--bad);border-radius:12px;padding:12px 14px;font-size:14px}
+.empty{color:var(--muted);text-align:center;padding:20px 10px;margin:0}
+.grow{flex:1 1 220px}
+footer{color:var(--muted);font-size:13px;padding:8px 0 40px}
+.settings{display:grid;grid-template-columns:repeat(2,minmax(0,220px));gap:12px;margin-top:14px}
+h3{font-size:15px;margin:18px 0 8px}
+/* Volume et calendrier */
+.check{display:grid;gap:6px;border-radius:12px;padding:12px 14px;background:var(--bg);font-size:14px;align-content:start}
+.check:empty{display:none}
+.check.ok{background:var(--good-soft)}.check.ok strong{color:var(--good)}
+.check.warn{background:var(--warn-soft)}.check.warn span{color:var(--warn)}
+.check.bad{background:var(--bad-soft)}.check.bad span{color:var(--bad)}
+.check .bar{height:8px;border-radius:999px;background:var(--line);overflow:hidden}.check .bar i{display:block;height:100%;background:var(--accent)}
+.settings{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:560px){.settings{grid-template-columns:1fr}}
+.slots{border:1px solid var(--line);border-radius:14px;padding:12px;margin:4px 0 0;min-width:0}
+.slots legend{font-weight:700;font-size:14px;padding:0 6px}
+.slot-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px}
+.slot{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:8px;align-items:center}
+.check-label{display:flex;gap:8px;align-items:center;font-weight:600;min-height:44px}
+.check-label input{width:22px;height:22px;min-height:0;accent-color:var(--accent)}
+.closure-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) minmax(0,2fr) auto;gap:10px;align-items:end}
+.closure-form label.field{margin:0}
+@media (max-width:680px){.closure-form{grid-template-columns:1fr 1fr}.closure-form .grow{grid-column:1/-1}}
+.list{list-style:none;margin:12px 0;padding:0;display:grid;gap:8px}
+.list li{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
+.list .txt{min-width:0}.list .txt b{display:block;overflow-wrap:anywhere}.list .txt span{display:block;font-size:13px;color:var(--muted)}
+/* Séances */
+.session-form{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,1fr);gap:0 10px;align-items:end}
+.session-form .full{grid-column:1/-1}.session-form button{justify-self:start}
+.sessions{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:10px}
+.sess{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:var(--bg)}
+.sess summary{cursor:pointer;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:2px 10px;align-items:baseline}
+.sess summary::-webkit-details-marker{display:none}
+.sess summary .num{font-weight:800;color:var(--accent);white-space:nowrap}
+.sess summary .when{font-size:13px;color:var(--muted);overflow-wrap:anywhere}.sess summary .when.none{color:var(--bad);font-weight:700}
+.sess summary .len{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.sess summary .ttl{grid-column:1/-1;overflow-wrap:anywhere}
+.sess summary .flag{grid-column:1/-1;justify-self:start;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px}
+.flag.warn{background:var(--warn-soft);color:var(--warn)}.flag.bad{background:var(--bad-soft);color:var(--bad)}
+.sess[open] summary{margin-bottom:10px;padding-bottom:10px;border-bottom:1px dashed var(--line)}
+.sess-head{display:grid;grid-template-columns:minmax(0,1fr) 110px auto;gap:10px;align-items:end}
+.sess-head .acts{display:flex;gap:6px;margin-bottom:12px}
+@media (max-width:560px){.sess-head{grid-template-columns:minmax(0,1fr) 96px}.sess-head .acts{grid-column:1/-1;margin:0 0 10px}}
+.activities h4{margin:4px 0 8px;font-size:14px}
+.act{display:grid;grid-template-columns:minmax(0,1fr) 96px auto;gap:8px;align-items:end;margin-bottom:8px}
+.act label.field{margin:0}
+.act-check{font-size:13px;margin:8px 0 0;color:var(--muted)}.act-check.ok{color:var(--good)}.act-check.warn{color:var(--warn)}.act-check.bad{color:var(--bad)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* Impression : seul le plan est imprimé */
+.print-only{display:none}
+@media print{
+  :root{--bg:#fff;--surface:#fff;--ink:#000;--muted:#333;--line:#999}
+  body{background:#fff}
+  .wrap>*:not(#print-area){display:none!important}
+  #print-area{display:block!important;font-size:10.5pt}
+  #print-area h1{font-size:18pt;margin:0 0 4pt}
+  .print-table{width:100%;border-collapse:collapse;margin-top:10pt}
+  .print-table th,.print-table td{border:1px solid #777;padding:5pt;vertical-align:top;text-align:start}
+  .print-table td div,.print-table ul{font-size:9.5pt;color:#333;margin:2pt 0 0}
+  .print-table tr{break-inside:avoid}
+}

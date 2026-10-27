@@ -1,0 +1,12 @@
+{
+  "name": "CareerMatch — comparer un CV et une offre",
+  "short_name": "CareerMatch",
+  "description": "Comparaison lexicale hors ligne d'un CV et d'une offre d'emploi : termes présents, absents, couverture.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#a61e4d",
+  "background_color": "#f8f5f6",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

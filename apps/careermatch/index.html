@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CareerMatch — Comparer un CV et une offre</title>
+<meta name="description" content="CareerMatch : comparez lexicalement votre CV et une offre d'emploi, hors ligne. Termes présents et absents, taux de couverture. Ni prédiction ni avis de recrutement.">
+<meta name="theme-color" content="#a61e4d">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/careermatch/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>CareerMatch</strong><small data-i18n="brand.tagline">Comparer un CV et une offre</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Quels mots de l'offre retrouve-t-on dans votre CV ?</h1>
+  <p data-i18n="hero.text">Collez votre CV et une offre.</p>
+</section>
+<p class="notice" id="notice" role="note" data-i18n="notice">Comparaison lexicale seulement.</p>
+<p id="warning" class="warning" hidden data-i18n="warning">Les comparaisons enregistrées sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-cmp">
+  <div class="row spread">
+    <h2 id="h-cmp" class="m0" data-i18n="cmp.title">Comparaison</h2>
+    <div class="row">
+      <label class="visually-hidden" for="cmp-select" data-i18n="cmp.select">Comparaison affichée</label>
+      <select id="cmp-select" class="auto"></select>
+      <button class="btn" id="new-cmp" type="button" data-i18n="btn.new">Nouvelle</button>
+      <button class="btn" id="rename-cmp" type="button" data-i18n="btn.rename">Renommer</button>
+      <button class="btn" id="delete-cmp" type="button" data-i18n="btn.delete">Supprimer</button>
+      <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+    </div>
+  </div>
+  <p class="status" id="cmp-status" role="status" aria-live="polite"></p>
+</section>
+
+<div class="grid two-cols" style="margin-top:16px">
+  <section class="panel" aria-labelledby="h-cv">
+    <h2 id="h-cv"><label for="cv" data-i18n="cv.title">Votre CV</label></h2>
+    <textarea id="cv" rows="14" maxlength="50000" data-i18n-attr="placeholder:cv.ph"></textarea>
+    <p class="status" id="cv-words"></p>
+  </section>
+  <section class="panel" aria-labelledby="h-offer">
+    <h2 id="h-offer"><label for="offer" data-i18n="offer.title">L'offre d'emploi</label></h2>
+    <textarea id="offer" rows="14" maxlength="50000" data-i18n-attr="placeholder:offer.ph"></textarea>
+    <p class="status" id="offer-words"></p>
+  </section>
+</div>
+
+<section class="panel" aria-labelledby="h-opt" style="margin-top:16px">
+  <h2 id="h-opt" data-i18n="opt.title">Réglages</h2>
+  <div class="opts">
+    <label class="field"><span data-i18n="opt.lang">Langue des textes (mots vides)</span><select id="text-lang"></select></label>
+    <label class="field"><span data-i18n="opt.top">Termes de l'offre pris en compte</span><select id="top"></select></label>
+  </div>
+  <label class="check"><input type="checkbox" id="fold" checked> <span data-i18n="opt.fold">Rapprocher singuliers et pluriels</span></label>
+  <div class="opts">
+    <label class="field"><span data-i18n="opt.phrases">Expressions à vérifier (une par ligne)</span><textarea id="phrases" rows="3" data-i18n-attr="placeholder:opt.phrasesPh"></textarea></label>
+    <label class="field"><span data-i18n="opt.ignore">Termes à ignorer (un par ligne)</span><textarea id="ignore" rows="3" data-i18n-attr="placeholder:opt.ignorePh"></textarea></label>
+  </div>
+  <p class="hint" data-i18n="opt.hint">Les mots vides de la langue choisie sont retirés.</p>
+  <p class="status" id="form-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-res" style="margin-top:16px">
+  <h2 id="h-res" data-i18n="res.title">Résultat lexical</h2>
+  <div id="res-empty" class="empty" data-i18n="res.empty">Collez une offre pour voir ses termes.</div>
+  <div id="res" hidden>
+    <div class="kpis">
+      <div class="kpi"><span data-i18n="kpi.coverage">Couverture des termes</span><strong id="k-coverage"></strong></div>
+      <div class="kpi"><span data-i18n="kpi.weighted">Couverture pondérée</span><strong id="k-weighted"></strong></div>
+      <div class="kpi"><span data-i18n="kpi.present">Termes présents</span><strong id="k-present"></strong></div>
+      <div class="kpi"><span data-i18n="kpi.missing">Termes absents</span><strong id="k-missing"></strong></div>
+    </div>
+    <p class="explain" id="res-explain" aria-live="polite"></p>
+    <h3 data-i18n="res.missing">Absents du CV</h3>
+    <ul class="chips missing" id="missing"></ul>
+    <h3 data-i18n="res.present">Présents dans le CV</h3>
+    <ul class="chips present" id="present"></ul>
+    <div id="phr-box">
+      <h3 data-i18n="phr.title">Expressions</h3>
+      <ul class="phrases" id="phrases-res"></ul>
+    </div>
+    <div class="row" style="margin-top:12px"><button class="btn" id="export-csv" type="button" data-i18n="btn.csv">Exporter les termes (CSV)</button></div>
+  </div>
+  <p class="status" id="res-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-backup" style="margin-top:16px">
+  <h2 id="h-backup" data-i18n="backup.title">Sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <label class="btn" for="import" data-i18n="btn.import">Restaurer…</label>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">Vos textes restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

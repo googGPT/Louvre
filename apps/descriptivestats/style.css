@@ -1,0 +1,62 @@
+/* DescriptiveStats — styles. Thème clair/sombre automatique, mêmes bases que l'accueil Louvre. */
+:root{--bg:#f8f6f4;--surface:#fff;--ink:#1b3342;--muted:#5b7280;--line:#dbe5e9;--accent:#c2410c;--accent-soft:#fff1e8;--accent-ink:#fff;--good:#2b8a3e;--good-soft:#e6f4ea;--bad:#c92a2a;--bad-soft:#fdecec;--focus:#ff922b;--radius:16px;
+font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg)}
+@media (prefers-color-scheme:dark){:root{--bg:#0b111d;--surface:#121b2b;--ink:#e6eef2;--muted:#9fb1bc;--line:#22314a;--accent:#ffa94d;--accent-soft:#3a2214;--accent-ink:#0b111d;--good:#69db7c;--good-soft:#14301d;--bad:#ff8787;--bad-soft:#3a1717}}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--bg);line-height:1.45}
+button,input,select,textarea{font:inherit;color:inherit}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.wrap{max-width:1120px;margin:0 auto;padding:0 18px}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:22px 0 8px}
+.brand{display:flex;align-items:center;gap:12px}.brand img{width:44px;height:44px;border-radius:12px}
+.brand strong{display:block;font-size:20px;letter-spacing:-.02em}.brand small{color:var(--muted);font-size:13px}
+.badge{font-size:12px;font-weight:700;padding:6px 11px;border-radius:999px;background:var(--good-soft);color:var(--good);white-space:nowrap}
+.hero h1{margin:18px 0 6px;font-size:clamp(26px,4.5vw,38px);line-height:1.1;letter-spacing:-.03em}
+.hero p{margin:0 0 18px;color:var(--muted);max-width:640px}
+.grid{display:grid;gap:16px;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);align-items:start}
+@media (max-width:820px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;min-width:0}
+.panel h2{margin:0 0 12px;font-size:18px;letter-spacing:-.01em}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 16px;font-weight:650;cursor:pointer;min-height:44px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.good{background:var(--good);border-color:var(--good);color:#fff}.btn.bad{background:var(--bad);border-color:var(--bad);color:#fff}
+@media (prefers-color-scheme:dark){.btn.good,.btn.bad{color:#0b111d}}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+label.field{display:grid;gap:6px;font-size:14px;font-weight:600;margin-bottom:12px}
+input,select,textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg);min-height:44px}
+textarea{min-height:76px;resize:vertical}
+.status{min-height:22px;font-size:14px;margin:8px 0 0;color:var(--muted)}.status.error{color:var(--bad)}.status.ok{color:var(--good)}
+.warning{background:var(--bad-soft);color:var(--bad);border-radius:12px;padding:12px 14px;font-size:14px}
+footer{color:var(--muted);font-size:13px;padding:24px 0 40px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* DescriptiveStats : options, tableau des résultats, histogramme */
+header.top{flex-wrap:wrap}
+.row.tight{gap:8px}.row.spread{justify-content:space-between;margin-bottom:10px}.m0{margin:0!important}
+label.btn{display:inline-flex;align-items:center}
+label.field.inline{display:flex;align-items:center;gap:8px;margin:0}
+label.field.inline select{width:auto;max-width:100%;min-width:0}
+.opts{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.opts label.field{margin-bottom:8px}
+@media (max-width:420px){.opts{grid-template-columns:1fr}}
+#values{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px;min-height:200px}
+.hint{color:var(--muted);font-size:13px;margin:0 0 10px}
+.stats{width:100%;border-collapse:collapse;font-size:14px;margin-bottom:10px}
+.stats th,.stats td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:start;vertical-align:top}
+.stats thead th{font-size:12px;color:var(--muted);font-weight:700}
+.stats tbody th{font-weight:600}
+.stats .num{text-align:end;font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:700}
+.stats tr[data-stat="mean"] td,.stats tr[data-stat="median"] td,.stats tr[data-stat="sdSample"] td{color:var(--accent)}
+.hist{border:1px solid var(--line);border-radius:12px;overflow-x:auto;background:#fff;margin-bottom:12px}
+.hist svg{display:block;width:100%;height:auto;min-width:480px}
+.hist .empty{color:#5b7280}
+.list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.list li{border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
+.list li.empty{display:block;color:var(--muted);text-align:center;border-style:dashed}
+.list .txt{min-width:0}.list .txt b{display:block;overflow-wrap:anywhere}.list .txt span{display:block;font-size:13px;color:var(--muted)}
+.list .acts{display:flex;gap:6px}.list .acts button{min-height:36px;padding:6px 10px;font-size:13px}
+.empty{color:var(--muted);text-align:center;padding:26px 10px}
+/* Petits écrans et polices larges : les menus déroulants rétrécissent au lieu de déborder. */
+.field,.field.inline{min-width:0;max-width:100%}
+select{max-width:100%;min-width:0;text-overflow:ellipsis}

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MarkdownDesk — Écrire en Markdown</title>
+<meta name="description" content="MarkdownDesk : éditeur Markdown local avec aperçu sûr, plusieurs documents, export .md et .html autonome. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#b02358">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/markdowndesk/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>MarkdownDesk</strong><small data-i18n="brand.tagline">Écrire en Markdown</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Écrivez, l'aperçu suit.</h1>
+  <p data-i18n="hero.text">Titres, listes, emphase, code, citations et tableaux : MarkdownDesk affiche un aperçu immédiat et sûr (aucun HTML saisi n'est exécuté), garde vos documents sur cet appareil et les exporte en .md ou en page .html autonome.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les documents enregistrés sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-docs">
+  <div class="row between">
+    <h2 id="h-docs" class="flush" data-i18n="docs.title">Document</h2>
+    <div class="row">
+      <label class="visually-hidden" for="doc-select" data-i18n="docs.select">Document affiché</label>
+      <select id="doc-select" class="auto"></select>
+      <button class="btn" id="new-doc" type="button" data-i18n="btn.new">Nouveau</button>
+      <button class="btn" id="delete-doc" type="button" data-i18n="btn.delete">Supprimer</button>
+      <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+      <label class="btn file" for="import-md" data-i18n="btn.importMd">Ouvrir un .md…</label>
+      <input id="import-md" type="file" accept=".md,.markdown,.txt,text/markdown,text/plain" class="visually-hidden">
+    </div>
+  </div>
+  <p class="status" id="docs-status" role="status" aria-live="polite"></p>
+</section>
+
+<div class="desk">
+  <section class="panel" aria-labelledby="h-editor">
+    <h2 id="h-editor" data-i18n="editor.title">Écriture</h2>
+    <label class="field"><span data-i18n="f.title">Titre</span><input id="doc-title" maxlength="120" autocomplete="off"></label>
+    <div class="toolbar" role="toolbar" data-i18n-attr="aria-label:toolbar.label" aria-label="Mise en forme">
+      <button class="tool" type="button" data-md="bold" data-i18n-attr="title:tool.bold;aria-label:tool.bold"><b>B</b></button>
+      <button class="tool" type="button" data-md="italic" data-i18n-attr="title:tool.italic;aria-label:tool.italic"><i>I</i></button>
+      <button class="tool" type="button" data-md="heading" data-i18n-attr="title:tool.heading;aria-label:tool.heading">H2</button>
+      <button class="tool" type="button" data-md="list" data-i18n-attr="title:tool.list;aria-label:tool.list">•</button>
+      <button class="tool" type="button" data-md="quote" data-i18n-attr="title:tool.quote;aria-label:tool.quote">❝</button>
+      <button class="tool" type="button" data-md="code" data-i18n-attr="title:tool.code;aria-label:tool.code">&lt;/&gt;</button>
+      <button class="tool" type="button" data-md="link" data-i18n-attr="title:tool.link;aria-label:tool.link">[ ]</button>
+      <button class="tool" type="button" data-md="table" data-i18n-attr="title:tool.table;aria-label:tool.table">▦</button>
+    </div>
+    <label class="visually-hidden" for="editor" data-i18n="f.body">Texte en Markdown</label>
+    <textarea id="editor" spellcheck="true" dir="auto" data-i18n-attr="placeholder:f.bodyPh"></textarea>
+    <p class="meta-line"><span id="stats"></span> · <span id="save-state" aria-live="polite"></span></p>
+  </section>
+  <section class="panel" aria-labelledby="h-preview">
+    <h2 id="h-preview" data-i18n="preview.title">Aperçu</h2>
+    <article id="preview" class="preview" dir="auto"></article>
+  </section>
+</div>
+
+<section class="panel" aria-labelledby="h-export">
+  <h2 id="h-export" data-i18n="export.title">Exporter et sauvegarder</h2>
+  <div class="row">
+    <button class="btn primary" id="export-md" type="button" data-i18n="btn.exportMd">Télécharger .md</button>
+    <button class="btn primary" id="export-html" type="button" data-i18n="btn.exportHtml">Télécharger .html</button>
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Sauvegarde (JSON)</button>
+    <label class="btn file" for="import" data-i18n="btn.import">Restaurer…</label>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="hint" data-i18n="export.hint">La page .html exportée ne contient aucun script et n'appelle aucune ressource externe.</p>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">Vos documents restent sur cet appareil : rien n'est envoyé.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

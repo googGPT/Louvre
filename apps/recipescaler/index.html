@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RecipeScaler — Adaptez vos recettes</title>
+<meta name="description" content="RecipeScaler : recalculez les quantités d'une recette pour le nombre de portions voulu, avec conversions d'unités cohérentes et arrondis lisibles. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#b8402a">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/recipescaler/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top no-print">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>RecipeScaler</strong><small data-i18n="brand.tagline">Adaptez vos recettes</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero no-print">
+  <h1 data-i18n="hero.title">Pour 4, pour 7 ou pour 12 : les bonnes quantités.</h1>
+  <p data-i18n="hero.text">Saisissez une recette une fois : RecipeScaler recalcule chaque ingrédient pour le nombre de portions voulu.</p>
+</section>
+<p id="warning" class="warning no-print" hidden data-i18n="warning">Les recettes enregistrées sur cet appareil sont illisibles.</p>
+
+<div class="grid">
+<section class="panel no-print" aria-labelledby="h-recipe">
+  <h2 id="h-recipe" data-i18n="recipe.title">Recette</h2>
+  <div class="row">
+    <label class="visually-hidden" for="recipe-select" data-i18n="recipe.select">Recette enregistrée</label>
+    <select id="recipe-select" class="grow"></select>
+    <button class="btn" id="new" type="button" data-i18n="btn.new">Nouvelle</button>
+    <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+  </div>
+  <form id="recipe-form" novalidate>
+    <div class="form-grid head">
+      <label class="field"><span data-i18n="f.title">Titre</span><input name="title" maxlength="80" data-i18n-attr="placeholder:f.titlePh"></label>
+      <label class="field"><span data-i18n="f.servings">Portions de la recette</span><input name="servings" inputmode="numeric" value="4"></label>
+    </div>
+    <fieldset class="ings">
+      <legend data-i18n="f.ingredients">Ingrédients</legend>
+      <div id="ing-rows"></div>
+      <button class="btn" id="add-ing" type="button" data-i18n="btn.addIng">+ Ingrédient</button>
+    </fieldset>
+    <label class="field top-gap"><span data-i18n="f.steps">Préparation (facultatif)</span><textarea name="steps" rows="4" maxlength="4000" dir="auto"></textarea></label>
+    <div class="row">
+      <button class="btn primary" id="save" type="submit" data-i18n="btn.save">Enregistrer la recette</button>
+      <button class="btn" id="delete" type="button" hidden data-i18n="btn.delete">Supprimer</button>
+    </div>
+    <p class="status" id="recipe-status" role="status" aria-live="polite"></p>
+  </form>
+</section>
+
+<section class="panel scale" aria-labelledby="h-scaled">
+  <div class="no-print">
+    <h2 data-i18n="scale.title">Adapter</h2>
+    <div class="stepper">
+      <button class="btn icon" id="minus" type="button" data-i18n-attr="aria-label:scale.minus;title:scale.minus">−</button>
+      <label class="field"><span data-i18n="scale.target">Portions voulues</span><input id="target" inputmode="numeric" value="4"></label>
+      <button class="btn icon" id="plus" type="button" data-i18n-attr="aria-label:scale.plus;title:scale.plus">+</button>
+    </div>
+    <details id="avail">
+      <summary data-i18n="avail.title">D'après la quantité disponible d'un ingrédient</summary>
+      <div class="form-grid avail-grid">
+        <label class="field"><span data-i18n="avail.ingredient">Ingrédient</span><select id="avail-ing"></select></label>
+        <label class="field"><span data-i18n="avail.qty">J'en ai</span><input id="avail-qty" inputmode="decimal"></label>
+        <label class="field"><span data-i18n="avail.unit">Unité</span><select id="avail-unit" class="unit-select"></select></label>
+        <button class="btn" id="avail-apply" type="button" data-i18n="avail.apply">Adapter</button>
+      </div>
+    </details>
+    <p class="status" id="scale-status" role="status" aria-live="polite"></p>
+  </div>
+  <h2 id="h-scaled" class="scaled-title"></h2>
+  <p class="factor" id="factor"></p>
+  <div class="scroll"><table class="data" id="scaled"></table></div>
+  <p class="hint" data-i18n="scale.legend">≈ : valeur arrondie pour rester lisible.</p>
+  <div id="steps-box" hidden><h3 data-i18n="scale.steps">Préparation</h3><p class="steps" id="steps" dir="auto"></p></div>
+  <p class="hint" data-i18n="scale.note">Les temps de cuisson et la taille du moule ne sont pas recalculés.</p>
+  <div class="row no-print">
+    <button class="btn" id="print" type="button" data-i18n="btn.print">Imprimer</button>
+    <button class="btn" id="export-txt" type="button" data-i18n="btn.exportTxt">Exporter (texte)</button>
+  </div>
+</section>
+</div>
+
+<section class="panel no-print" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <button class="btn" id="pick-backup" type="button" data-i18n="btn.restore">Restaurer…</button>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden" tabindex="-1" aria-hidden="true">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer class="no-print" data-i18n="footer">Vos recettes restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

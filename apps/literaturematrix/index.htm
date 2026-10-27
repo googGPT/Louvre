@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LiteratureMatrix — Matrice de revue de littérature</title>
+<meta name="description" content="LiteratureMatrix : organisez votre revue de littérature dans une matrice articles × question, méthode, données, résultats et limites. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#3b5bdb">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/literaturematrix/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>LiteratureMatrix</strong><small data-i18n="brand.tagline">Matrice de revue de littérature</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Toute votre revue de littérature dans un seul tableau</h1>
+  <p data-i18n="hero.text">Une ligne par article, une colonne par élément d'analyse. Repérez d'un coup d'œil ce qui manque.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">La matrice enregistrée est illisible.</p>
+
+<div class="grid">
+<section class="panel" aria-labelledby="h-form">
+  <h2 id="h-form" data-i18n="form.title">Ajouter un article</h2>
+  <form id="paper-form" novalidate>
+    <label class="field"><span data-i18n="f.authors">Auteurs</span><input name="authors" maxlength="300" autocomplete="off" data-i18n-attr="placeholder:f.authorsPh"></label>
+    <div class="two">
+      <label class="field"><span data-i18n="f.year">Année</span><input name="year" inputmode="numeric" maxlength="4" placeholder="2024"></label>
+      <label class="field"><span data-i18n="f.doi">DOI (facultatif)</span><input name="doi" maxlength="240" autocomplete="off" placeholder="10.1016/…" dir="ltr"></label>
+    </div>
+    <label class="field"><span data-i18n="f.title">Titre</span><input name="title" maxlength="300" autocomplete="off"></label>
+    <label class="field"><span data-i18n="f.journal">Revue</span><input name="journal" maxlength="200" autocomplete="off"></label>
+    <div id="cell-fields"></div>
+    <div class="row">
+      <button class="btn primary" id="save-paper" type="submit" data-i18n="btn.add">Ajouter à la matrice</button>
+      <button class="btn" id="cancel-edit" type="button" hidden data-i18n="btn.cancel">Annuler</button>
+      <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+    </div>
+    <p class="status" id="form-status" role="status" aria-live="polite"></p>
+  </form>
+</section>
+
+<section class="panel" aria-labelledby="h-cols">
+  <h2 id="h-cols" data-i18n="cols.title">Colonnes d'analyse</h2>
+  <p class="hint" data-i18n="cols.hint">Les cinq colonnes de base sont fixes ; ajoutez les vôtres (pays, théorie, variables…).</p>
+  <ul class="cols" id="cols"></ul>
+  <form id="col-form" class="row" novalidate>
+    <label class="visually-hidden" for="col-label" data-i18n="cols.new">Nouvelle colonne</label>
+    <input id="col-label" maxlength="40" class="grow" data-i18n-attr="placeholder:cols.newPh">
+    <button class="btn" id="add-col" type="submit" data-i18n="btn.addCol">Ajouter la colonne</button>
+  </form>
+  <p class="status" id="col-status" role="status" aria-live="polite"></p>
+</section>
+</div>
+
+<section class="panel" aria-labelledby="h-matrix" style="margin-top:16px">
+  <h2 id="h-matrix" data-i18n="matrix.title">Matrice</h2>
+  <div class="filters">
+    <label class="field"><span data-i18n="flt.q">Rechercher</span><input id="flt-q" type="search" maxlength="120" data-i18n-attr="placeholder:flt.qPh"></label>
+    <label class="field"><span data-i18n="flt.from">De (année)</span><input id="flt-from" inputmode="numeric" maxlength="4"></label>
+    <label class="field"><span data-i18n="flt.to">À (année)</span><input id="flt-to" inputmode="numeric" maxlength="4"></label>
+    <label class="field"><span data-i18n="flt.gap">Cellules vides</span><select id="flt-gap"></select></label>
+  </div>
+  <p class="status" id="filter-status" role="status" aria-live="polite"></p>
+  <div class="kpis" id="kpis">
+    <div class="kpi"><span data-i18n="kpi.papers">Articles</span><strong id="k-papers">0</strong></div>
+    <div class="kpi"><span data-i18n="kpi.empty">Cellules vides</span><strong id="k-empty">0</strong></div>
+    <div class="kpi"><span data-i18n="kpi.complete">Complétude</span><strong id="k-complete">—</strong></div>
+  </div>
+  <div class="scroll" id="matrix-scroll" tabindex="0" data-i18n-attr="aria-label:matrix.scroll"><table class="matrix" id="matrix"></table></div>
+</section>
+
+<section class="panel" aria-labelledby="h-export" style="margin-top:16px">
+  <h2 id="h-export" data-i18n="export.title">Exports et sauvegarde</h2>
+  <p class="hint" data-i18n="export.hint">Les exports reprennent les articles affichés (filtres et tri appliqués).</p>
+  <div class="row">
+    <label class="field inline"><span data-i18n="export.sep">Séparateur CSV</span><select id="csv-sep"><option value="," data-i18n="sep.comma">virgule</option><option value=";" data-i18n="sep.semicolon">point-virgule</option></select></label>
+    <button class="btn" id="export-csv" type="button" data-i18n="btn.csv">Exporter (CSV)</button>
+    <button class="btn" id="export-md" type="button" data-i18n="btn.md">Exporter (Markdown)</button>
+  </div>
+  <div class="row" style="margin-top:10px">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Sauvegarder (JSON)</button>
+    <label class="btn" for="import" data-i18n="btn.import">Restaurer…</label>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">Vos notes restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

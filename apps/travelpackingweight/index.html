@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TravelPackingWeight — Le poids de vos bagages</title>
+<meta name="description" content="TravelPackingWeight : pesez vos bagages objet par objet, comparez-les aux limites de votre billet et voyez quoi déplacer d'un sac à l'autre. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#5f3dc4">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/travelpackingweight/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>TravelPackingWeight</strong><small data-i18n="brand.tagline">Le poids de vos bagages</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Pas de mauvaise surprise au comptoir.</h1>
+  <p data-i18n="hero.text">Listez vos objets et leur poids dans chaque bagage, saisissez les limites de votre billet : TravelPackingWeight calcule chaque total, signale les dépassements et propose quoi déplacer d'un bagage à l'autre.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les voyages enregistrés sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-trip">
+  <div class="row between">
+    <h2 id="h-trip" class="flush" data-i18n="trip.title">Voyage</h2>
+    <div class="row">
+      <label class="visually-hidden" for="trip-select" data-i18n="trip.select">Voyage affiché</label>
+      <select id="trip-select" class="auto"></select>
+      <button class="btn" id="new-trip" type="button" data-i18n="btn.new">Nouveau</button>
+      <button class="btn" id="rename-trip" type="button" data-i18n="btn.rename">Renommer</button>
+      <button class="btn" id="delete-trip" type="button" data-i18n="btn.delete">Supprimer</button>
+      <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+    </div>
+  </div>
+  <div class="row top-gap">
+    <label class="inline" for="display-unit"><span data-i18n="f.displayUnit">Affichage</span></label>
+    <select id="display-unit" class="auto small-select"><option value="kg">kg</option><option value="lb">lb</option></select>
+  </div>
+  <p class="status" id="trip-status" role="status" aria-live="polite"></p>
+</section>
+
+<div class="grid">
+<div class="col">
+  <section class="panel" aria-labelledby="h-limits">
+    <h2 id="h-limits" data-i18n="limits.title">Limites de votre billet</h2>
+    <form id="limits-form" novalidate>
+      <div class="form-grid four">
+        <label class="field"><span data-i18n="type.cabin">Cabine</span><input name="cabin" inputmode="decimal" placeholder="8"></label>
+        <label class="field"><span data-i18n="type.checked">Soute</span><input name="checked" inputmode="decimal" placeholder="23"></label>
+        <label class="field"><span data-i18n="type.personal">Objet personnel</span><input name="personal" inputmode="decimal" placeholder=""></label>
+        <label class="field"><span data-i18n="f.unit">Unité</span><select name="unit"><option value="kg">kg</option><option value="lb">lb</option></select></label>
+      </div>
+      <p class="hint" data-i18n="limits.hint">Recopiez les limites indiquées par votre compagnie. Laissez vide s'il n'y a pas de limite de poids.</p>
+      <button class="btn primary" id="save-limits" type="submit" data-i18n="btn.saveLimits">Enregistrer les limites</button>
+      <p class="status" id="limits-status" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <section class="panel" aria-labelledby="h-bags">
+    <h2 id="h-bags" data-i18n="bags.title">Bagages</h2>
+    <form id="bag-form" novalidate>
+      <div class="form-grid three">
+        <label class="field"><span data-i18n="f.bagName">Nom</span><input name="name" maxlength="60" data-i18n-attr="placeholder:f.bagNamePh"></label>
+        <label class="field"><span data-i18n="f.type">Type</span><select name="type"><option value="checked" data-i18n="type.checked">Soute</option><option value="cabin" data-i18n="type.cabin">Cabine</option><option value="personal" data-i18n="type.personal">Objet personnel</option></select></label>
+        <label class="field"><span><span data-i18n="f.tare">Poids à vide</span> (<span class="unit-label">kg</span>)</span><input name="tare" inputmode="decimal" placeholder="0"></label>
+      </div>
+      <button class="btn primary" id="add-bag" type="submit" data-i18n="btn.addBag">Ajouter le bagage</button>
+      <p class="status" id="bag-status" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <section class="panel" aria-labelledby="h-items">
+    <h2 id="h-items" data-i18n="items.title">Objets</h2>
+    <form id="item-form" novalidate>
+      <div class="form-grid three">
+        <label class="field span2"><span data-i18n="f.itemName">Objet</span><input name="name" maxlength="60" data-i18n-attr="placeholder:f.itemNamePh"></label>
+        <label class="field"><span data-i18n="f.bag">Bagage</span><select name="bag" id="item-bag"></select></label>
+        <label class="field"><span data-i18n="f.weight">Poids unitaire</span><input name="weight" inputmode="decimal" placeholder="0.5"></label>
+        <label class="field"><span data-i18n="f.unit">Unité</span><select name="unit"><option value="kg">kg</option><option value="g">g</option><option value="lb">lb</option><option value="oz">oz</option></select></label>
+        <label class="field"><span data-i18n="f.qty">Quantité</span><input name="qty" inputmode="numeric" value="1"></label>
+      </div>
+      <label class="check"><input type="checkbox" name="fixed"> <span data-i18n="f.fixed">À garder dans ce bagage (ne pas proposer de le déplacer)</span></label>
+      <button class="btn primary" id="add-item" type="submit" data-i18n="btn.addItem">Ajouter l'objet</button>
+      <p class="status" id="item-status" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+</div>
+
+<div class="col">
+  <section class="panel" aria-labelledby="h-weigh">
+    <h2 id="h-weigh" data-i18n="weigh.title">Pesée</h2>
+    <div class="kpis">
+      <div class="kpi"><span data-i18n="kpi.total">Poids total</span><strong id="k-total">—</strong></div>
+      <div class="kpi"><span data-i18n="kpi.over">Dépassements</span><strong id="k-over">—</strong></div>
+    </div>
+    <p class="empty" id="bags-empty" data-i18n="bags.empty">Ajoutez un bagage pour commencer.</p>
+    <div id="bag-cards" class="bag-cards"></div>
+  </section>
+  <section class="panel" aria-labelledby="h-moves">
+    <h2 id="h-moves" data-i18n="moves.title">Que déplacer ?</h2>
+    <div id="moves" aria-live="polite"></div>
+    <div class="row top-gap"><button class="btn primary" id="apply-moves" type="button" hidden data-i18n="btn.apply">Appliquer ces déplacements</button><button class="btn" id="export-csv" type="button" data-i18n="btn.csv">Liste (CSV)</button></div>
+    <p class="status" id="moves-status" role="status" aria-live="polite"></p>
+    <p class="hint" data-i18n="moves.hint">Calcul sur vos pesées et les limites saisies : la balance de l'aéroport fait foi.</p>
+  </section>
+</div>
+</div>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <label class="btn file" for="import" data-i18n="btn.import">Restaurer…</label>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">Aucune limite de compagnie n'est préenregistrée : vos voyages restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "RecipeScaler — adaptez vos recettes",
+  "short_name": "RecipeScaler",
+  "description": "Recalcule les quantités d'une recette selon le nombre de portions, avec conversions et arrondis lisibles.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#b8402a",
+  "background_color": "#faf5f3",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

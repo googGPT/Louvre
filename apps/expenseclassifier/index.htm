@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ExpenseClassifier — Classez votre relevé bancaire</title>
+<meta name="description" content="ExpenseClassifier : importez un relevé CSV, classez les opérations avec vos propres règles et obtenez les totaux par catégorie et par mois. Tout reste dans votre navigateur.">
+<meta name="theme-color" content="#4338ca">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/expenseclassifier/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>ExpenseClassifier</strong><small data-i18n="brand.tagline">Classez votre relevé bancaire</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Où part votre argent, ligne par ligne ?</h1>
+  <p data-i18n="hero.text">Importez le relevé CSV de votre banque, écrivez vos règles (mot-clé ou motif) et obtenez les totaux par catégorie et par mois. Le fichier est lu dans votre navigateur : rien n'est envoyé.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les données enregistrées sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-import">
+  <h2 id="h-import" data-i18n="import.title">1. Importer un relevé</h2>
+  <div class="row">
+    <button class="btn primary" id="pick-file" type="button" data-i18n="btn.file">Choisir un fichier CSV…</button>
+    <input id="file" type="file" accept=".csv,.txt,text/csv,text/plain" class="visually-hidden" tabindex="-1" aria-hidden="true">
+    <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+  </div>
+  <label class="field top-gap"><span data-i18n="import.paste">… ou collez le contenu du relevé</span>
+    <textarea id="csv-text" rows="4" spellcheck="false" dir="auto" data-i18n-attr="placeholder:import.pastePh"></textarea></label>
+  <button class="btn" id="analyze" type="button" data-i18n="btn.analyze">Analyser</button>
+  <p class="status" id="import-status" role="status" aria-live="polite"></p>
+
+  <div id="settings" hidden>
+    <h3 data-i18n="settings.title">Lecture du fichier</h3>
+    <div class="form-grid">
+      <label class="field"><span data-i18n="settings.delimiter">Séparateur</span>
+        <select id="delim"><option value=";" data-i18n="delim.semicolon">Point-virgule ;</option><option value="," data-i18n="delim.comma">Virgule ,</option><option value="&#9;" data-i18n="delim.tab">Tabulation</option><option value="|" data-i18n="delim.pipe">Barre verticale |</option></select></label>
+      <label class="field"><span data-i18n="settings.decimal">Décimales</span>
+        <select id="decimal"><option value="comma" data-i18n="decimal.comma">Virgule (12,50)</option><option value="dot" data-i18n="decimal.dot">Point (12.50)</option></select></label>
+      <label class="field"><span data-i18n="settings.dateFormat">Format des dates</span>
+        <select id="datefmt"><option value="dmy" data-i18n="datefmt.dmy">JJ/MM/AAAA</option><option value="mdy" data-i18n="datefmt.mdy">MM/JJ/AAAA</option><option value="ymd" data-i18n="datefmt.ymd">AAAA-MM-JJ</option></select></label>
+      <label class="check"><input type="checkbox" id="has-header"> <span data-i18n="settings.header">La première ligne contient les titres</span></label>
+    </div>
+    <p class="hint" id="date-hint" hidden data-i18n="settings.ambiguous">Dates ambiguës (jour et mois ≤ 12) : vérifiez le format.</p>
+    <h3 data-i18n="map.title">Colonnes</h3>
+    <div class="form-grid">
+      <label class="field"><span data-i18n="map.date">Date</span><select id="col-date"></select></label>
+      <label class="field"><span data-i18n="map.label">Libellé</span><select id="col-label"></select></label>
+      <label class="field"><span data-i18n="map.mode">Montants</span>
+        <select id="amount-mode"><option value="single" data-i18n="map.single">Une colonne (débits négatifs)</option><option value="split" data-i18n="map.split">Deux colonnes débit / crédit</option></select></label>
+      <label class="field" id="f-amount"><span data-i18n="map.amount">Montant</span><select id="col-amount"></select></label>
+      <label class="field" id="f-debit" hidden><span data-i18n="map.debit">Débit</span><select id="col-debit"></select></label>
+      <label class="field" id="f-credit" hidden><span data-i18n="map.credit">Crédit</span><select id="col-credit"></select></label>
+    </div>
+    <h3 data-i18n="preview.title">Aperçu</h3>
+    <div class="scroll"><table class="data" id="preview"></table></div>
+    <div class="row top-gap"><button class="btn primary" id="do-import" type="button" data-i18n="btn.import">Importer</button></div>
+    <ul class="errors" id="row-errors"></ul>
+  </div>
+</section>
+
+<section class="panel" aria-labelledby="h-rules">
+  <h2 id="h-rules" data-i18n="rules.title">2. Catégories et règles</h2>
+  <form id="cat-form" class="row" novalidate>
+    <label class="visually-hidden" for="cat-name" data-i18n="cat.name">Nouvelle catégorie</label>
+    <input id="cat-name" class="grow" maxlength="40" data-i18n-attr="placeholder:cat.namePh">
+    <button class="btn" type="submit" data-i18n="btn.addCat">Ajouter la catégorie</button>
+  </form>
+  <ul class="chips" id="cats" data-i18n-attr="aria-label:cat.list"></ul>
+  <form id="rule-form" novalidate>
+    <div class="form-grid rule-grid">
+      <label class="field"><span data-i18n="rule.category">Catégorie</span><select id="rule-cat"></select></label>
+      <label class="field"><span data-i18n="rule.kind">Type</span>
+        <select id="rule-kind"><option value="keyword" data-i18n="kind.keyword">Contient le mot-clé</option><option value="pattern" data-i18n="kind.pattern">Correspond au motif</option></select></label>
+      <label class="field wide"><span data-i18n="rule.value">Mot-clé ou motif</span><input id="rule-value" maxlength="80" data-i18n-attr="placeholder:rule.valuePh"></label>
+      <label class="field"><span data-i18n="rule.sign">Opérations</span>
+        <select id="rule-sign"><option value="any" data-i18n="sign.any">Débits et crédits</option><option value="out" data-i18n="sign.out">Débits seulement</option><option value="in" data-i18n="sign.in">Crédits seulement</option></select></label>
+    </div>
+    <p class="hint" data-i18n="rule.hint">Majuscules et accents sont ignorés.</p>
+    <button class="btn primary" type="submit" data-i18n="btn.addRule">Ajouter la règle</button>
+    <p class="status" id="rule-status" role="status" aria-live="polite"></p>
+  </form>
+  <h3 data-i18n="rules.order">Règles, par ordre de priorité</h3>
+  <ol class="rules" id="rules"></ol>
+</section>
+
+<section class="panel" aria-labelledby="h-results">
+  <h2 id="h-results" data-i18n="results.title">3. Résultats</h2>
+  <div class="kpis" id="kpis"></div>
+  <h3 data-i18n="results.byCat">Par catégorie</h3>
+  <div class="scroll"><table class="data" id="by-cat"></table></div>
+  <h3 data-i18n="results.byMonth">Par mois (solde net)</h3>
+  <div class="scroll"><table class="data" id="by-month"></table></div>
+  <div class="row between top-gap">
+    <h3 class="flush" data-i18n="results.lines">Opérations</h3>
+    <div class="row">
+      <label class="visually-hidden" for="filter" data-i18n="results.filter">Afficher</label>
+      <select id="filter" class="auto"></select>
+      <button class="btn" id="export-csv" type="button" data-i18n="btn.exportCsv">Exporter le CSV classé</button>
+    </div>
+  </div>
+  <div class="scroll"><table class="data" id="lines"></table></div>
+  <p class="hint" id="lines-more" hidden></p>
+</section>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <button class="btn" id="pick-backup" type="button" data-i18n="btn.restore">Restaurer…</button>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden" tabindex="-1" aria-hidden="true">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+    <button class="btn" id="clear" type="button" data-i18n="btn.clear">Effacer le relevé</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">Classement selon vos règles.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

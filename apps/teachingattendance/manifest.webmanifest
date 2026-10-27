@@ -1,0 +1,12 @@
+{
+  "name": "TeachingAttendance — feuille de présence locale",
+  "short_name": "Attendance",
+  "description": "Fait l'appel par séance, calcule le taux d'assiduité de chaque étudiant et signale ceux sous le seuil choisi.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#1864ab",
+  "background_color": "#f3f6fa",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
