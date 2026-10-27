@@ -78,3 +78,8 @@ footer{color:var(--muted);font-size:13px;padding:24px 0 40px}
 .preview th,.preview td{border:1px solid var(--line);padding:6px 10px}
 .preview th{background:var(--bg)}
 @media print{header.top,.hero,#warning,.wrap>.panel,footer,.desk>.panel:first-child{display:none!important}.desk{display:block}.panel{border:0;padding:0}#h-preview{display:none}}
+/* Petits écrans et polices larges : aucun enfant de ligne, menu ni bloc de code ne dépasse la largeur. */
+.row>*{min-width:0;max-width:100%}
+select.auto{flex:1 1 180px;min-width:0;text-overflow:ellipsis}
+.preview,.editor,.panel{min-width:0}
+.preview pre{max-width:100%}

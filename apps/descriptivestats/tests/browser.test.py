@@ -42,7 +42,10 @@ def main():
             page.on('request', lambda r: external.append(r.url) if r.url.startswith('http') and not r.url.startswith(origin) else None)
             page.on('dialog', lambda d: d.accept())
             page.goto(origin)
-            assert page.evaluate('() => document.documentElement.scrollWidth <= innerWidth + 2'), 'débordement mobile'
+            wide0 = page.evaluate('''() => document.documentElement.scrollWidth <= innerWidth + 2 ? [] :
+          [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 2)
+            .slice(0, 5).map((e) => `${e.tagName}.${e.className} « ${(e.textContent || '').trim().slice(0, 40)} »`)''')
+            assert not wide0, f'débordement mobile : {wide0}'
             expect(page.locator('#decimal')).to_have_value(',')  # français : virgule décimale par défaut
             page.locator('#export-csv').click()
             expect(page.locator('#results-status')).to_have_text('Aucune valeur numérique à analyser')

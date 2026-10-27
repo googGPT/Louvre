@@ -57,3 +57,6 @@ label.field.inline select{width:auto;max-width:100%;min-width:0}
 .list .txt{min-width:0}.list .txt b{display:block;overflow-wrap:anywhere}.list .txt span{display:block;font-size:13px;color:var(--muted)}
 .list .acts{display:flex;gap:6px}.list .acts button{min-height:36px;padding:6px 10px;font-size:13px}
 .empty{color:var(--muted);text-align:center;padding:26px 10px}
+/* Petits écrans et polices larges : les menus déroulants rétrécissent au lieu de déborder. */
+.field,.field.inline{min-width:0;max-width:100%}
+select{max-width:100%;min-width:0;text-overflow:ellipsis}
