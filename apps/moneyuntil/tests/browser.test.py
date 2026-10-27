@@ -81,7 +81,8 @@ def main():
             page.locator('#import-file').set_input_files({'name':'good.json','mimeType':'application/json','buffer':backup})
             expect(page.locator('#live-announcement')).to_contain_text('Sauvegarde restaurée')
             assert 'Courses' in page.locator('#expense-list').inner_text()
-            assert len(json.loads(page.evaluate("localStorage.getItem('moneyuntil-v1')") or '{}').get('expenses',[])) in (0,1)
+            persisted=page.evaluate("JSON.parse(localStorage.getItem('moneyuntil:v1'))")
+            assert len(persisted['expenses'])==1 and len(persisted['bills'])==1
             assert not external,external
             assert not errors,errors
             browser.close()
