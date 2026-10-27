@@ -1,5 +1,7 @@
 # Louvre — Audit transversal de fiabilité des applications existantes
 
+> **Audit historique (26 octobre 2026).** Depuis, les tests, le déploiement, les service workers et la CSP sont communs à toutes les applis : voir la section « Les applications » du [README](README.md).
+
 **Périmètre :** dépôt `googGPT/Louvre`, branche `main`, inventaire inspecté le 27 octobre 2026. Cette passe vise **les erreurs de validation commune observées et les protections d'import**, pas une réécriture aveugle de chaque application.
 
 ## Inventaire réellement vérifié

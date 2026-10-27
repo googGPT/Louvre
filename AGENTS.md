@@ -1,6 +1,16 @@
-# Instructions pour Codex
+# Instructions pour les agents (Codex, Claude et autres)
 
-Ces règles s'appliquent à l'ensemble du dépôt et à toutes les futures fiches techniques.
+Ces règles s'appliquent à l'ensemble du dépôt, aux applications et à toutes les futures fiches techniques, quel que soit l'agent.
+
+## Applications (`apps/`)
+
+- La liste des applis publiées est `apps/catalogue.json` ; toute nouvelle appli y est ajoutée.
+- Ne jamais écrire `sw.js` à la main : lancer `python scripts/build_sw.py` après toute modification d'une appli (le nom du cache suit le contenu ; sinon les visiteurs gardent l'ancienne version).
+- Lancer `python scripts/apply_csp.py` après toute modification d'un `index.html` ; garder `index.htm` identique à `index.html`.
+- Aucune ressource externe (script, police, image, API) : la CSP l'interdit et les applis doivent fonctionner hors ligne.
+- Montants en centimes entiers ; dates en jours civils ; sauvegardes validées avant écriture ; mode protégé conservé si une restauration échoue.
+- Avant toute PR : `bash scripts/test_app.sh <slug>` pour chaque appli touchée, puis `bash scripts/build_site.sh`.
+- Une appli sans vraie logique métier (simple formulaire générique) ne doit pas être publiée.
 
 ## Sources et honnêteté documentaire
 

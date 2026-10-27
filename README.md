@@ -1,4 +1,55 @@
-# Louvre — Bibliothèque technique pour Codex
+# Louvre
+
+Louvre réunit deux choses :
+
+1. **Une collection d'applications web gratuites**, publiées sur [googgpt.github.io/Louvre](https://googgpt.github.io/Louvre/) : sans compte, sans publicité, sans serveur, hors ligne après la première visite.
+2. **Une bibliothèque technique** tirée de cinq ouvrages de développement, qui sert de référence aux agents de code (section plus bas).
+
+## Les applications
+
+La liste officielle est [`apps/catalogue.json`](apps/catalogue.json) : c'est la seule source de vérité. La page d'accueil en est générée.
+
+Chaque appli vit dans `apps/<slug>/` et suit la même structure :
+
+| Fichier | Rôle |
+| --- | --- |
+| `index.html` (+ copie `index.htm`) | Page de l'appli, avec sa politique de sécurité (CSP) |
+| `core.js` | Logique pure (calculs, validation), testable sans navigateur |
+| `app.js`, `style.css` | Interface |
+| `sw.js` | Service worker **généré** (ne pas modifier à la main) |
+| `manifest.webmanifest`, `icon.svg`, `sitemap.xml` | Installation et référencement |
+| `tests/core.test.cjs`, `tests/browser.test.py` | Tests métier (Node) et test de bout en bout (Chromium) |
+
+### Ajouter ou modifier une appli
+
+```bash
+python scripts/apply_csp.py      # écrit la politique de sécurité dans index.html / index.htm
+python scripts/build_sw.py       # régénère sw.js : le nom du cache suit le contenu, donc les visiteurs reçoivent la mise à jour
+python scripts/build_home.py     # régénère la page d'accueil depuis apps/catalogue.json
+bash scripts/test_app.sh <slug>  # syntaxe, manifeste, tests métier, test navigateur
+bash scripts/build_site.sh       # assemble le site comme en production (_site/)
+```
+
+Pour une nouvelle appli, ajouter aussi son entrée dans `apps/catalogue.json`. La CI refuse un service worker, une CSP ou une page d'accueil non régénérés.
+
+### Automatisation
+
+- **`louvre-apps-qa.yml`** : sur chaque PR, teste chaque appli modifiée et assemble le site complet.
+- **`louvre-pages.yml`** : sur `main`, teste toutes les applis, publie, puis vérifie en ligne l'accueil, chaque appli et chaque fichier mis en cache.
+- **`louvre-sw-cache-guard.yml`** : refuse une modification d'appli qui ne renouvelle pas son cache hors ligne.
+
+### Règles de fiabilité communes
+
+- Les montants sont calculés en centimes entiers, et les dates sont des jours civils (pas de piège d'heure d'été).
+- Une sauvegarde importée est validée champ par champ avant toute écriture.
+- Si le stockage local est illisible, l'appli passe en mode protégé : rien n'est écrasé, une copie brute est exportable, et ce mode est conservé si une restauration échoue.
+- Toutes les applis partagent la même adresse : effacer les données du site les efface pour toutes. La page d'accueil le rappelle.
+
+Historique de maintenance : [branches à nettoyer](docs/maintenance/branches.md).
+
+---
+
+# Bibliothèque technique
 
 Louvre transforme cinq ouvrages de développement logiciel en références structurées : fiches de conception, compromis, exemples originaux, limites et provenance documentaire.
 
