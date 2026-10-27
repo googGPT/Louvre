@@ -1,0 +1,6 @@
+/* Louvre — menus langue et devise (copie identique dans chaque appli multilingue). */
+.louvre-locale{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.louvre-locale select{width:auto;min-height:36px;padding:4px 8px;border-radius:10px;font-size:13px;font-weight:600;border:1px solid var(--line,#dbe5e9);background:var(--surface,#fff);color:inherit}
+.louvre-visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+[dir="rtl"] .louvre-locale{direction:rtl}
+[dir="rtl"] *{letter-spacing:0!important} /* les lettres arabes se lient : pas d’espacement artificiel */

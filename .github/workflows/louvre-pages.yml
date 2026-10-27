@@ -9,6 +9,7 @@ on:
       - 'index.html'
       - 'assets/**'
       - 'scripts/**'
+      - 'shared/**'
       - '.github/workflows/louvre-pages.yml'
   workflow_dispatch:
 permissions:

@@ -9,6 +9,7 @@ on:
       - 'index.html'
       - 'assets/**'
       - 'scripts/**'
+      - 'shared/**'
       - '.github/workflows/louvre-apps-qa.yml'
   workflow_dispatch:  # lancement manuel : teste toutes les applis
 permissions:
@@ -35,7 +36,7 @@ jobs:
             chosen="$all"                                   # lancement manuel : tout
           else
             changed=$(git diff --name-only "origin/${BASE_REF}...HEAD")
-            if echo "$changed" | grep -qE '^(scripts/test_app\.sh|\.github/workflows/louvre-apps-qa\.yml)$'; then
+            if echo "$changed" | grep -qE '^(scripts/test_app\.sh|scripts/check_messages\.cjs|shared/.*|\.github/workflows/louvre-apps-qa\.yml)$'; then
               chosen="$all"                                 # la recette change : tout retester
             else
               chosen=$(echo "$changed" | sed -nE 's#^apps/([^/]+)/.*#\1#p' | sort -u | while read -r s; do [ -f "apps/$s/index.html" ] && echo "$s"; done || true)

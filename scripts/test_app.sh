@@ -19,6 +19,12 @@ if [ -f "$dir/manifest.webmanifest" ]; then      # manifeste de l'appli installa
   node -e "JSON.parse(require('fs').readFileSync('$dir/manifest.webmanifest','utf8'))"  # doit être du JSON valide
 fi
 
+if [ -f "$dir/messages.js" ]; then                # appli multilingue
+  node scripts/check_messages.cjs "$slug"        # toutes les langues complètes et cohérentes
+  cmp shared/louvre-i18n.js "$dir/louvre-i18n.js"   # copie du mécanisme commun à jour
+  cmp shared/louvre-i18n.css "$dir/louvre-i18n.css"
+fi
+
 if [ -f "$dir/index.htm" ]; then                 # copie historique de index.html
   cmp "$dir/index.html" "$dir/index.htm"         # doit rester strictement identique
 fi

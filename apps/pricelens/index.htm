@@ -11,62 +11,65 @@
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
 </head>
 <body>
 <div class="wrap">
 <header class="top">
-  <div class="brand"><img src="./icon.svg" alt=""><div><strong>PriceLens</strong><small>Le vrai prix au kilo</small></div></div>
-  <span class="badge">Local · sans compte</span>
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>PriceLens</strong><small data-i18n="brand.tagline">Le vrai prix au kilo</small></div></div>
+  <div class="row" style="gap:8px"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale></div></div>
 </header>
 <section class="hero">
-  <h1>Le grand format est-il vraiment moins cher ?</h1>
-  <p>Saisissez le prix et la contenance de chaque produit : PriceLens calcule le prix au kilo, au litre ou à la pièce, classe les offres et indique l'économie réelle. Les lots (« 6 × 33 cl ») sont pris en compte.</p>
+  <h1 data-i18n="hero.title">Le grand format est-il vraiment moins cher ?</h1>
+  <p data-i18n="hero.text">Saisissez le prix et la contenance de chaque produit : PriceLens calcule le prix au kilo, au litre ou à la pièce, classe les offres et indique l'économie réelle.</p>
 </section>
-<p id="warning" class="warning" hidden>Les comparaisons enregistrées sur cet appareil sont illisibles. Rien ne sera écrasé : exportez la copie brute, puis restaurez une sauvegarde valide.</p>
+<p id="warning" class="warning" hidden data-i18n="warning">Les comparaisons enregistrées sur cet appareil sont illisibles.</p>
 
 <section class="panel" aria-labelledby="h-list">
   <div class="row" style="justify-content:space-between">
-    <h2 id="h-list" style="margin:0">Comparaison</h2>
+    <h2 id="h-list" style="margin:0" data-i18n="list.title">Comparaison</h2>
     <div class="row">
-      <label class="visually-hidden" for="list-select">Comparaison affichée</label>
+      <label class="visually-hidden" for="list-select" data-i18n="list.select">Comparaison affichée</label>
       <select id="list-select" style="width:auto;min-width:200px"></select>
-      <button class="btn" id="new-list" type="button">Nouvelle</button>
-      <button class="btn" id="rename-list" type="button">Renommer</button>
-      <button class="btn" id="delete-list" type="button">Supprimer</button>
+      <button class="btn" id="new-list" type="button" data-i18n="btn.new">Nouvelle</button>
+      <button class="btn" id="rename-list" type="button" data-i18n="btn.rename">Renommer</button>
+      <button class="btn" id="delete-list" type="button" data-i18n="btn.delete">Supprimer</button>
     </div>
   </div>
   <form id="item-form" novalidate style="margin-top:16px">
     <div class="form-grid">
-      <label class="field name">Produit<input name="name" maxlength="80" placeholder="ex. Riz basmati 1 kg" required></label>
-      <label class="field">Prix payé (€)<input name="price" inputmode="decimal" placeholder="2,49" required></label>
-      <label class="field">Contenance<input name="qty" inputmode="decimal" placeholder="500" required></label>
-      <label class="field">Unité<select name="unit"><option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="cl">cl</option><option value="l">L</option><option value="piece">pièce(s)</option></select></label>
-      <label class="field">Nb d'unités<input name="count" inputmode="numeric" value="1"></label>
+      <label class="field name"><span data-i18n="f.name">Produit</span><input name="name" maxlength="80" data-i18n-attr="placeholder:f.namePh" required></label>
+      <label class="field"><span><span data-i18n="f.price">Prix payé</span> (<span id="cur-symbol">€</span>)</span><input name="price" inputmode="decimal" placeholder="2.49" required></label>
+      <label class="field"><span data-i18n="f.qty">Contenance</span><input name="qty" inputmode="decimal" placeholder="500" required></label>
+      <label class="field"><span data-i18n="f.unit">Unité</span><select name="unit"><option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="cl">cl</option><option value="l">L</option><option value="piece" data-i18n="unit.piece">pièce(s)</option></select></label>
+      <label class="field"><span data-i18n="f.count">Nb d'unités</span><input name="count" inputmode="numeric" value="1"></label>
     </div>
-    <div class="row" style="margin-top:12px"><button class="btn primary" id="add" type="submit">Ajouter</button><button class="btn" id="sample" type="button">Exemple</button></div>
+    <div class="row" style="margin-top:12px"><button class="btn primary" id="add" type="submit" data-i18n="btn.add">Ajouter</button><button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button></div>
     <p class="status" id="form-status" role="status"></p>
   </form>
 </section>
 
 <section class="panel" aria-labelledby="h-result" style="margin-top:16px">
-  <h2 id="h-result">Classement</h2>
+  <h2 id="h-result" data-i18n="result.title">Classement</h2>
   <div id="verdict" class="verdict" hidden></div>
-  <p id="mixed" class="status" hidden>Masses, volumes et pièces ne se comparent pas entre eux : ils sont classés séparément.</p>
-  <div id="groups"><p class="empty">Ajoutez au moins deux produits pour les comparer.</p></div>
+  <p id="mixed" class="status" hidden data-i18n="result.mixed">Masses, volumes et pièces sont classés séparément.</p>
+  <div id="groups"></div>
 </section>
 
 <section class="panel" aria-labelledby="h-backup" style="margin-top:16px">
-  <h2 id="h-backup">Sauvegarde</h2>
+  <h2 id="h-backup" data-i18n="backup.title">Sauvegarde</h2>
   <div class="row">
-    <button class="btn" id="export" type="button">Exporter (JSON)</button>
-    <label class="btn" for="import" style="display:inline-flex;align-items:center">Restaurer…</label>
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <label class="btn" for="import" style="display:inline-flex;align-items:center" data-i18n="btn.import">Restaurer…</label>
     <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
-    <button class="btn" id="export-raw" type="button" hidden>Copie brute</button>
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
   </div>
   <p class="status" id="backup-status" role="status"></p>
 </section>
-<footer>Les prix sont ceux que vous saisissez : PriceLens ne consulte aucun magasin. Vos comparaisons restent sur cet appareil.</footer>
+<footer data-i18n="footer">Les prix sont ceux que vous saisissez : PriceLens ne consulte aucun magasin.</footer>
 </div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
 <script src="./core.js"></script>
 <script src="./app.js"></script>
 </body>

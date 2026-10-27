@@ -72,3 +72,4 @@ footer{color:var(--muted);font-size:13px;padding:24px 0 40px}
 .cats{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:14px}
 .cats li{display:grid;grid-template-columns:110px minmax(0,1fr) 92px;gap:8px;align-items:center}
 .cats .bar{height:8px;border-radius:999px;background:var(--line);overflow:hidden}.cats .bar i{display:block;height:100%;background:var(--accent)}
+[dir="rtl"] #prev,[dir="rtl"] #next{transform:scaleX(-1)} /* flèches dans le sens de lecture */

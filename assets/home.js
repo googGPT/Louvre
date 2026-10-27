@@ -1,5 +1,6 @@
 // Recherche et filtres de la page d'accueil. Sans JavaScript, toutes les applis restent visibles.
 (() => {
+  window.LouvreI18n.init(window.LouvreMessages); // langue (menu, choix mémorisé ou navigateur) et traductions
   const tools = document.querySelector('.tools'); // zone recherche + filtres, cachée par défaut
   const input = document.getElementById('q'); // champ de recherche
   const chips = [...document.querySelectorAll('.chip')]; // boutons de famille
@@ -15,7 +16,7 @@
     const q = norm(input.value.trim()); // texte recherché, normalisé
     let shown = 0; // nombre total de cartes visibles
     for (const c of cards) { // décide pour chaque carte
-      const ok = (!family || c.dataset.family === family) && (!q || norm(c.dataset.search).includes(q));
+      const ok = (!family || c.dataset.family === family) && (!q || norm(c.textContent).includes(q));
       c.hidden = !ok; // cache la carte si elle ne correspond pas
       if (ok) shown++; // compte les cartes visibles
     }

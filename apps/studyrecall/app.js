@@ -2,6 +2,9 @@
 (() => {
   'use strict';
   const C = window.StudyCore;
+  const L = window.LouvreI18n.init(window.LouvreMessages); // langue et traductions
+  const t = L.t;
+  const deckName = (d) => (d === 'Général' ? t('deck.general') : d); // paquet par défaut traduit à l'affichage
   const KEY = 'louvre-studyrecall-v1'; // clé de stockage local
   const $ = (id) => document.getElementById(id);
   const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined) n.textContent = String(text); return n; };
@@ -17,9 +20,9 @@
 
   // Enregistre seulement si le stockage est sain ; renvoie vrai en cas de succès.
   function save(next) {
-    if (readOnly) { say('backup-status', 'Stockage illisible : restaurez une sauvegarde valide avant de modifier.', 'error'); return false; }
+    if (readOnly) { say('backup-status', t('storage.readonly'), 'error'); return false; }
     try { localStorage.setItem(KEY, C.backup(next)); cards = next; return true; }
-    catch (e) { say('backup-status', 'Enregistrement impossible (stockage plein ou bloqué) : ' + e.message, 'error'); return false; }
+    catch (e) { say('backup-status', t('storage.fail', { msg: L.error(e) }), 'error'); return false; }
   }
 
   // --- Révision
@@ -31,10 +34,10 @@
     $('reveal').disabled = !current;
     $('reveal').hidden = false; $('known').hidden = true; $('forgot').hidden = true; $('flash-a').hidden = true;
     if (!current) {
-      $('flash-empty').textContent = cards.length ? 'Bravo, plus rien à réviser aujourd\'hui.' : 'Ajoutez vos premières fiches pour commencer.';
+      $('flash-empty').textContent = cards.length ? t('flash.done') : t('flash.start');
       return;
     }
-    $('flash-meta').textContent = `${current.deck} · boîte ${current.box} · ${q.length} à réviser`;
+    $('flash-meta').textContent = t('flash.meta', { deck: deckName(current.deck), box: current.box, n: q.length });
     $('flash-q').textContent = current.front;
     $('flash-a').textContent = current.back;
   }
@@ -48,45 +51,44 @@
     try {
       const updated = C.review(current, known, today());
       if (!save(cards.map((c) => (c.id === updated.id ? updated : c)))) return;
-      say('session-status', known ? `Bien ! Prochaine révision le ${formatDay(updated.due)}.` : 'Elle revient demain, en boîte 1.', known ? 'ok' : '');
+      say('session-status', known ? t('session.known', { date: formatDay(updated.due) }) : t('session.forgot'), known ? 'ok' : '');
       render();
-    } catch (e) { say('session-status', e.message, 'error'); }
+    } catch (e) { say('session-status', L.error(e), 'error'); }
   }
 
   // --- Affichage
   function formatDay(day) {
-    const [y, m, d] = day.split('-').map(Number);
-    return new Date(y, m - 1, d, 12).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+    return L.date(day, { weekday: 'short', day: 'numeric', month: 'short' }); // selon la langue choisie
   }
   function renderStats() {
     const s = C.stats(cards, today());
     $('k-due').textContent = s.due; $('k-today').textContent = s.reviewedToday; $('k-mastered').textContent = s.mastered;
-    $('k-retention').textContent = s.retention === null ? '—' : s.retention.toLocaleString('fr-FR') + ' %';
+    $('k-retention').textContent = s.retention === null ? '—' : L.number(s.retention / 100, { style: 'percent', maximumFractionDigits: 1 });
     const max = Math.max(1, ...s.perBox);
-    $('boxes').replaceChildren(...s.perBox.map((n, i) => { const bar = el('div'); bar.style.height = Math.max(6, Math.round(100 * n / max)) + '%'; bar.title = `Boîte ${i + 1} : ${n} fiche(s)`; bar.append(el('b', '', n)); return bar; }));
-    $('forecast').replaceChildren(...C.forecast(cards, today(), 7).map((f, i) => { const li = el('li'); li.append(el('strong', '', f.count), i === 0 ? 'auj.' : formatDay(f.day).split(' ')[0]); return li; }));
+    $('boxes').replaceChildren(...s.perBox.map((n, i) => { const bar = el('div'); bar.style.height = Math.max(6, Math.round(100 * n / max)) + '%'; bar.title = t('box.tip', { box: i + 1, n }); bar.append(el('b', '', n)); return bar; }));
+    $('forecast').replaceChildren(...C.forecast(cards, today(), 7).map((f, i) => { const li = el('li'); li.append(el('strong', '', f.count), i === 0 ? t('forecast.today') : L.date(f.day, { weekday: 'short' })); return li; }));
   }
   function renderDecks() {
     const list = C.decks(cards), filter = $('deck-filter'), chosen = filter.value;
-    filter.replaceChildren(el('option', '', 'Tous les paquets'), ...list.map((d) => { const o = el('option', '', d); o.value = d; return o; }));
+    filter.replaceChildren(el('option', '', t('deck.all')), ...list.map((d) => { const o = el('option', '', deckName(d)); o.value = d; return o; }));
     filter.firstChild.value = '';
     filter.value = list.includes(chosen) ? chosen : '';
     $('deck-list').replaceChildren(...list.map((d) => { const o = el('option'); o.value = d; return o; }));
   }
   function renderList() {
-    const q = $('search').value.trim().toLocaleLowerCase('fr');
-    const shown = cards.filter((c) => !q || `${c.front} ${c.back} ${c.deck}`.toLocaleLowerCase('fr').includes(q))
+    const q = $('search').value.trim().toLocaleLowerCase();
+    const shown = cards.filter((c) => !q || `${c.front} ${c.back} ${deckName(c.deck)}`.toLocaleLowerCase().includes(q))
       .sort((a, b) => a.due.localeCompare(b.due) || a.front.localeCompare(b.front, 'fr'));
     $('count').textContent = `(${cards.length})`;
-    if (!shown.length) { $('cards').replaceChildren(el('li', 'empty', cards.length ? 'Aucune fiche ne correspond.' : 'Aucune fiche pour l\'instant.')); return; }
+    if (!shown.length) { $('cards').replaceChildren(el('li', 'empty', cards.length ? t('list.noMatch') : t('list.none'))); return; }
     $('cards').replaceChildren(...shown.map((c) => {
       const li = el('li'), txt = el('div', 'txt');
-      txt.append(el('b', '', c.front), el('span', '', c.back), el('span', 'tag', `${c.deck} · boîte ${c.box} · ${C.isDue(c, today()) ? 'à réviser' : 'le ' + formatDay(c.due)}`));
-      const acts = el('div', 'acts'), edit = el('button', 'btn', 'Modifier'), del = el('button', 'btn', 'Supprimer');
+      txt.append(el('b', '', c.front), el('span', '', c.back), el('span', 'tag', C.isDue(c, today()) ? t('tag.due', { deck: deckName(c.deck), box: c.box }) : t('tag.later', { deck: deckName(c.deck), box: c.box, date: formatDay(c.due) })));
+      const acts = el('div', 'acts'), edit = el('button', 'btn', t('btn.edit')), del = el('button', 'btn', t('btn.delete'));
       edit.type = del.type = 'button';
-      edit.setAttribute('aria-label', 'Modifier : ' + c.front); del.setAttribute('aria-label', 'Supprimer : ' + c.front);
+      edit.setAttribute('aria-label', t('aria.edit', { q: c.front })); del.setAttribute('aria-label', t('aria.delete', { q: c.front }));
       edit.addEventListener('click', () => startEdit(c));
-      del.addEventListener('click', () => { if (confirm('Supprimer cette fiche ?') && save(cards.filter((x) => x.id !== c.id))) { if (editing === c.id) stopEdit(); render(); } });
+      del.addEventListener('click', () => { if (confirm(t('confirm.delete')) && save(cards.filter((x) => x.id !== c.id))) { if (editing === c.id) stopEdit(); render(); } });
       acts.append(edit, del); li.append(txt, acts); return li;
     }));
   }
@@ -96,20 +98,20 @@
   function startEdit(c) {
     editing = c.id; const f = $('card-form');
     f.front.value = c.front; f.back.value = c.back; f.deck.value = c.deck === 'Général' ? '' : c.deck;
-    $('h-form').textContent = 'Modifier la fiche'; $('save').textContent = 'Enregistrer'; $('cancel').hidden = false; f.front.focus();
+    $('h-form').textContent = t('form.edit'); $('save').textContent = t('btn.save'); $('cancel').hidden = false; f.front.focus();
   }
-  function stopEdit() { editing = null; $('card-form').reset(); $('h-form').textContent = 'Nouvelle fiche'; $('save').textContent = 'Ajouter la fiche'; $('cancel').hidden = true; }
+  function stopEdit() { editing = null; $('card-form').reset(); $('h-form').textContent = t('form.new'); $('save').textContent = t('btn.addCard'); $('cancel').hidden = true; }
   $('card-form').addEventListener('submit', (event) => {
     event.preventDefault();
     const f = event.currentTarget, input = { front: f.front.value, back: f.back.value, deck: f.deck.value };
     try {
       let next;
       if (editing) next = cards.map((c) => (c.id === editing ? C.editCard(c, input) : c));
-      else { if (cards.length >= C.MAX_CARDS) throw new Error('Nombre maximal de fiches atteint'); next = [...cards, C.createCard(input, today(), newId())]; }
+      else { if (cards.length >= C.MAX_CARDS) throw new Error(`err.tooMany|${JSON.stringify({ max: C.MAX_CARDS })}`); next = [...cards, C.createCard(input, today(), newId())]; }
       if (!save(next)) return;
-      say('form-status', editing ? 'Fiche modifiée.' : 'Fiche ajoutée : à réviser dès aujourd\'hui.', 'ok');
+      say('form-status', editing ? t('form.edited') : t('form.added'), 'ok');
       stopEdit(); render(); f.front.focus();
-    } catch (e) { say('form-status', e.message, 'error'); }
+    } catch (e) { say('form-status', L.error(e), 'error'); }
   });
   $('cancel').addEventListener('click', stopEdit);
 
@@ -119,31 +121,29 @@
     a.href = url; a.download = name; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 4000);
   }
   $('export').addEventListener('click', () => {
-    try { download(`studyrecall-${today()}.json`, C.backup(cards), 'application/json'); say('backup-status', 'Sauvegarde téléchargée.', 'ok'); }
-    catch (e) { say('backup-status', e.message, 'error'); }
+    try { download(`studyrecall-${today()}.json`, C.backup(cards), 'application/json'); say('backup-status', t('backup.done'), 'ok'); }
+    catch (e) { say('backup-status', L.error(e), 'error'); }
   });
   $('import').addEventListener('change', async (event) => {
     const file = event.target.files && event.target.files[0]; event.target.value = '';
     if (!file) return;
     try {
-      if (file.size > 3_000_000) throw new Error('Fichier trop volumineux');
+      if (file.size > 3_000_000) throw new Error('err.fileBig');
       const next = C.validateBackup(JSON.parse(await file.text()));
-      if (!confirm(`Remplacer les ${cards.length} fiches de cet appareil par les ${next.length} fiches de la sauvegarde ?`)) return;
+      if (!confirm(t('backup.confirm', { a: cards.length, b: next.length }))) return;
       const wasReadOnly = readOnly; readOnly = false;
       if (!save(next)) { readOnly = wasReadOnly; return; } // échec : on garde la protection
       $('warning').hidden = true; $('export-raw').hidden = true; stopEdit(); render();
-      say('backup-status', `Sauvegarde restaurée : ${next.length} fiche(s).`, 'ok');
-    } catch (e) { say('backup-status', 'Restauration refusée : ' + e.message, 'error'); }
+      say('backup-status', t('backup.restored', { n: next.length }), 'ok');
+    } catch (e) { say('backup-status', t('backup.refused', { msg: L.error(e) }), 'error'); }
   });
   $('export-raw').addEventListener('click', () => download('studyrecall-stockage-brut.txt', localStorage.getItem(KEY) || '', 'text/plain'));
   $('sample').addEventListener('click', () => {
     const samples = [
-      { front: 'Capitale de l\'Australie ?', back: 'Canberra', deck: 'Géographie' },
-      { front: 'Formule de la valeur actuelle d\'un flux F dans n ans au taux r ?', back: 'VA = F / (1 + r)^n', deck: 'Finance' },
-      { front: '« To overlook » signifie…', back: 'Négliger, ne pas remarquer (et non « surveiller »).', deck: 'Anglais' },
+      ...[1, 2, 3].map((i) => ({ front: t(`sample.q${i}`), back: t(`sample.a${i}`), deck: t(`sample.d${i}`) })), // exemples dans la langue choisie
     ];
-    try { if (save([...cards, ...samples.map((s) => C.createCard(s, today(), newId()))])) { render(); say('backup-status', '3 fiches d\'exemple ajoutées.', 'ok'); } }
-    catch (e) { say('backup-status', e.message, 'error'); }
+    try { if (save([...cards, ...samples.map((s) => C.createCard(s, today(), newId()))])) { render(); say('backup-status', t('sample.added'), 'ok'); } }
+    catch (e) { say('backup-status', L.error(e), 'error'); }
   });
 
   // --- Événements de révision
@@ -169,6 +169,7 @@
   } catch (e) {
     readOnly = true; $('warning').hidden = false; $('export-raw').hidden = false;
   }
+  L.onChange(() => { if (editing) { $('h-form').textContent = t('form.edit'); $('save').textContent = t('btn.save'); } else { $('h-form').textContent = t('form.new'); $('save').textContent = t('btn.addCard'); } render(); }); // nouvelle langue : on réaffiche
   render();
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').catch(() => {});
 })();

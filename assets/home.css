@@ -31,3 +31,5 @@ h1{margin:8px 0 10px;font-size:clamp(28px,5vw,44px);line-height:1.08;letter-spac
 .empty{margin:40px 0;color:var(--muted)}
 footer{margin-top:48px;padding-top:20px;padding-bottom:40px;border-top:1px solid var(--line);font-size:14px;line-height:1.5;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){.card a{transition:none}.card a:hover{transform:none}}
+.hero-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+[dir="rtl"] .card-domain{letter-spacing:0;text-transform:none}

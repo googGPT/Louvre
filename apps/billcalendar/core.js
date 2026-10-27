@@ -13,7 +13,8 @@
   const CATEGORIES = Object.freeze(['Logement', 'Énergie', 'Télécom', 'Assurance', 'Abonnement', 'Transport', 'Santé', 'Impôts', 'Autre']);
   const MAX_BILLS = 300, MAX_NAME = 60;
 
-  function fail(m) { throw new Error(m); }
+  // Les erreurs portent une clé de traduction (et des paramètres JSON après « | ») : l'interface les traduit.
+  function fail(key, params) { throw new Error(params ? `${key}|${JSON.stringify(params)}` : key); }
 
   // --- Dates
   function isDay(s) {
@@ -102,22 +103,22 @@
   // --- Saisie
   function parseCents(value) {
     const s = String(value).trim().replace(/\s/g, '').replace(',', '.');
-    if (!/^\d{1,7}(\.\d{1,2})?$/.test(s)) fail('Montant invalide (ex. 12,99)');
+    if (!/^\d{1,7}(\.\d{1,2})?$/.test(s)) fail('err.amount');
     const [a, b = ''] = s.split('.');
     const cents = Number(a) * 100 + Number((b + '00').slice(0, 2));
-    if (cents <= 0) fail('Le montant doit être positif');
+    if (cents <= 0) fail('err.amountPositive');
     return cents;
   }
   function makeBill(input, id) {
-    if (typeof id !== 'string' || !/^[a-z0-9-]{6,64}$/i.test(id)) fail('Identifiant invalide');
+    if (typeof id !== 'string' || !/^[a-z0-9-]{6,64}$/i.test(id)) fail('err.id');
     const name = typeof input.name === 'string' ? input.name.trim() : '';
-    if (!name) fail('Nom obligatoire');
-    if (name.length > MAX_NAME) fail(`Nom trop long (${MAX_NAME} caractères au plus)`);
-    if (!Object.prototype.hasOwnProperty.call(FREQUENCIES, input.frequency)) fail('Fréquence inconnue');
-    if (!isDay(input.start)) fail('Date de première échéance invalide');
-    if (!CATEGORIES.includes(input.category)) fail('Catégorie inconnue');
+    if (!name) fail('err.nameRequired');
+    if (name.length > MAX_NAME) fail('err.nameLong', { max: MAX_NAME });
+    if (!Object.prototype.hasOwnProperty.call(FREQUENCIES, input.frequency)) fail('err.frequency');
+    if (!isDay(input.start)) fail('err.start');
+    if (!CATEGORIES.includes(input.category)) fail('err.category');
     const amountCents = typeof input.amountCents === 'number' ? input.amountCents : parseCents(input.amount);
-    if (!Number.isSafeInteger(amountCents) || amountCents <= 0 || amountCents > 999999999) fail('Montant invalide');
+    if (!Number.isSafeInteger(amountCents) || amountCents <= 0 || amountCents > 999999999) fail('err.amount');
     return { id, name, amountCents, frequency: input.frequency, start: input.start, category: input.category, active: input.active !== false };
   }
 
@@ -142,15 +143,20 @@
       }
     }
   }
-  function toICS(bills, stamp) {
-    if (!/^\d{8}T\d{6}Z$/.test(stamp)) fail('Horodatage invalide');
+  // `text` permet à l'interface de fournir le montant dans la devise choisie et des libellés traduits.
+  const DEFAULT_TEXT = {
+    money: (cents) => `${(cents / 100).toFixed(2).replace('.', ',')} €`,
+    describe: (bill) => `${bill.category} · ${FREQUENCIES[bill.frequency].label}`,
+  };
+  function toICS(bills, stamp, text = DEFAULT_TEXT) {
+    if (!/^\d{8}T\d{6}Z$/.test(stamp)) fail('err.stamp');
     const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Louvre//BillCalendar//FR', 'CALSCALE:GREGORIAN'];
     for (const b of bills.filter((x) => x.active)) {
       const start = b.start.replace(/-/g, ''), end = addDays(b.start, 1).replace(/-/g, '');
       lines.push('BEGIN:VEVENT', `UID:${b.id}@billcalendar.louvre`, `DTSTAMP:${stamp}`,
         `DTSTART;VALUE=DATE:${start}`, `DTEND;VALUE=DATE:${end}`, `RRULE:${rrule(b)}`,
-        fold(`SUMMARY:${icsEscape(`${b.name} — ${(b.amountCents / 100).toFixed(2).replace('.', ',')} €`)}`),
-        fold(`DESCRIPTION:${icsEscape(`${b.category} · ${FREQUENCIES[b.frequency].label}`)}`),
+        fold(`SUMMARY:${icsEscape(`${b.name} — ${text.money(b.amountCents)}`)}`),
+        fold(`DESCRIPTION:${icsEscape(text.describe(b))}`),
         'TRANSP:TRANSPARENT', 'END:VEVENT');
     }
     lines.push('END:VCALENDAR');
@@ -159,16 +165,16 @@
 
   // --- Sauvegarde
   function validateBackup(data) {
-    if (!data || typeof data !== 'object' || Array.isArray(data)) fail('Sauvegarde illisible');
-    if (data.app !== 'billcalendar' || data.version !== VERSION || !Array.isArray(data.bills)) fail('Ce fichier n\'est pas une sauvegarde BillCalendar');
-    if (data.bills.length > MAX_BILLS) fail(`Trop de factures (${MAX_BILLS} au plus)`);
+    if (!data || typeof data !== 'object' || Array.isArray(data)) fail('err.backup');
+    if (data.app !== 'billcalendar' || data.version !== VERSION || !Array.isArray(data.bills)) fail('err.notBackup');
+    if (data.bills.length > MAX_BILLS) fail('err.tooMany', { max: MAX_BILLS });
     const bills = data.bills.map((b) => {
-      if (!b || typeof b !== 'object' || Array.isArray(b)) fail('Facture invalide');
-      if (Object.keys(b).sort().join(',') !== 'active,amountCents,category,frequency,id,name,start') fail('Champs de facture inattendus');
-      if (typeof b.active !== 'boolean') fail('Statut de facture invalide');
+      if (!b || typeof b !== 'object' || Array.isArray(b)) fail('err.backup');
+      if (Object.keys(b).sort().join(',') !== 'active,amountCents,category,frequency,id,name,start') fail('err.backup');
+      if (typeof b.active !== 'boolean') fail('err.backup');
       return makeBill(b, b.id);
     });
-    if (new Set(bills.map((b) => b.id)).size !== bills.length) fail('Factures en double');
+    if (new Set(bills.map((b) => b.id)).size !== bills.length) fail('err.backup');
     return bills;
   }
   function backup(bills) { return JSON.stringify({ app: 'billcalendar', version: VERSION, bills: validateBackup({ app: 'billcalendar', version: VERSION, bills }) }, null, 2); }

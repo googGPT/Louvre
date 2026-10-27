@@ -24,7 +24,7 @@ def main():
         with sync_playwright() as p:
             exe = os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium')
             browser = p.chromium.launch(headless=True, executable_path=exe if os.path.exists(exe) else None, args=['--no-sandbox'])
-            context = browser.new_context(viewport={'width': 390, 'height': 844}, accept_downloads=True)
+            context = browser.new_context(viewport={'width': 390, 'height': 844}, accept_downloads=True, locale='fr-FR')
             page = context.new_page()
             errors, external = [], []
             page.on('pageerror', lambda e: errors.append(str(e)))
@@ -66,7 +66,7 @@ def main():
             expect(page.locator('#k-due')).to_have_text('2')
 
             # Recherche et modification.
-            page.locator('#search').fill('canberra')
+            page.locator('#search').fill('australie')
             expect(page.locator('#cards li')).to_have_count(1)
             page.locator('#cards li button', has_text='Modifier').click()
             page.locator('[name=back]').fill('Canberra (pas Sydney)')
@@ -89,7 +89,7 @@ def main():
             page.locator('#save').click()
             assert page.evaluate(f"() => localStorage.getItem('{KEY}')") == '{abîmé'
             page.locator('#import').set_input_files({'name': 'b.json', 'mimeType': 'application/json', 'buffer': backup.encode('utf-8')})
-            expect(page.locator('#backup-status')).to_contain_text('4 fiche(s)')
+            expect(page.locator('#backup-status')).to_contain_text('4 fiches')
             expect(page.locator('#warning')).to_be_hidden()
 
             # Hors ligne.
@@ -102,8 +102,33 @@ def main():
 
             assert not external, external
             assert not errors, errors
+
+            # --- Langues : les 7 langues sont complètes, sans débordement ; l'arabe s'affiche de droite à gauche.
+            intl = browser.new_context(viewport={'width': 390, 'height': 844}, locale='it-IT')
+            ip = intl.new_page()
+            ip.on('pageerror', lambda e: errors.append(str(e)))
+            ip.on('dialog', lambda d: d.accept())
+            ip.goto(origin)
+            expect(ip.locator('h1')).to_have_text('Ripassa solo il necessario, al momento giusto.')  # navigateur italien
+            ip.locator('#sample').click()
+            expect(ip.locator('#flash-q')).to_have_text("Capitale dell'Australia?")  # exemples dans la langue choisie
+            for lang in ['fr', 'en', 'es', 'ar', 'pt', 'de', 'it']:
+                ip.locator('#louvre-lang').select_option(lang)
+                assert ip.evaluate('() => document.documentElement.dir') == ('rtl' if lang == 'ar' else 'ltr')
+                assert ip.evaluate('() => document.documentElement.scrollWidth <= innerWidth + 2'), f'débordement en {lang}'
+                expect(ip.locator('#cards > li')).to_have_count(3)
+            assert ip.evaluate('() => LouvreI18n.missing()') == [], ip.evaluate('() => LouvreI18n.missing()')
+            ip.locator('#louvre-lang').select_option('en')
+            expect(ip.locator('#flash-meta')).to_contain_text('box 1')
+            expect(ip.locator('#deck-filter option').first).to_have_text('All decks')
+            ip.locator('#reveal').click(); ip.locator('#known').click()
+            expect(ip.locator('#session-status')).to_contain_text('Next review on')
+            ip.locator('#louvre-lang').select_option('de')
+            ip.locator('#save').click()
+            expect(ip.locator('#form-status')).to_have_text('Frage erforderlich')  # erreur du moteur traduite
+            assert not errors, errors
             browser.close()
-        print('BROWSER PASS StudyRecall: add/validate, reveal, Leitner boxes, shortcuts, edit, export/restore, corrupted storage, offline, mobile')
+        print('BROWSER PASS StudyRecall: add/validate, reveal, Leitner boxes, shortcuts, edit, export/restore, corrupted storage, offline, mobile, 7 languages, RTL')
     finally:
         server.shutdown()
         server.server_close()

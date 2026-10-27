@@ -34,7 +34,7 @@ def main():
         with sync_playwright() as p:
             exe = os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium')
             browser = p.chromium.launch(headless=True, executable_path=exe if os.path.exists(exe) else None, args=['--no-sandbox'])
-            context = browser.new_context(viewport={'width': 390, 'height': 844}, accept_downloads=True)
+            context = browser.new_context(viewport={'width': 390, 'height': 844}, accept_downloads=True, locale='fr-FR')
             page = context.new_page()
             errors, external = [], []
             page.on('pageerror', lambda e: errors.append(str(e)))
@@ -85,7 +85,7 @@ def main():
             page.locator('#add').click()
             assert page.evaluate(f"() => localStorage.getItem('{KEY}')") == 'pas du json'
             page.locator('#import').set_input_files({'name': 'b.json', 'mimeType': 'application/json', 'buffer': backup.encode('utf-8')})
-            expect(page.locator('#backup-status')).to_contain_text('2 comparaison(s)')
+            expect(page.locator('#backup-status')).to_contain_text('2 comparaisons')
             expect(page.locator('#warning')).to_be_hidden()
 
             # Hors ligne.
@@ -98,8 +98,36 @@ def main():
 
             assert not external, external
             assert not errors, errors
+
+            # --- Langues : les 7 langues sont complètes, sans débordement ; l'arabe s'affiche de droite à gauche.
+            intl = browser.new_context(viewport={'width': 390, 'height': 844}, locale='en-US')
+            ip = intl.new_page()
+            ip.on('pageerror', lambda e: errors.append(str(e)))
+            ip.goto(origin)
+            expect(ip.locator('h1')).to_have_text('Is the big pack really cheaper?')  # navigateur anglais -> anglais
+            assert ip.evaluate('() => LouvreI18n.currency') == 'USD'  # région US -> dollar proposé
+            ip.locator('#sample').click()
+            expect(ip.locator('#verdict')).to_contain_text('$1.98/kg')
+            for lang in ['fr', 'en', 'es', 'ar', 'pt', 'de', 'it']:
+                ip.locator('#louvre-lang').select_option(lang)
+                assert ip.evaluate('() => document.documentElement.lang') == lang
+                assert ip.evaluate('() => document.documentElement.dir') == ('rtl' if lang == 'ar' else 'ltr')
+                assert ip.evaluate('() => document.documentElement.scrollWidth <= innerWidth + 2'), f'débordement en {lang}'
+                expect(ip.locator('#groups tbody tr')).to_have_count(4)
+            assert ip.evaluate('() => LouvreI18n.missing()') == [], ip.evaluate('() => LouvreI18n.missing()')
+            # Le choix de langue et de devise est mémorisé (pour toutes les applis Louvre).
+            ip.locator('#louvre-lang').select_option('de')
+            ip.locator('#louvre-currency').select_option('CHF')
+            ip.reload()
+            expect(ip.locator('h1')).to_have_text('Ist die Großpackung wirklich günstiger?')
+            expect(ip.locator('#verdict')).to_contain_text('CHF')
+            # Erreur du moteur traduite.
+            ip.locator('[name=name]').fill('Test'); ip.locator('[name=price]').fill('abc'); ip.locator('[name=qty]').fill('1')
+            ip.locator('#add').click()
+            expect(ip.locator('#form-status')).to_have_text('Ungültiger Preis (z. B. 2,49)')
+            assert not errors, errors
             browser.close()
-        print('BROWSER PASS PriceLens: validation, ranking, packs, remove, multiple comparisons, litres, export/restore, corrupted storage, offline, mobile')
+        print('BROWSER PASS PriceLens: validation, ranking, packs, remove, multiple comparisons, litres, export/restore, corrupted storage, offline, mobile, 7 languages, RTL, currency')
     finally:
         server.shutdown()
         server.server_close()

@@ -11,28 +11,29 @@
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
 </head>
 <body>
 <div class="wrap">
 <header class="top">
-  <div class="brand"><img src="./icon.svg" alt=""><div><strong>StudyRecall</strong><small>Révisions espacées</small></div></div>
-  <span class="badge">Local · sans compte</span>
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>StudyRecall</strong><small data-i18n="brand.tagline">Révisions espacées</small></div></div>
+  <div class="row" style="gap:8px"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale></div></div>
 </header>
 <section class="hero">
-  <h1>Révisez juste ce qu'il faut, au bon moment.</h1>
-  <p>Chaque fiche passe par 5 boîtes. Une réponse sue l'envoie dans la boîte suivante et espace la prochaine révision (1, 2, 4, 8 puis 16 jours). Une réponse oubliée la renvoie en boîte 1, à revoir demain.</p>
+  <h1 data-i18n="hero.title">Révisez juste ce qu'il faut, au bon moment.</h1>
+  <p data-i18n="hero.text">Chaque fiche passe par 5 boîtes. Une réponse sue l'envoie dans la boîte suivante et espace la prochaine révision (1, 2, 4, 8 puis 16 jours). Une réponse oubliée la renvoie en boîte 1, à revoir demain.</p>
 </section>
-<p id="warning" class="warning" hidden>Les fiches enregistrées sur cet appareil sont illisibles. Rien ne sera écrasé : exportez la copie brute, puis restaurez une sauvegarde valide.</p>
+<p id="warning" class="warning" hidden data-i18n="warning">Les fiches enregistrées sur cet appareil sont illisibles. Rien ne sera écrasé : exportez la copie brute, puis restaurez une sauvegarde valide.</p>
 
 <div class="grid">
   <section class="panel" aria-labelledby="h-review">
-    <h2 id="h-review">Révision du jour</h2>
+    <h2 id="h-review" data-i18n="review.title">Révision du jour</h2>
     <div class="row" style="margin-bottom:12px">
-      <label class="visually-hidden" for="deck-filter">Paquet à réviser</label>
-      <select id="deck-filter"><option value="">Tous les paquets</option></select>
+      <label class="visually-hidden" for="deck-filter" data-i18n="deck.filterLabel">Paquet à réviser</label>
+      <select id="deck-filter"></select>
     </div>
     <div class="flash" id="flash" aria-live="polite">
-      <p class="empty" id="flash-empty">Aucune fiche à réviser pour l'instant.</p>
+      <p class="empty" id="flash-empty" data-i18n="flash.empty">Aucune fiche à réviser pour l'instant.</p>
       <div id="flash-card" hidden>
         <div class="meta" id="flash-meta"></div>
         <div class="q" id="flash-q"></div>
@@ -40,63 +41,65 @@
       </div>
     </div>
     <div class="row" style="margin-top:12px">
-      <button class="btn primary" id="reveal" type="button" disabled>Afficher la réponse</button>
-      <button class="btn good" id="known" type="button" hidden>Je savais</button>
-      <button class="btn bad" id="forgot" type="button" hidden>À revoir</button>
+      <button class="btn primary" id="reveal" type="button" disabled data-i18n="btn.reveal">Afficher la réponse</button>
+      <button class="btn good" id="known" type="button" hidden data-i18n="btn.known">Je savais</button>
+      <button class="btn bad" id="forgot" type="button" hidden data-i18n="btn.forgot">À revoir</button>
     </div>
     <p class="status" id="session-status" role="status"></p>
   </section>
 
   <section class="panel" aria-labelledby="h-stats">
-    <h2 id="h-stats">Progression</h2>
+    <h2 id="h-stats" data-i18n="stats.title">Progression</h2>
     <div class="kpis">
-      <div class="kpi"><span>À réviser</span><strong id="k-due">0</strong></div>
-      <div class="kpi"><span>Révisées aujourd'hui</span><strong id="k-today">0</strong></div>
-      <div class="kpi"><span>Bien ancrées (boîte 5)</span><strong id="k-mastered">0</strong></div>
-      <div class="kpi"><span>Taux de réussite</span><strong id="k-retention">—</strong></div>
+      <div class="kpi"><span data-i18n="k.due">À réviser</span><strong id="k-due">0</strong></div>
+      <div class="kpi"><span data-i18n="k.today">Révisées aujourd'hui</span><strong id="k-today">0</strong></div>
+      <div class="kpi"><span data-i18n="k.mastered">Bien ancrées (boîte 5)</span><strong id="k-mastered">0</strong></div>
+      <div class="kpi"><span data-i18n="k.retention">Taux de réussite</span><strong id="k-retention">—</strong></div>
     </div>
-    <div class="boxes" id="boxes" aria-label="Nombre de fiches par boîte"></div>
-    <div class="boxes-legend"><span>Boîte 1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
-    <h3 style="font-size:14px;margin:16px 0 0">7 prochains jours</h3>
+    <div class="boxes" id="boxes" aria-label="Nombre de fiches par boîte" data-i18n-attr="aria-label:boxes.aria"></div>
+    <div class="boxes-legend"><span data-i18n="box.first">Boîte 1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+    <h3 style="font-size:14px;margin:16px 0 0" data-i18n="forecast.title">7 prochains jours</h3>
     <ol class="forecast" id="forecast"></ol>
   </section>
 </div>
 
 <div class="grid" style="margin-top:16px">
   <section class="panel" aria-labelledby="h-cards">
-    <h2 id="h-cards">Mes fiches <span id="count" style="color:var(--muted);font-weight:500"></span></h2>
-    <label class="visually-hidden" for="search">Rechercher une fiche</label>
-    <input id="search" type="search" placeholder="Rechercher une fiche…" style="margin-bottom:12px">
+    <h2 id="h-cards"><span data-i18n="cards.title">Mes fiches</span> <span id="count" style="color:var(--muted);font-weight:500"></span></h2>
+    <label class="visually-hidden" for="search" data-i18n="search.label">Rechercher une fiche</label>
+    <input id="search" type="search" placeholder="Rechercher une fiche…" data-i18n-attr="placeholder:search.ph" style="margin-bottom:12px">
     <ul class="list" id="cards"></ul>
   </section>
 
   <section class="panel" aria-labelledby="h-form">
-    <h2 id="h-form">Nouvelle fiche</h2>
+    <h2 id="h-form" data-i18n="form.new">Nouvelle fiche</h2>
     <form id="card-form" novalidate>
-      <label class="field">Question<textarea name="front" maxlength="500" required></textarea></label>
-      <label class="field">Réponse<textarea name="back" maxlength="500" required></textarea></label>
-      <label class="field">Paquet (facultatif)<input name="deck" maxlength="60" list="deck-list" placeholder="Général"></label>
+      <label class="field"><span data-i18n="f.front">Question</span><textarea name="front" maxlength="500" required></textarea></label>
+      <label class="field"><span data-i18n="f.back">Réponse</span><textarea name="back" maxlength="500" required></textarea></label>
+      <label class="field"><span data-i18n="f.deck">Paquet (facultatif)</span><input name="deck" maxlength="60" list="deck-list" placeholder="Général" data-i18n-attr="placeholder:deck.general"></label>
       <datalist id="deck-list"></datalist>
       <div class="row">
-        <button class="btn primary" id="save" type="submit">Ajouter la fiche</button>
-        <button class="btn" id="cancel" type="button" hidden>Annuler</button>
+        <button class="btn primary" id="save" type="submit" data-i18n="btn.addCard">Ajouter la fiche</button>
+        <button class="btn" id="cancel" type="button" hidden data-i18n="btn.cancel">Annuler</button>
       </div>
       <p class="status" id="form-status" role="status"></p>
     </form>
-    <h2 style="margin-top:20px">Sauvegarde</h2>
+    <h2 style="margin-top:20px" data-i18n="backup.title">Sauvegarde</h2>
     <div class="row">
-      <button class="btn" id="export" type="button">Exporter (JSON)</button>
-      <label class="btn" for="import" style="display:inline-flex;align-items:center">Restaurer…</label>
+      <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+      <label class="btn" for="import" style="display:inline-flex;align-items:center" data-i18n="btn.import">Restaurer…</label>
       <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
-      <button class="btn" id="sample" type="button">Ajouter des exemples</button>
-      <button class="btn" id="export-raw" type="button" hidden>Copie brute</button>
+      <button class="btn" id="sample" type="button" data-i18n="btn.sample">Ajouter des exemples</button>
+      <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
     </div>
     <p class="status" id="backup-status" role="status"></p>
   </section>
 </div>
 
-<footer>Vos fiches restent sur cet appareil (stockage du navigateur). Exportez régulièrement une sauvegarde : effacer les données du site les supprime.</footer>
+<footer data-i18n="footer">Vos fiches restent sur cet appareil (stockage du navigateur). Exportez régulièrement une sauvegarde : effacer les données du site les supprime.</footer>
 </div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
 <script src="./core.js"></script>
 <script src="./app.js"></script>
 </body>

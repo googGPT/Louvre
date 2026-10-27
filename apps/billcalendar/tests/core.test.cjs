@@ -69,16 +69,16 @@ test('export agenda .ics : règles de récurrence et échappement', () => {
 });
 
 test('saisies refusées et sauvegarde validée', () => {
-  assert.throws(() => bill({ amount: '0' }), /positif/);
-  assert.throws(() => bill({ amount: '12,999' }), /Montant/);
-  assert.throws(() => bill({ frequency: 'daily' }), /Fréquence/);
-  assert.throws(() => bill({ start: '2026-02-30' }), /Date/);
-  assert.throws(() => bill({ category: 'Divers' }), /Catégorie/);
+  assert.throws(() => bill({ amount: '0' }), /err\.amountPositive/);
+  assert.throws(() => bill({ amount: '12,999' }), /err\.amount/);
+  assert.throws(() => bill({ frequency: 'daily' }), /err\.frequency/);
+  assert.throws(() => bill({ start: '2026-02-30' }), /err\.start/);
+  assert.throws(() => bill({ category: 'Divers' }), /err\.category/);
   const bills = [bill(), { ...bill({ frequency: 'yearly' }), active: false }];
   assert.deepEqual(C.validateBackup(JSON.parse(C.backup(bills))), bills);
   const ok = { app: 'billcalendar', version: 1, bills };
-  assert.throws(() => C.validateBackup({ ...ok, app: 'autre' }), /pas une sauvegarde/);
-  assert.throws(() => C.validateBackup({ ...ok, bills: [{ ...bills[0], hack: 1 }] }), /inattendus/);
-  assert.throws(() => C.validateBackup({ ...ok, bills: [{ ...bills[0], active: 'oui' }] }), /Statut/);
-  assert.throws(() => C.validateBackup({ ...ok, bills: [bills[0], bills[0]] }), /double/);
+  assert.throws(() => C.validateBackup({ ...ok, app: 'autre' }), /err\.notBackup/);
+  assert.throws(() => C.validateBackup({ ...ok, bills: [{ ...bills[0], hack: 1 }] }), /err\.backup/);
+  assert.throws(() => C.validateBackup({ ...ok, bills: [{ ...bills[0], active: 'oui' }] }), /err\.backup/);
+  assert.throws(() => C.validateBackup({ ...ok, bills: [bills[0], bills[0]] }), /err\.backup/);
 });
