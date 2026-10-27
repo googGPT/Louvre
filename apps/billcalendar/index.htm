@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BillCalendar — Factures et abonnements</title>
+<meta name="description" content="BillCalendar : suivez vos factures et abonnements récurrents, leur coût mensuel réel et un calendrier des échéances. Export vers votre agenda. Gratuit, sans compte.">
+<meta name="theme-color" content="#c2410c">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/billcalendar/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>BillCalendar</strong><small>Factures et abonnements</small></div></div>
+  <span class="badge">Local · sans compte</span>
+</header>
+<section class="hero">
+  <h1>Ce que vos abonnements coûtent vraiment.</h1>
+  <p>Ajoutez loyers, forfaits, assurances et abonnements avec leur rythme (semaine, mois, trimestre, année). BillCalendar calcule le coût mensuel réel, affiche les échéances à venir et peut les exporter dans l'agenda de votre téléphone.</p>
+</section>
+<p id="warning" class="warning" hidden>Les factures enregistrées sur cet appareil sont illisibles. Rien ne sera écrasé : exportez la copie brute, puis restaurez une sauvegarde valide.</p>
+
+<div class="grid">
+  <section class="panel" aria-labelledby="h-month">
+    <div class="cal-head">
+      <button class="btn" id="prev" type="button" aria-label="Mois précédent">‹</button>
+      <h2 id="h-month">Mois</h2>
+      <button class="btn" id="next" type="button" aria-label="Mois suivant">›</button>
+    </div>
+    <div class="cal" id="cal" aria-hidden="true"></div>
+    <p class="month-total" id="month-total"></p>
+    <ul class="list" id="month-list" aria-label="Échéances du mois"></ul>
+  </section>
+
+  <section class="panel" aria-labelledby="h-sum">
+    <h2 id="h-sum">En résumé</h2>
+    <div class="kpis">
+      <div class="kpi"><span>Coût mensuel moyen</span><strong id="k-month">0 €</strong></div>
+      <div class="kpi"><span>Sur un an</span><strong id="k-year">0 €</strong></div>
+      <div class="kpi"><span>30 prochains jours</span><strong id="k-30">0 €</strong></div>
+      <div class="kpi"><span>Actives / en pause</span><strong id="k-count">0</strong></div>
+    </div>
+    <h3 style="font-size:14px;margin:0 0 8px">Par catégorie (coût mensuel)</h3>
+    <ul class="cats" id="cats"></ul>
+    <h3 style="font-size:14px;margin:16px 0 8px">Prochaines échéances</h3>
+    <ul class="list" id="upcoming"></ul>
+  </section>
+</div>
+
+<div class="grid" style="margin-top:16px">
+  <section class="panel" aria-labelledby="h-bills">
+    <h2 id="h-bills">Mes factures <span id="count" style="color:var(--muted);font-weight:500"></span></h2>
+    <ul class="list" id="bills"></ul>
+  </section>
+  <section class="panel" aria-labelledby="h-form">
+    <h2 id="h-form">Nouvelle facture</h2>
+    <form id="bill-form" novalidate>
+      <div class="form-grid">
+        <label class="field full">Nom<input name="name" maxlength="60" placeholder="ex. Forfait mobile" required></label>
+        <label class="field">Montant (€)<input name="amount" inputmode="decimal" placeholder="12,99" required></label>
+        <label class="field">Fréquence<select name="frequency"><option value="monthly">Chaque mois</option><option value="yearly">Chaque année</option><option value="quarterly">Chaque trimestre</option><option value="weekly">Chaque semaine</option></select></label>
+        <label class="field">Première échéance<input name="start" type="date" required></label>
+        <label class="field">Catégorie<select name="category"></select></label>
+      </div>
+      <div class="row">
+        <button class="btn primary" id="save" type="submit">Ajouter</button>
+        <button class="btn" id="cancel" type="button" hidden>Annuler</button>
+        <button class="btn" id="sample" type="button">Exemples</button>
+      </div>
+      <p class="status" id="form-status" role="status"></p>
+    </form>
+    <h2 style="margin-top:20px">Exporter</h2>
+    <div class="row">
+      <button class="btn" id="export-ics" type="button">Agenda (.ics)</button>
+      <button class="btn" id="export" type="button">Sauvegarde (JSON)</button>
+      <label class="btn" for="import" style="display:inline-flex;align-items:center">Restaurer…</label>
+      <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+      <button class="btn" id="export-raw" type="button" hidden>Copie brute</button>
+    </div>
+    <p class="status" id="backup-status" role="status"></p>
+  </section>
+</div>
+<footer>Les montants et dates sont ceux que vous saisissez ; aucune banque n'est consultée. Les échéances fixées un 29, 30 ou 31 tombent le dernier jour des mois plus courts.</footer>
+</div>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

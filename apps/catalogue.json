@@ -266,6 +266,13 @@
       "domain": "Achats",
       "description": "Compare le prix au kilo, au litre ou à la pièce de produits vendus en formats différents.",
       "family": "Argent et achats"
+    },
+    {
+      "slug": "billcalendar",
+      "name": "BillCalendar",
+      "domain": "Finance",
+      "description": "Suit factures et abonnements récurrents : coût mensuel réel, calendrier, export agenda.",
+      "family": "Argent et achats"
     }
   ]
 }
