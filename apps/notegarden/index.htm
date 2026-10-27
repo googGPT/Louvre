@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NoteGarden — Notes reliées entre elles</title>
+<meta name="description" content="NoteGarden : notes locales avec étiquettes, liens [[Titre]], rétroliens, recherche plein texte et export Markdown. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#3f6f12">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/notegarden/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>NoteGarden</strong><small data-i18n="brand.tagline">Notes reliées entre elles</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Des notes qui se répondent.</h1>
+  <p data-i18n="hero.text">Écrivez [[Titre]] pour relier une note à une autre.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les notes enregistrées sur cet appareil sont illisibles.</p>
+
+<div class="grid">
+  <section class="panel" aria-labelledby="h-notes">
+    <div class="row spread">
+      <h2 id="h-notes" data-i18n="notes.title">Notes</h2>
+      <div class="row tight"><button class="btn primary" id="new-note" type="button" data-i18n="btn.new">Nouvelle note</button><button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button></div>
+    </div>
+    <label class="field"><span data-i18n="search.label">Rechercher</span><input id="search" type="search" maxlength="200" autocomplete="off" data-i18n-attr="placeholder:search.ph"></label>
+    <div class="row filters">
+      <label class="field grow"><span data-i18n="filter.tag">Étiquette</span><select id="tag-filter"></select></label>
+      <label class="check"><input id="only-orphans" type="checkbox"> <span data-i18n="filter.orphans">Orphelines seulement</span></label>
+    </div>
+    <p class="status" id="summary"></p>
+    <ul id="note-list" class="notes"></ul>
+    <div id="wanted-box" hidden>
+      <h3 data-i18n="wanted.title">Notes à créer</h3>
+      <p class="hint" data-i18n="wanted.hint">Des liens pointent vers ces titres, qui n'existent pas encore.</p>
+      <ul id="wanted" class="chips"></ul>
+    </div>
+    <p class="status" id="list-status" role="status" aria-live="polite"></p>
+  </section>
+
+  <div class="col">
+    <section class="panel" aria-labelledby="h-edit">
+      <h2 id="h-edit" data-i18n="edit.title">Note</h2>
+      <p id="no-note" class="empty" data-i18n="edit.none">Créez une note ou choisissez-en une dans la liste.</p>
+      <div id="editor-box">
+        <label class="field"><span data-i18n="f.title">Titre</span><input id="note-title" maxlength="120" autocomplete="off"></label>
+        <p class="hint" data-i18n="f.titleHint">Renommer met à jour tous les liens vers cette note.</p>
+        <label class="field"><span data-i18n="f.tags">Étiquettes</span><input id="note-tags" maxlength="900" autocomplete="off" data-i18n-attr="placeholder:f.tagsPh"></label>
+        <label class="field"><span data-i18n="f.body">Texte</span><textarea id="note-body" rows="10" data-i18n-attr="placeholder:f.bodyPh"></textarea></label>
+        <div class="row spread"><span id="save-state" class="save-state"></span><button class="btn bad-outline" id="delete-note" type="button" data-i18n="btn.delete">Supprimer</button></div>
+      </div>
+      <p class="status" id="note-status" role="status" aria-live="polite"></p>
+    </section>
+    <section class="panel" aria-labelledby="h-preview">
+      <h2 id="h-preview" data-i18n="preview.title">Lecture</h2>
+      <div id="preview" class="preview"></div>
+    </section>
+    <section class="panel" aria-labelledby="h-back">
+      <h2 id="h-back" data-i18n="back.title">Rétroliens</h2>
+      <ul id="backlinks" class="backlinks"></ul>
+    </section>
+  </div>
+</div>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Exports et sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export-zip" type="button" data-i18n="btn.exportZip">Markdown : un fichier par note (.zip)</button>
+    <button class="btn" id="export-md" type="button" data-i18n="btn.exportMd">Markdown : un seul fichier</button>
+  </div>
+  <div class="row" style="margin-top:10px">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Sauvegarde (JSON)</button>
+    <label class="btn" for="import" data-i18n="btn.import">Restaurer…</label>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">Vos notes restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

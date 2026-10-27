@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TripDocumentList — Papiers de voyage en règle</title>
+<meta name="description" content="TripDocumentList : listez passeports, visas, assurances, réservations et billets de chaque voyageur, contrôlez leurs échéances par rapport aux dates du voyage et à votre marge. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#0c7c6e">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/tripdocumentlist/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>TripDocumentList</strong><small data-i18n="brand.tagline">Papiers de voyage en règle</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Tous les papiers sont-ils prêts pour partir ?</h1>
+  <p data-i18n="hero.text">Listez les documents de chaque voyageur avec leur date d'échéance : TripDocumentList vérifie qu'ils restent valides pendant tout le voyage et la marge que vous fixez après le retour, et suit ce qui est prêt ou reste à faire.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les voyages enregistrés sur cet appareil sont illisibles.</p>
+<p class="notice" data-i18n="privacy">Ne saisissez jamais de numéro de passeport, de visa ou de billet : l'appli n'en a pas besoin et refuse les notes qui y ressemblent.</p>
+
+<section class="panel" aria-labelledby="h-trip">
+  <div class="row between">
+    <h2 id="h-trip" class="flush" data-i18n="trip.title">Voyage</h2>
+    <div class="row">
+      <label class="visually-hidden" for="trip-select" data-i18n="trip.select">Voyage affiché</label>
+      <select id="trip-select" class="auto"></select>
+      <button class="btn" id="new-trip" type="button" data-i18n="btn.new">Nouveau</button>
+      <button class="btn" id="rename-trip" type="button" data-i18n="btn.rename">Renommer</button>
+      <button class="btn" id="delete-trip" type="button" data-i18n="btn.delete">Supprimer</button>
+      <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+    </div>
+  </div>
+  <p class="status" id="trip-status" role="status" aria-live="polite"></p>
+</section>
+
+<div class="grid">
+<div class="col">
+  <section class="panel" aria-labelledby="h-dates">
+    <h2 id="h-dates" data-i18n="dates.title">Dates et marge</h2>
+    <form id="dates-form" novalidate>
+      <div class="form-grid two">
+        <label class="field"><span data-i18n="f.start">Départ</span><input name="start" type="date"></label>
+        <label class="field"><span data-i18n="f.end">Retour</span><input name="end" type="date"></label>
+        <label class="field"><span data-i18n="f.margin">Validité exigée après le retour</span><input name="margin" inputmode="numeric" maxlength="3" placeholder="0"></label>
+        <label class="field"><span data-i18n="f.marginUnit">Unité</span><select name="marginUnit"><option value="d" data-i18n="unit.days">jours</option><option value="m" data-i18n="unit.months">mois</option></select></label>
+      </div>
+      <p class="hint" data-i18n="dates.hint">Aucune règle de pays n'est intégrée : vérifiez auprès des autorités ou de la compagnie la validité exigée, puis saisissez-la ici.</p>
+      <button class="btn primary" id="save-dates" type="submit" data-i18n="btn.saveDates">Enregistrer</button>
+      <p class="status" id="dates-status" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <section class="panel" aria-labelledby="h-travelers">
+    <h2 id="h-travelers" data-i18n="travelers.title">Voyageurs</h2>
+    <form id="traveler-form" novalidate>
+      <div class="row end">
+        <label class="field grow"><span data-i18n="f.traveler">Nom</span><input name="name" maxlength="60" data-i18n-attr="placeholder:f.travelerPh"></label>
+        <button class="btn primary" id="add-traveler" type="submit" data-i18n="btn.addTraveler">Ajouter</button>
+      </div>
+      <p class="status" id="traveler-status" role="status" aria-live="polite"></p>
+    </form>
+    <ul id="traveler-list" class="chips"></ul>
+  </section>
+
+  <section class="panel" aria-labelledby="h-doc">
+    <h2 id="h-doc" data-i18n="doc.title">Document</h2>
+    <form id="doc-form" novalidate>
+      <div class="form-grid two">
+        <label class="field"><span data-i18n="f.holder">Titulaire</span><select name="travelerId" id="doc-traveler"></select></label>
+        <label class="field"><span data-i18n="f.type">Type</span><select name="type" id="doc-type"></select></label>
+        <label class="field span2"><span data-i18n="f.expires">Date d'échéance (vide si aucune)</span><input name="expires" type="date"></label>
+      </div>
+      <label class="field"><span data-i18n="f.note">Note (sans numéro)</span><textarea name="note" maxlength="140" rows="2" data-i18n-attr="placeholder:f.notePh"></textarea></label>
+      <label class="check"><input type="checkbox" name="done"> <span data-i18n="f.done">Prêt (obtenu, imprimé ou rangé)</span></label>
+      <div class="row">
+        <button class="btn primary" id="add-doc" type="submit" data-i18n="btn.addDoc">Ajouter le document</button>
+        <button class="btn" id="cancel-edit" type="button" hidden data-i18n="btn.cancelEdit">Annuler</button>
+      </div>
+      <p class="status" id="doc-status" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+</div>
+
+<div class="col">
+  <section class="panel print-keep" aria-labelledby="h-check">
+    <h2 id="h-check" data-i18n="check.title">Contrôle</h2>
+    <p id="print-head" class="print-only"></p>
+    <div class="kpis">
+      <div class="kpi"><span data-i18n="kpi.ready">Prêts</span><strong id="k-ready">—</strong></div>
+      <div class="kpi"><span data-i18n="kpi.problems">À revoir</span><strong id="k-problems">—</strong></div>
+      <div class="kpi"><span data-i18n="kpi.until">Valides jusqu'au</span><strong id="k-until">—</strong></div>
+      <div class="kpi"><span data-i18n="kpi.next">Prochaine échéance</span><strong id="k-next">—</strong></div>
+    </div>
+    <div id="verdict" class="verdict" hidden aria-live="polite"></div>
+    <p class="empty" id="check-empty" data-i18n="check.empty">Ajoutez un voyageur puis ses documents.</p>
+    <div id="groups"></div>
+    <div class="row top-gap no-print"><button class="btn" id="export-ics" type="button" data-i18n="btn.ics">Échéances (.ics)</button><button class="btn" id="print" type="button" data-i18n="btn.print">Imprimer la liste</button></div>
+    <p class="status" id="check-status" role="status" aria-live="polite"></p>
+    <p class="hint" data-i18n="check.hint">Contrôle des seules dates que vous saisissez : TripDocumentList ne connaît aucune règle d'entrée, de visa ou de santé.</p>
+  </section>
+</div>
+</div>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <label class="btn file" for="import" data-i18n="btn.import">Restaurer…</label>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">Aucun numéro de document n'est enregistré : vos listes restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

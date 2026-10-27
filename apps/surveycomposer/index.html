@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SurveyComposer — Concevoir un questionnaire</title>
+<meta name="description" content="SurveyComposer : concevez un questionnaire avec sections, échelles de Likert et conditions d'affichage, contrôlez sa qualité et exportez le dictionnaire des codes. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#6741d9">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/surveycomposer/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>SurveyComposer</strong><small data-i18n="brand.tagline">Concevoir un questionnaire</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Un questionnaire clair, avant la première réponse</h1>
+  <p data-i18n="hero.text">Construisez sections et questions, testez les conditions d'affichage dans l'aperçu, corrigez les défauts signalés, puis exportez le dictionnaire des codes.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les questionnaires enregistrés sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-survey">
+  <div class="row spread">
+    <h2 id="h-survey" class="m0" data-i18n="survey.title">Questionnaire</h2>
+    <div class="row tight">
+      <label class="visually-hidden" for="survey-select" data-i18n="survey.select">Questionnaire affiché</label>
+      <select id="survey-select" class="grow"></select>
+      <button class="btn" id="new-survey" type="button" data-i18n="btn.new">Nouveau</button>
+      <button class="btn" id="rename-survey" type="button" data-i18n="btn.rename">Renommer</button>
+      <button class="btn" id="delete-survey" type="button" data-i18n="btn.delete">Supprimer</button>
+      <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+    </div>
+  </div>
+  <p class="status" id="survey-status" role="status" aria-live="polite"></p>
+  <p class="empty" id="no-survey" data-i18n="survey.none">Créez un questionnaire ou chargez l'exemple.</p>
+</section>
+
+<div id="editor" hidden>
+<section class="panel mt" aria-labelledby="h-settings">
+  <h2 id="h-settings" data-i18n="settings.title">Réglages</h2>
+  <div class="two">
+    <label class="field"><span data-i18n="f.title">Titre</span><input id="survey-title" maxlength="120" autocomplete="off"></label>
+    <label class="field"><span data-i18n="f.lang">Langue du questionnaire</span><select id="survey-lang"></select></label>
+  </div>
+  <label class="field"><span data-i18n="f.intro">Introduction (consignes, confidentialité)</span><textarea id="survey-intro" maxlength="1000" rows="3"></textarea></label>
+  <p class="hint" data-i18n="settings.langHint">La langue du questionnaire sert aux consignes de l'aperçu et de la version imprimable, et au repérage des questions doubles.</p>
+</section>
+
+<div class="grid mt">
+<section class="panel" aria-labelledby="h-structure">
+  <div class="row spread">
+    <h2 id="h-structure" class="m0" data-i18n="structure.title">Structure</h2>
+    <button class="btn" id="add-section" type="button" data-i18n="btn.addSection">Ajouter une section</button>
+  </div>
+  <p class="status" id="structure-status" role="status" aria-live="polite"></p>
+  <div id="sections"></div>
+</section>
+
+<section class="panel" aria-labelledby="q-form-title">
+  <h2 id="q-form-title" data-i18n="form.newTitle">Nouvelle question</h2>
+  <form id="q-form" novalidate>
+    <div class="two">
+      <label class="field"><span data-i18n="f.section">Section</span><select name="section"></select></label>
+      <label class="field"><span data-i18n="f.type">Type</span><select name="type"></select></label>
+    </div>
+    <label class="field"><span data-i18n="f.text">Question</span><textarea name="text" maxlength="500" rows="2"></textarea></label>
+    <div class="two">
+      <label class="field"><span data-i18n="f.code">Code (variable)</span><input name="code" maxlength="32" autocomplete="off" spellcheck="false" dir="ltr"></label>
+      <label class="check"><input type="checkbox" name="required"><span data-i18n="f.required">Réponse obligatoire</span></label>
+    </div>
+    <label class="field"><span data-i18n="f.help">Aide (facultatif)</span><input name="help" maxlength="300" autocomplete="off"></label>
+
+    <div data-for="single multiple">
+      <label class="field"><span data-i18n="f.options">Modalités, une par ligne</span><textarea name="options" rows="4" data-i18n-attr="placeholder:f.optionsPh"></textarea></label>
+      <p class="hint" data-i18n="f.optionsHint">Codes 1, 2, 3… automatiques ; écrivez « 9 = Ne sait pas » pour imposer un code.</p>
+    </div>
+    <div data-for="likert">
+      <div class="three">
+        <label class="field"><span data-i18n="f.points">Points</span><select name="points"></select></label>
+        <label class="field"><span data-i18n="f.start">Premier code</span><select name="start"></select></label>
+        <label class="check"><input type="checkbox" name="reversed"><span data-i18n="f.reversed">Item inversé</span></label>
+      </div>
+      <div class="three">
+        <label class="field"><span data-i18n="f.minLabel">Libellé du minimum</span><input name="minLabel" maxlength="120"></label>
+        <label class="field"><span data-i18n="f.midLabel">Libellé du milieu</span><input name="midLabel" maxlength="120"></label>
+        <label class="field"><span data-i18n="f.maxLabel">Libellé du maximum</span><input name="maxLabel" maxlength="120"></label>
+      </div>
+      <p class="hint" id="mid-hint" data-i18n="f.midHint">Échelle paire : pas de point milieu.</p>
+    </div>
+    <div data-for="number" class="four">
+      <label class="field"><span data-i18n="f.min">Minimum</span><input name="min" inputmode="decimal" dir="ltr"></label>
+      <label class="field"><span data-i18n="f.max">Maximum</span><input name="max" inputmode="decimal" dir="ltr"></label>
+      <label class="field"><span data-i18n="f.decimals">Décimales</span><select name="decimals"></select></label>
+      <label class="field"><span data-i18n="f.unit">Unité</span><input name="unit" maxlength="20"></label>
+    </div>
+    <div data-for="text">
+      <label class="check"><input type="checkbox" name="long"><span data-i18n="f.long">Réponse longue (plusieurs lignes)</span></label>
+    </div>
+
+    <fieldset class="cond">
+      <legend data-i18n="cond.title">Condition d'affichage</legend>
+      <label class="field"><span data-i18n="cond.question">Afficher seulement si la question…</span><select name="condQuestion"></select></label>
+      <div class="two" id="cond-detail" hidden>
+        <label class="field"><span data-i18n="cond.op">…vérifie</span><select name="condOp"></select></label>
+        <label class="field" id="cond-value-sel-wrap"><span data-i18n="cond.value">Valeur</span><select name="condValueSel"></select></label>
+        <label class="field" id="cond-value-num-wrap"><span data-i18n="cond.value">Valeur</span><input name="condValueNum" inputmode="decimal" dir="ltr"></label>
+      </div>
+      <p class="hint" data-i18n="cond.hint">Seules les questions placées plus haut peuvent servir de condition : aucune boucle n'est possible.</p>
+    </fieldset>
+
+    <div class="row">
+      <button class="btn primary" id="save-q" type="submit" data-i18n="btn.addQuestion">Ajouter la question</button>
+      <button class="btn" id="cancel-q" type="button" hidden data-i18n="btn.cancel">Annuler</button>
+    </div>
+    <p class="status" id="form-status" role="status" aria-live="polite"></p>
+  </form>
+</section>
+</div>
+
+<section class="panel mt" aria-labelledby="h-quality">
+  <h2 id="h-quality" data-i18n="quality.title">Contrôle de qualité</h2>
+  <p class="hint" id="quality-summary"></p>
+  <ul class="issues" id="quality"></ul>
+  <p class="hint" data-i18n="quality.note">Repérages automatiques à vérifier : ce sont des signaux, pas des verdicts.</p>
+</section>
+
+<section class="panel mt" aria-labelledby="h-preview">
+  <div class="row spread">
+    <h2 id="h-preview" class="m0" data-i18n="preview.title">Aperçu interactif</h2>
+    <span class="hint m0" id="preview-count"></span>
+  </div>
+  <p class="hint" data-i18n="preview.note">Testez les conditions : les réponses restent en mémoire, ne sont ni enregistrées ni envoyées.</p>
+  <div id="preview" class="preview"></div>
+  <div class="row">
+    <button class="btn primary" id="check-answers" type="button" data-i18n="btn.check">Vérifier les réponses</button>
+    <button class="btn" id="reset-answers" type="button" data-i18n="btn.resetAnswers">Effacer les réponses</button>
+  </div>
+  <p class="status" id="preview-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel mt" aria-labelledby="h-export">
+  <h2 id="h-export" data-i18n="export.title">Exports</h2>
+  <div class="row bottom">
+    <label class="field inline"><span data-i18n="f.sep">Séparateur CSV</span><select id="csv-sep"><option value="," data-i18n="sep.comma">virgule</option><option value=";" data-i18n="sep.semicolon">point-virgule</option></select></label>
+    <button class="btn" id="export-csv" type="button" data-i18n="btn.csv">Dictionnaire des codes (CSV)</button>
+    <button class="btn" id="export-txt" type="button" data-i18n="btn.txt">Version texte (.txt)</button>
+    <button class="btn" id="print" type="button" data-i18n="btn.print">Imprimer</button>
+  </div>
+  <p class="status" id="export-status" role="status" aria-live="polite"></p>
+</section>
+</div>
+
+<section class="panel mt" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Sauvegarder (JSON)</button>
+    <label class="btn" for="import" data-i18n="btn.import">Restaurer…</label>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">SurveyComposer ne publie aucun questionnaire et ne recueille aucune réponse.</footer>
+</div>
+<pre id="print-area" class="print-area" aria-hidden="true"></pre>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

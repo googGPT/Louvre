@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HypothesisGraph — Schéma d'hypothèses</title>
+<meta name="description" content="HypothesisGraph : dessinez le modèle de recherche (variables, hypothèses H1…Hn, médiation, modération) et exportez le schéma SVG. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#5f3dc4">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/hypothesisgraph/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>HypothesisGraph</strong><small data-i18n="brand.tagline">Schéma d'hypothèses</small></div></div>
+  <div class="row tools"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Votre modèle de recherche, en un schéma clair</h1>
+  <p data-i18n="hero.text">Déclarez les variables, puis les hypothèses H1, H2… avec leur signe attendu.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les modèles enregistrés sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-model">
+  <div class="row spread">
+    <h2 id="h-model" class="flat" data-i18n="model.title">Modèle</h2>
+    <div class="row">
+      <label class="visually-hidden" for="graph-select" data-i18n="model.select">Modèle affiché</label>
+      <select id="graph-select" class="auto"></select>
+      <button class="btn" id="new-graph" type="button" data-i18n="btn.new">Nouveau</button>
+      <button class="btn" id="rename-graph" type="button" data-i18n="btn.rename">Renommer</button>
+      <button class="btn" id="delete-graph" type="button" data-i18n="btn.delete">Supprimer</button>
+      <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+    </div>
+  </div>
+  <p class="status" id="model-status" role="status" aria-live="polite"></p>
+</section>
+
+<div class="grid">
+<div class="col">
+<section class="panel" aria-labelledby="h-vars">
+  <h2 id="h-vars" data-i18n="vars.title">Variables</h2>
+  <form id="node-form" novalidate>
+    <div class="form-row">
+      <label class="field grow"><span data-i18n="f.label">Nom de la variable</span><input name="label" maxlength="40" autocomplete="off" data-i18n-attr="placeholder:f.labelPh"></label>
+      <label class="field"><span data-i18n="f.role">Rôle</span>
+        <select name="role">
+          <option value="iv" data-i18n="role.iv">Indépendante</option>
+          <option value="dv" data-i18n="role.dv">Dépendante</option>
+          <option value="med" data-i18n="role.med">Médiatrice</option>
+          <option value="mod" data-i18n="role.mod">Modératrice</option>
+          <option value="ctrl" data-i18n="role.ctrl">Contrôle</option>
+        </select>
+      </label>
+    </div>
+    <div class="row"><button class="btn primary" id="node-submit" type="submit" data-i18n="btn.addVar">Ajouter la variable</button><button class="btn" id="node-cancel" type="button" hidden data-i18n="btn.cancel">Annuler</button></div>
+    <p class="status" id="node-status" role="status" aria-live="polite"></p>
+  </form>
+  <ul class="list" id="node-list"></ul>
+</section>
+
+<section class="panel" aria-labelledby="h-hyps">
+  <h2 id="h-hyps" data-i18n="hyps.title">Hypothèses</h2>
+  <form id="edge-form" novalidate>
+    <div class="form-row">
+      <label class="field grow"><span data-i18n="f.from">De (cause)</span><select name="from"></select></label>
+      <label class="field grow"><span data-i18n="f.to">Vers (effet ou relation modérée)</span><select name="to"></select></label>
+    </div>
+    <div class="form-row">
+      <label class="field"><span data-i18n="f.sign">Signe attendu</span>
+        <select name="sign"><option value="+" data-i18n="sign.pos">+ positif</option><option value="-" data-i18n="sign.neg">− négatif</option><option value="?" data-i18n="sign.unk">? non précisé</option></select>
+      </label>
+      <label class="field"><span data-i18n="f.hyp">Étiquette</span><input name="label" maxlength="12" autocomplete="off" placeholder="H1"></label>
+    </div>
+    <p class="hint" data-i18n="f.hint">Une modératrice pointe vers une hypothèse (la relation qu'elle modère).</p>
+    <div class="row"><button class="btn primary" id="edge-submit" type="submit" data-i18n="btn.addHyp">Ajouter l'hypothèse</button><button class="btn" id="edge-cancel" type="button" hidden data-i18n="btn.cancel">Annuler</button></div>
+    <p class="status" id="edge-status" role="status" aria-live="polite"></p>
+  </form>
+  <ul class="list" id="edge-list"></ul>
+</section>
+</div>
+
+<div class="col">
+<section class="panel" aria-labelledby="h-diagram">
+  <div class="row spread"><h2 id="h-diagram" class="flat" data-i18n="diagram.title">Schéma</h2>
+    <div class="row"><button class="btn" id="relayout" type="button" data-i18n="btn.relayout">Réorganiser</button><button class="btn" id="export-svg" type="button" data-i18n="btn.svg">Exporter SVG</button><button class="btn" id="export-md" type="button" data-i18n="btn.md">Hypothèses (.md)</button></div>
+  </div>
+  <p class="hint" data-i18n="diagram.hint">Glissez une boîte pour la déplacer ; « Réorganiser » revient à la mise en page automatique.</p>
+  <div id="canvas" class="canvas" role="img" data-i18n-attr="aria-label:diagram.aria"></div>
+  <ul class="legend" id="legend"></ul>
+</section>
+
+<section class="panel" aria-labelledby="h-check">
+  <h2 id="h-check" data-i18n="check.title">Vérifications</h2>
+  <ul class="diag" id="diag" aria-live="polite"></ul>
+  <h3 class="sub" data-i18n="med.title">Chemins de médiation</h3>
+  <ul class="diag" id="paths"></ul>
+</section>
+</div>
+</div>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <label class="btn" for="import" data-i18n="btn.import">Restaurer…</label>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">HypothesisGraph vérifie la cohérence du schéma, pas la validité de vos hypothèses.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "SampleSizeCalc — taille d'échantillon",
+  "short_name": "SampleSize",
+  "description": "Taille d'échantillon pour une proportion, marge d'erreur obtenue et comparaison de deux proportions, formules détaillées.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#087f5b",
+  "background_color": "#f3f8f6",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

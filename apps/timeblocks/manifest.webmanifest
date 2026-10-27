@@ -1,0 +1,12 @@
+{
+  "name": "TimeBlocks — agenda en blocs",
+  "short_name": "TimeBlocks",
+  "description": "Planifie des blocs de travail dans un agenda quotidien, avec chevauchements, pauses, modèles et export .ics.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#5f3dc4",
+  "background_color": "#f5f4fa",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

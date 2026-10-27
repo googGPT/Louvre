@@ -1,0 +1,66 @@
+/* NoteGarden — styles. Thème clair/sombre automatique, mêmes bases que les autres applis Louvre. */
+:root{--bg:#f4f7f1;--surface:#fff;--ink:#1f3020;--muted:#5a6d58;--line:#dce6d6;--accent:#3f6f12;--accent-soft:#eaf3df;--accent-ink:#fff;--good:#2b7a3a;--good-soft:#e5f3e8;--bad:#c92a2a;--bad-soft:#fdecec;--focus:#6fae3a;--mark:#fff1a8;--radius:16px;
+font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg)}
+@media (prefers-color-scheme:dark){:root{--bg:#0d140c;--surface:#152014;--ink:#e7f0e3;--muted:#a3b69e;--line:#26372a;--accent:#a9e05f;--accent-soft:#1e3317;--accent-ink:#0d140c;--good:#7bd88d;--good-soft:#16301d;--bad:#ff8787;--bad-soft:#3a1717;--mark:#5a4d00}}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--bg);line-height:1.45}
+button,input,select,textarea{font:inherit;color:inherit}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,label.btn:focus-within{outline:3px solid var(--focus);outline-offset:2px}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:22px 0 8px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}.brand img{width:44px;height:44px;border-radius:12px}
+.brand strong{display:block;font-size:20px;letter-spacing:-.02em}.brand small{color:var(--muted);font-size:13px}
+.badge{font-size:12px;font-weight:700;padding:6px 11px;border-radius:999px;background:var(--good-soft);color:var(--good);white-space:nowrap}
+.hero h1{margin:18px 0 6px;font-size:clamp(26px,4.5vw,38px);line-height:1.1;letter-spacing:-.03em}
+.hero p{margin:0 0 18px;color:var(--muted);max-width:680px}
+.grid{display:grid;gap:16px;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);align-items:start;margin-bottom:16px}
+.col{display:grid;gap:16px;min-width:0}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;min-width:0}
+.panel h2{margin:0 0 12px;font-size:18px;letter-spacing:-.01em}
+.panel h3{font-size:15px;margin:18px 0 4px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.row>*{min-width:0;max-width:100%}
+.row.tight{gap:8px}.row.spread{justify-content:space-between}.row.spread h2{margin:0}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 16px;font-weight:650;cursor:pointer;min-height:44px;display:inline-flex;align-items:center;max-width:100%;text-align:start}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.bad-outline{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 40%,var(--line))}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+label.field{display:grid;gap:6px;font-size:14px;font-weight:600;margin:12px 0 0;min-width:0}
+input,select,textarea{width:100%;max-width:100%;min-width:0;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg);min-height:44px}
+textarea{min-height:220px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px;line-height:1.5}
+.filters{align-items:end}.filters .grow{flex:1 1 160px}
+.check{display:inline-flex;gap:8px;align-items:center;font-size:14px;font-weight:600;min-height:44px}
+.check input{width:20px;height:20px;min-height:0}
+.hint{font-size:13px;color:var(--muted);margin:4px 0 0}
+.status{min-height:22px;font-size:14px;margin:8px 0 0;color:var(--muted);overflow-wrap:anywhere}.status.error{color:var(--bad)}.status.ok{color:var(--good)}
+.warning{background:var(--bad-soft);color:var(--bad);border-radius:12px;padding:12px 14px;font-size:14px}
+.empty{color:var(--muted);text-align:center;padding:18px 8px;list-style:none}
+.save-state{font-size:13px;color:var(--muted)}
+/* Liste des notes */
+.notes{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px;max-height:560px;overflow-y:auto}
+.note-btn{width:100%;text-align:start;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg);cursor:pointer;display:grid;gap:2px;min-height:44px}
+.note-btn b{overflow-wrap:anywhere}
+.note-btn.current{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent)}
+[dir="rtl"] .note-btn.current{box-shadow:inset -3px 0 0 var(--accent)}
+.note-btn .meta,.note-btn .tags{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.note-btn .tags{color:var(--accent);font-weight:650}
+.snippet{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+mark{background:var(--mark);color:inherit;border-radius:3px;padding:0 2px}
+.chips{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px dashed var(--accent);color:var(--accent);background:transparent;border-radius:999px;padding:6px 12px;font-size:13px;font-weight:650;cursor:pointer;min-height:36px;max-width:100%;overflow-wrap:anywhere;text-align:start}
+/* Lecture */
+.preview{overflow-wrap:anywhere;min-width:0}
+.preview h3,.preview h4,.preview h5{margin:14px 0 6px}
+.preview p{margin:0 0 10px}
+.preview pre{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;overflow-x:auto;white-space:pre}
+.preview code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em}
+.preview blockquote{margin:0 0 10px;padding:4px 12px;border-inline-start:4px solid var(--line);color:var(--muted)}
+.wikilink{border:0;background:none;padding:0 2px;color:var(--accent);font-weight:650;text-decoration:underline;text-underline-offset:3px;cursor:pointer;border-radius:4px;overflow-wrap:anywhere;text-align:start}
+.wikilink.missing{color:var(--bad);text-decoration-style:dashed}
+.backlinks{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.backlinks li:not(.empty){border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;gap:2px}
+.linkish{border:0;background:none;padding:0;color:var(--accent);font-weight:700;cursor:pointer;text-align:start;overflow-wrap:anywhere;min-height:32px}
+.backlinks .count{font-size:12px;color:var(--muted)}.backlinks .ctx{font-size:13px;overflow-wrap:anywhere;font-family:ui-monospace,Menlo,Consolas,monospace}
+footer{color:var(--muted);font-size:13px;padding:24px 0 40px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}

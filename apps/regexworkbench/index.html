@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RegexWorkbench — Atelier d'expressions régulières</title>
+<meta name="description" content="RegexWorkbench : testez une expression régulière JavaScript sur un texte, avec groupes, remplacement, explication et protection contre les expressions qui s'emballent. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#5f3dc4">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/regexworkbench/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>RegexWorkbench</strong><small data-i18n="brand.tagline">Atelier d'expressions régulières</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Testez une expression avant de la livrer.</h1>
+  <p data-i18n="hero.text">Expression JavaScript, correspondances, groupes et remplacement.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les données enregistrées sur cet appareil sont illisibles.</p>
+<p id="timeout-alert" class="alert" role="alert" hidden></p>
+
+<div class="grid">
+  <div class="col">
+    <section class="panel" aria-labelledby="h-pattern">
+      <div class="row spread"><h2 id="h-pattern" data-i18n="pattern.title">Expression</h2><button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button></div>
+      <label class="field"><span data-i18n="f.pattern">Expression régulière</span>
+        <span class="re-input"><span aria-hidden="true">/</span><input id="pattern" maxlength="2000" autocomplete="off" autocapitalize="off" spellcheck="false" dir="ltr"><span aria-hidden="true" id="flags-view">/g</span></span></label>
+      <fieldset class="flags"><legend data-i18n="f.flags">Drapeaux</legend><div id="flag-boxes" class="flag-boxes"></div></fieldset>
+      <p class="status" id="pattern-status" role="status" aria-live="polite"></p>
+      <h3 data-i18n="explain.title">Explication</h3>
+      <p id="explain-warn" class="warn-note" hidden></p>
+      <ol id="explain" class="explain"></ol>
+      <ul id="flag-explain" class="flag-explain"></ul>
+    </section>
+    <section class="panel" aria-labelledby="h-library">
+      <h2 id="h-library" data-i18n="lib.title">Bibliothèque</h2>
+      <div class="row end">
+        <label class="field grow"><span data-i18n="lib.name">Nom</span><input id="lib-name" maxlength="80" autocomplete="off" data-i18n-attr="placeholder:lib.namePh"></label>
+        <button class="btn primary" id="lib-save" type="button" data-i18n="lib.save">Enregistrer</button>
+      </div>
+      <ul id="library" class="library"></ul>
+      <p class="status" id="lib-status" role="status" aria-live="polite"></p>
+    </section>
+  </div>
+
+  <div class="col">
+    <section class="panel" aria-labelledby="h-text">
+      <h2 id="h-text" data-i18n="text.title">Texte à tester</h2>
+      <label class="field"><span class="visually-hidden" data-i18n="text.title">Texte à tester</span><textarea id="subject" rows="7" spellcheck="false" data-i18n-attr="placeholder:text.ph"></textarea></label>
+      <div class="row spread"><p class="count" id="count" aria-live="polite"></p><span id="engine" class="engine"></span></div>
+      <div id="highlight" class="highlight" dir="auto"></div>
+      <h3 data-i18n="matches.title">Correspondances</h3>
+      <div class="scroll"><table class="matches"><thead><tr><th>#</th><th data-i18n="th.pos">Position</th><th data-i18n="th.match">Texte trouvé</th><th data-i18n="th.groups">Groupes</th></tr></thead><tbody id="matches"></tbody></table></div>
+    </section>
+    <section class="panel" aria-labelledby="h-replace">
+      <h2 id="h-replace" data-i18n="rep.title">Remplacement</h2>
+      <label class="field"><span data-i18n="f.replacement">Remplacer par</span><input id="replacement" maxlength="2000" autocomplete="off" spellcheck="false" dir="ltr" data-i18n-attr="placeholder:rep.ph"></label>
+      <p class="hint" data-i18n="rep.hint">$&amp; : texte trouvé · $1 : groupe 1 · $&lt;nom&gt; : groupe nommé · $$ : signe dollar</p>
+      <div id="replaced" class="highlight" dir="auto"></div>
+      <div class="row"><button class="btn" id="copy" type="button" data-i18n="rep.copy">Copier le résultat</button></div>
+      <p class="status" id="rep-status" role="status" aria-live="polite"></p>
+    </section>
+  </div>
+</div>
+
+<section class="panel" aria-labelledby="h-settings">
+  <h2 id="h-settings" data-i18n="set.title">Réglages et sauvegarde</h2>
+  <div class="row end">
+    <label class="field narrow"><span data-i18n="set.timeout">Délai maximal (ms)</span><input id="timeout" inputmode="numeric" maxlength="5"></label>
+    <p class="hint grow" data-i18n="set.timeoutHint">Au-delà, l'exécution est arrêtée.</p>
+  </div>
+  <div class="row" style="margin-top:12px">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Sauvegarde (JSON)</button>
+    <label class="btn" for="import" data-i18n="btn.import">Restaurer…</label>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">Tout est exécuté sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

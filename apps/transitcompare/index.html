@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TransitCompare — Le meilleur itinéraire selon vos critères</title>
+<meta name="description" content="TransitCompare : comparez vos itinéraires (marche, bus, train, voiture, vélo) selon le temps, le prix et les correspondances, avec votre propre valeur du temps. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#5f3dc4">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/transitcompare/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>TransitCompare</strong><small data-i18n="brand.tagline">Le meilleur itinéraire selon vos critères</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Plus rapide, moins cher ou plus simple ?</h1>
+  <p data-i18n="hero.text">Décrivez chaque itinéraire segment par segment. TransitCompare additionne temps, attente, marche, prix et correspondances, puis classe les options selon la valeur que vous donnez à votre temps.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les données enregistrées sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-trip">
+  <div class="row between">
+    <h2 id="h-trip" class="flush" data-i18n="trip.title">Trajet</h2>
+    <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+  </div>
+  <div class="row top-gap">
+    <label class="visually-hidden" for="trip-select" data-i18n="trip.select">Trajet affiché</label>
+    <select id="trip-select" class="auto"></select>
+    <button class="btn" id="new-trip" type="button" data-i18n="btn.newTrip">Nouveau trajet</button>
+    <button class="btn" id="rename-trip" type="button" data-i18n="btn.rename">Renommer</button>
+    <button class="btn" id="delete-trip" type="button" data-i18n="btn.delete">Supprimer</button>
+  </div>
+  <p class="status" id="trip-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-routes">
+  <h2 id="h-routes" data-i18n="routes.title">Itinéraires</h2>
+  <form id="route-form" novalidate class="row">
+    <label class="field grow inline-field"><span data-i18n="f.routeName">Nom de l'itinéraire</span><input name="name" maxlength="60" data-i18n-attr="placeholder:f.routeNamePh" autocomplete="off"></label>
+    <button class="btn primary" id="add-route" type="submit" data-i18n="btn.addRoute">Ajouter l'itinéraire</button>
+  </form>
+  <ul class="routes" id="routes"></ul>
+  <details class="add" id="seg-add" open>
+    <summary data-i18n="seg.add">Ajouter un segment</summary>
+    <form id="seg-form" novalidate class="form-grid three">
+      <label class="field span"><span data-i18n="f.route">Itinéraire</span><select name="route" id="seg-route"></select></label>
+      <label class="field"><span data-i18n="f.mode">Mode</span><select name="mode" id="seg-mode"></select></label>
+      <label class="field"><span data-i18n="f.minutes">Durée (min)</span><input name="minutes" inputmode="numeric" autocomplete="off" placeholder="15"></label>
+      <label class="field"><span data-i18n="f.wait">Attente avant (min)</span><input name="wait" inputmode="numeric" autocomplete="off" placeholder="0"></label>
+      <label class="field"><span><span data-i18n="f.cost">Prix</span> (<span class="cur">€</span>)</span><input name="cost" inputmode="decimal" autocomplete="off" placeholder="0"></label>
+      <label class="field"><span data-i18n="f.label">Précision (facultatif)</span><input name="label" maxlength="40" data-i18n-attr="placeholder:f.labelPh" autocomplete="off"></label>
+      <div class="row span"><button class="btn primary" id="add-seg" type="submit" data-i18n="btn.addSeg">Ajouter le segment</button></div>
+    </form>
+  </details>
+  <p class="status" id="route-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-prefs">
+  <h2 id="h-prefs" data-i18n="prefs.title">Vos pondérations</h2>
+  <p class="hint" data-i18n="prefs.hint">Ces valeurs sont les vôtres : TransitCompare n'en impose aucune. Le classement est un calcul sur ces hypothèses, pas un conseil.</p>
+  <form id="prefs-form" novalidate class="form-grid four">
+    <label class="field"><span><span data-i18n="f.vot">Valeur d'une heure de votre temps</span> (<span class="cur">€</span>)</span><input name="vot" inputmode="decimal" autocomplete="off"></label>
+    <label class="field"><span data-i18n="f.walkWeight">Poids d'une minute de marche (×)</span><input name="walkWeight" inputmode="decimal" autocomplete="off"></label>
+    <label class="field"><span data-i18n="f.waitWeight">Poids d'une minute d'attente (×)</span><input name="waitWeight" inputmode="decimal" autocomplete="off"></label>
+    <label class="field"><span data-i18n="f.penalty">Pénalité par correspondance (min)</span><input name="transferMinutes" inputmode="numeric" autocomplete="off"></label>
+  </form>
+  <p class="hint" data-i18n="prefs.formula">Coût généralisé = prix + valeur du temps × (minutes en véhicule + marche × poids + attente × poids + correspondances × pénalité) / 60.</p>
+  <p class="status" id="prefs-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-rank">
+  <div class="row between">
+    <h2 id="h-rank" class="flush" data-i18n="rank.title">Classement</h2>
+    <button class="btn" id="export-csv" type="button" data-i18n="btn.csv">Exporter (CSV)</button>
+  </div>
+  <div id="verdict" class="verdict top-gap" hidden aria-live="polite"></div>
+  <p id="pivot" class="pivot" hidden></p>
+  <ol class="ranking" id="ranking"></ol>
+  <p class="status" id="rank-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <button class="btn" id="pick-backup" type="button" data-i18n="btn.import">Restaurer…</button>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden" tabindex="-1" aria-hidden="true">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">TransitCompare ne consulte aucun horaire ni tarif : les durées et prix sont ceux que vous saisissez. Vos données restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SampleSizeCalc — Taille d'échantillon</title>
+<meta name="description" content="SampleSizeCalc : taille d'échantillon pour une proportion, marge d'erreur obtenue et comparaison de deux proportions (puissance), avec les formules détaillées. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#087f5b">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/samplesizecalc/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>SampleSizeCalc</strong><small data-i18n="brand.tagline">Taille d'échantillon</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Combien de réponses faut-il vraiment ?</h1>
+  <p data-i18n="hero.text">Choisissez le niveau de confiance, la marge d'erreur et la proportion attendue.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les scénarios enregistrés sont illisibles.</p>
+
+<div class="tabs" role="tablist" aria-labelledby="h-calc">
+  <button class="tab" type="button" role="tab" id="tab-one" aria-controls="panel-one" data-kind="one" data-i18n="tab.one">Une proportion</button>
+  <button class="tab" type="button" role="tab" id="tab-margin" aria-controls="panel-margin" data-kind="margin" data-i18n="tab.margin">Marge obtenue</button>
+  <button class="tab" type="button" role="tab" id="tab-two" aria-controls="panel-two" data-kind="two" data-i18n="tab.two">Deux proportions</button>
+</div>
+<h2 id="h-calc" class="visually-hidden" data-i18n="calc.title">Calcul</h2>
+
+<div class="grid">
+<section class="panel" aria-labelledby="h-inputs">
+  <div class="row spread">
+    <h2 id="h-inputs" class="m0" data-i18n="inputs.title">Hypothèses</h2>
+    <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+  </div>
+  <p class="hint" data-i18n="inputs.hint">Toutes les valeurs sont vos hypothèses ; aucune n'est imposée par l'outil.</p>
+
+  <form id="panel-one" class="calc" role="tabpanel" aria-labelledby="tab-one" data-kind="one" novalidate>
+    <div class="two">
+      <label class="field"><span data-i18n="f.confidence">Niveau de confiance</span><span class="unit-in"><input id="one-confidence" inputmode="decimal" value="95" dir="ltr"><b>%</b></span></label>
+      <label class="field"><span data-i18n="f.margin">Marge d'erreur (±)</span><span class="unit-in"><input id="one-margin" inputmode="decimal" value="5" dir="ltr"><b data-i18n="unit.points">points</b></span></label>
+      <label class="field"><span data-i18n="f.p">Proportion attendue</span><span class="unit-in"><input id="one-p" inputmode="decimal" value="50" dir="ltr"><b>%</b></span></label>
+      <label class="field"><span data-i18n="f.population">Taille de la population (facultatif)</span><input id="one-population" inputmode="numeric" dir="ltr" data-i18n-attr="placeholder:f.populationPh"></label>
+      <label class="field"><span data-i18n="f.response">Taux de réponse attendu</span><span class="unit-in"><input id="one-response" inputmode="decimal" value="100" dir="ltr"><b>%</b></span></label>
+      <label class="field"><span data-i18n="f.deff">Effet de plan (deff)</span><input id="one-deff" inputmode="decimal" value="1" dir="ltr"></label>
+    </div>
+    <p class="hint" data-i18n="f.pHint">Sans estimation préalable, 50 % donne la taille la plus prudente. Effet de plan : 1 pour un échantillon aléatoire simple, plus pour un échantillon en grappes.</p>
+  </form>
+
+  <form id="panel-margin" class="calc" role="tabpanel" aria-labelledby="tab-margin" data-kind="margin" novalidate hidden>
+    <div class="two">
+      <label class="field"><span data-i18n="f.n">Nombre de réponses obtenues</span><input id="m-n" inputmode="numeric" value="400" dir="ltr"></label>
+      <label class="field"><span data-i18n="f.confidence">Niveau de confiance</span><span class="unit-in"><input id="m-confidence" inputmode="decimal" value="95" dir="ltr"><b>%</b></span></label>
+      <label class="field"><span data-i18n="f.pObserved">Proportion observée ou attendue</span><span class="unit-in"><input id="m-p" inputmode="decimal" value="50" dir="ltr"><b>%</b></span></label>
+      <label class="field"><span data-i18n="f.population">Taille de la population (facultatif)</span><input id="m-population" inputmode="numeric" dir="ltr" data-i18n-attr="placeholder:f.populationPh"></label>
+      <label class="field"><span data-i18n="f.deff">Effet de plan (deff)</span><input id="m-deff" inputmode="decimal" value="1" dir="ltr"></label>
+    </div>
+  </form>
+
+  <form id="panel-two" class="calc" role="tabpanel" aria-labelledby="tab-two" data-kind="two" novalidate hidden>
+    <div class="two">
+      <label class="field"><span data-i18n="f.p1">Proportion attendue, groupe 1</span><span class="unit-in"><input id="t-p1" inputmode="decimal" value="50" dir="ltr"><b>%</b></span></label>
+      <label class="field"><span data-i18n="f.p2">Proportion attendue, groupe 2</span><span class="unit-in"><input id="t-p2" inputmode="decimal" value="60" dir="ltr"><b>%</b></span></label>
+      <label class="field"><span data-i18n="f.alpha">Risque α</span><span class="unit-in"><input id="t-alpha" inputmode="decimal" value="5" dir="ltr"><b>%</b></span></label>
+      <label class="field"><span data-i18n="f.power">Puissance (1 − β)</span><span class="unit-in"><input id="t-power" inputmode="decimal" value="80" dir="ltr"><b>%</b></span></label>
+      <label class="field"><span data-i18n="f.sides">Test</span><select id="t-sides"><option value="2" data-i18n="sides.two">bilatéral</option><option value="1" data-i18n="sides.one">unilatéral</option></select></label>
+      <label class="field"><span data-i18n="f.response">Taux de réponse attendu</span><span class="unit-in"><input id="t-response" inputmode="decimal" value="100" dir="ltr"><b>%</b></span></label>
+    </div>
+    <label class="check"><input type="checkbox" id="t-cc"><span data-i18n="f.cc">Correction de continuité (Fleiss)</span></label>
+    <p class="hint" data-i18n="f.twoHint">Deux groupes indépendants de même taille ; test du khi-deux (ou z) de comparaison de deux proportions.</p>
+  </form>
+  <p class="status" id="calc-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-result">
+  <h2 id="h-result" data-i18n="result.title">Résultat</h2>
+  <div id="result" aria-live="polite"></div>
+  <ul class="warns" id="warns"></ul>
+  <h3 class="steps-title" data-i18n="steps.title">Détail du calcul</h3>
+  <ol class="steps" id="steps"></ol>
+  <div class="row"><button class="btn primary" id="save" type="button" data-i18n="btn.save">Enregistrer ce scénario</button></div>
+  <p class="status" id="save-status" role="status" aria-live="polite"></p>
+</section>
+</div>
+
+<section class="panel mt" aria-labelledby="h-saved">
+  <h2 id="h-saved" data-i18n="saved.title">Scénarios enregistrés</h2>
+  <ul class="list" id="scenarios"></ul>
+  <div class="row bottom mt-s">
+    <label class="field inline"><span data-i18n="f.sep">Séparateur CSV</span><select id="csv-sep"><option value="," data-i18n="sep.comma">virgule</option><option value=";" data-i18n="sep.semicolon">point-virgule</option></select></label>
+    <button class="btn" id="export-csv" type="button" data-i18n="btn.csv">Exporter (CSV)</button>
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Sauvegarder (JSON)</button>
+    <label class="btn" for="import" data-i18n="btn.import">Restaurer…</label>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">Calculs sur hypothèses.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

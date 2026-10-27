@@ -1,0 +1,12 @@
+{
+  "name": "ReadabilityLab — longueur des phrases et lisibilité",
+  "short_name": "ReadabilityLab",
+  "description": "Mesure les longueurs de phrases et des indicateurs simples de lisibilité, avec des formules propres à chaque langue.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#a61e4d",
+  "background_color": "#f8f4f5",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

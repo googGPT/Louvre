@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VolunteerRoster — Planning des bénévoles</title>
+<meta name="description" content="VolunteerRoster : disponibilités et compétences des bénévoles, postes et créneaux, affectation automatique, trous de couverture, planning imprimable par personne et export CSV. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#4338ca">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/volunteerroster/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>VolunteerRoster</strong><small data-i18n="brand.tagline">Planning des bénévoles</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Le bon bénévole au bon poste, sans trou.</h1>
+  <p data-i18n="hero.text">Saisissez les disponibilités, compétences et heures maximales de chacun, puis les postes et leurs besoins. VolunteerRoster propose une affectation qui respecte toutes les contraintes, signale les places non pourvues et imprime le planning de chaque personne.</p>
+  <div class="row">
+    <label class="field grow"><span data-i18n="f.title">Événement</span><input id="ev-title" maxlength="80" autocomplete="off" data-i18n-attr="placeholder:f.titlePh"></label>
+    <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+  </div>
+  <p class="status" id="sample-status" role="status" aria-live="polite"></p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les données enregistrées sur cet appareil sont illisibles.</p>
+
+<div class="grid">
+<section class="panel" aria-labelledby="h-vol">
+  <h2 id="h-vol" data-i18n="vol.title">Bénévoles</h2>
+  <form id="vol-form" novalidate>
+    <label class="field"><span data-i18n="f.name">Nom</span><input id="v-name" maxlength="80" autocomplete="off" data-i18n-attr="placeholder:f.namePh"></label>
+    <div class="form-grid">
+      <label class="field"><span data-i18n="f.skills">Compétences (facultatif)</span><input id="v-skills" maxlength="300" autocomplete="off" data-i18n-attr="placeholder:f.skillsPh"></label>
+      <label class="field"><span data-i18n="f.hours">Heures au maximum</span><input id="v-hours" inputmode="decimal" maxlength="6" autocomplete="off" data-i18n-attr="placeholder:f.hoursPh"></label>
+    </div>
+    <fieldset class="avail">
+      <legend data-i18n="f.avail">Disponibilités</legend>
+      <div class="form-grid three">
+        <label class="field"><span data-i18n="f.day">Jour</span><input id="a-day" type="date"></label>
+        <label class="field"><span data-i18n="f.from">De</span><input id="a-start" type="time" step="300"></label>
+        <label class="field"><span data-i18n="f.to">À</span><input id="a-end" type="time" step="300"></label>
+      </div>
+      <button class="btn small" id="add-window" type="button" data-i18n="btn.addWindow">Ajouter cette disponibilité</button>
+      <ul class="chips" id="pending-windows"></ul>
+    </fieldset>
+    <div class="row"><button class="btn primary" id="save-vol" type="submit" data-i18n="btn.addVol">Ajouter le bénévole</button><button class="btn" id="cancel-vol" type="button" hidden data-i18n="btn.cancel">Annuler</button></div>
+    <p class="status" id="vol-status" role="status" aria-live="polite"></p>
+  </form>
+  <ul class="list" id="volunteers"></ul>
+</section>
+
+<section class="panel" aria-labelledby="h-shift">
+  <h2 id="h-shift" data-i18n="shift.title">Postes et créneaux</h2>
+  <form id="shift-form" novalidate>
+    <div class="form-grid">
+      <label class="field"><span data-i18n="f.post">Poste</span><input id="s-post" maxlength="60" autocomplete="off" data-i18n-attr="placeholder:f.postPh"></label>
+      <label class="field"><span data-i18n="f.skill">Compétence requise (facultatif)</span><input id="s-skill" maxlength="40" autocomplete="off" list="skill-list" data-i18n-attr="placeholder:f.skillPh"></label>
+    </div>
+    <datalist id="skill-list"></datalist>
+    <div class="form-grid four">
+      <label class="field"><span data-i18n="f.day">Jour</span><input id="s-day" type="date"></label>
+      <label class="field"><span data-i18n="f.from">De</span><input id="s-start" type="time" step="300"></label>
+      <label class="field"><span data-i18n="f.to">À</span><input id="s-end" type="time" step="300"></label>
+      <label class="field"><span data-i18n="f.need">Besoin</span><input id="s-need" inputmode="numeric" maxlength="2" value="1"></label>
+    </div>
+    <div class="row"><button class="btn primary" id="save-shift" type="submit" data-i18n="btn.addShift">Ajouter le créneau</button><button class="btn" id="cancel-shift" type="button" hidden data-i18n="btn.cancel">Annuler</button></div>
+    <p class="status" id="shift-status" role="status" aria-live="polite"></p>
+  </form>
+</section>
+</div>
+
+<section class="panel" aria-labelledby="h-roster">
+  <h2 id="h-roster" data-i18n="roster.title">Planning</h2>
+  <p class="hint" data-i18n="roster.help">L'affectation automatique garde les affectations verrouillées (ajouts manuels) et recalcule les autres. Elle respecte disponibilités, compétences, chevauchements et maximum d'heures ; c'est une proposition à ajuster.</p>
+  <div class="row"><button class="btn primary" id="auto" type="button" data-i18n="btn.auto">Affectation automatique</button><button class="btn" id="export-csv" type="button" data-i18n="btn.csv">Exporter le planning (CSV)</button></div>
+  <p class="gaps" id="gaps" role="status" aria-live="polite"></p>
+  <p class="status" id="roster-status" role="status" aria-live="polite"></p>
+  <div id="roster"></div>
+</section>
+
+<section class="panel" aria-labelledby="h-person">
+  <h2 id="h-person" data-i18n="person.title">Planning par personne</h2>
+  <div class="row">
+    <label class="field grow"><span data-i18n="f.who">Bénévole</span><select id="who"></select></label>
+    <button class="btn" id="print" type="button" data-i18n="btn.print">Imprimer</button>
+  </div>
+  <div id="person-view"></div>
+</section>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <label class="btn" for="import" data-i18n="btn.import">Restaurer…</label>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<div id="print-area"></div>
+<footer data-i18n="footer">Disponibilités, compétences et besoins sont ceux que vous saisissez. Un créneau ne peut pas passer minuit. Vos données restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

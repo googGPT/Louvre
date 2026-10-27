@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ParkingSpotMemory — Où est garée ma voiture ?</title>
+<meta name="description" content="ParkingSpotMemory : notez où vous êtes garé (niveau, zone, place, repères, photo, position GPS facultative), suivez la fin du stationnement avec une alerte et retrouvez la direction de votre véhicule. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#087f5b">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/parkingspotmemory/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>ParkingSpotMemory</strong><small data-i18n="brand.tagline">Où est garée ma voiture ?</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Garé. Noté. Retrouvé.</h1>
+  <p data-i18n="hero.text">Notez le parking, le niveau, la zone et la place, ajoutez un repère ou une photo. ParkingSpotMemory vous prévient avant la fin du stationnement et vous indique la direction de votre véhicule si vous avez enregistré sa position.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les données enregistrées sur cet appareil sont illisibles.</p>
+<p id="alarm" class="alarm" hidden role="alert"></p>
+
+<section class="panel" aria-labelledby="h-car" id="car-panel">
+  <h2 id="h-car" data-i18n="car.title">Mon véhicule</h2>
+  <div id="current" hidden>
+    <div class="spot-card">
+      <p class="spot-main" id="spot-main"></p>
+      <p class="spot-sub" id="spot-sub"></p>
+      <p class="spot-sub" id="spot-landmarks"></p>
+      <img id="spot-photo" class="photo" alt="" hidden>
+      <p class="spot-sub" id="spot-gps"></p>
+      <div class="row">
+        <button class="btn" id="find" type="button" data-i18n="btn.find">Où est ma voiture ?</button>
+        <a class="btn link" id="map-link" target="_blank" rel="noopener noreferrer" hidden><span data-i18n="btn.map">Ouvrir dans une appli de cartes</span> ↗</a>
+      </div>
+      <p class="guide" id="guide" role="status" aria-live="polite"></p>
+    </div>
+    <div class="timer" id="timer-box">
+      <h3 data-i18n="timer.title">Fin du stationnement</h3>
+      <p class="countdown" id="countdown" aria-live="off"></p>
+      <p class="spot-sub" id="timer-end"></p>
+      <div class="row">
+        <label class="field inline"><span data-i18n="f.duration">Durée (ex. 1h30)</span><input id="timer-duration" inputmode="text" autocomplete="off" placeholder="1h30"></label>
+        <label class="field inline"><span data-i18n="f.clock">ou heure de fin</span><input id="timer-clock" type="time"></label>
+        <button class="btn primary" id="timer-set" type="button" data-i18n="btn.timerSet">Régler</button>
+      </div>
+      <div class="row top-gap">
+        <button class="btn small" id="plus15" type="button" data-i18n="btn.plus15">+15 min</button>
+        <button class="btn small" id="plus60" type="button" data-i18n="btn.plus60">+1 h</button>
+        <button class="btn small" id="timer-clear" type="button" data-i18n="btn.timerClear">Arrêter la minuterie</button>
+        <button class="btn small" id="timer-ics" type="button" data-i18n="btn.ics">Rappel d'agenda (.ics)</button>
+      </div>
+      <p class="hint" data-i18n="timer.hint">L'alerte s'affiche (et vibre si l'appareil le permet) tant que cette page est ouverte. Pour un rappel même page fermée, ajoutez le rappel à votre agenda.</p>
+    </div>
+    <div class="row top-gap">
+      <button class="btn" id="edit" type="button" data-i18n="btn.edit">Modifier l'emplacement</button>
+      <button class="btn good" id="leave" type="button" data-i18n="btn.leave">Je suis reparti</button>
+    </div>
+  </div>
+
+  <form id="spot-form" novalidate>
+    <p class="hint" id="form-intro" data-i18n="form.intro">Remplissez ce qui vous aidera à retrouver le véhicule : un seul repère suffit.</p>
+    <div class="form-grid four">
+      <label class="field span"><span data-i18n="f.place">Parking ou rue</span><input name="place" maxlength="60" list="places" data-i18n-attr="placeholder:f.placePh" autocomplete="off"></label>
+      <label class="field"><span data-i18n="f.level">Niveau</span><input name="level" maxlength="20" data-i18n-attr="placeholder:f.levelPh" autocomplete="off"></label>
+      <label class="field"><span data-i18n="f.zone">Zone, allée ou couleur</span><input name="zone" maxlength="20" data-i18n-attr="placeholder:f.zonePh" autocomplete="off"></label>
+      <label class="field"><span data-i18n="f.spot">Place n°</span><input name="spot" maxlength="20" autocomplete="off"></label>
+      <label class="field"><span data-i18n="f.duration">Durée (ex. 1h30)</span><input name="duration" autocomplete="off" placeholder="1h30"></label>
+      <label class="field span"><span data-i18n="f.landmarks">Repères (facultatif)</span><textarea name="landmarks" maxlength="200" rows="2" data-i18n-attr="placeholder:f.landmarksPh"></textarea></label>
+    </div>
+    <datalist id="places"></datalist>
+    <div class="habit" id="habit" hidden><span id="habit-text"></span> <button class="btn small" id="habit-use" type="button" data-i18n="btn.habitUse">Reprendre</button></div>
+    <div class="extras">
+      <div class="extra">
+        <span class="extra-title" data-i18n="photo.title">Photo (facultative)</span>
+        <p class="hint" data-i18n="photo.hint">Réduite sur cet appareil (640 px) et gardée localement ; seules les 5 photos les plus récentes de l'historique sont conservées.</p>
+        <div class="row">
+          <button class="btn small" id="pick-photo" type="button" data-i18n="btn.photo">Prendre ou choisir une photo</button>
+          <button class="btn small" id="drop-photo" type="button" hidden data-i18n="btn.photoRemove">Retirer la photo</button>
+          <input id="photo-input" type="file" accept="image/*" capture="environment" class="visually-hidden" tabindex="-1" aria-hidden="true">
+        </div>
+        <img id="photo-preview" class="photo" alt="" hidden>
+      </div>
+      <div class="extra">
+        <span class="extra-title" data-i18n="gps.title">Position GPS (facultative)</span>
+        <p class="hint" data-i18n="gps.hint">Demandée seulement si vous appuyez sur le bouton, avec l'autorisation de votre navigateur. Elle reste sur cet appareil.</p>
+        <div class="row">
+          <button class="btn small" id="gps" type="button" data-i18n="btn.gps">Ajouter ma position</button>
+          <button class="btn small" id="drop-gps" type="button" hidden data-i18n="btn.gpsRemove">Retirer la position</button>
+        </div>
+        <p class="spot-sub" id="gps-draft" aria-live="polite"></p>
+      </div>
+    </div>
+    <div class="row top-gap">
+      <button class="btn primary" id="save-spot" type="submit" data-i18n="btn.save">Enregistrer l'emplacement</button>
+      <button class="btn" id="cancel-edit" type="button" hidden data-i18n="btn.cancel">Annuler</button>
+      <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+    </div>
+  </form>
+  <p class="status" id="car-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-hist">
+  <div class="row between">
+    <h2 id="h-hist" class="flush" data-i18n="hist.title">Historique</h2>
+    <button class="btn small" id="clear-hist" type="button" data-i18n="btn.clearHist">Tout effacer</button>
+  </div>
+  <p class="hint" id="hist-stats"></p>
+  <ul class="list" id="history"></ul>
+  <p class="status" id="hist-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Réglages et sauvegarde</h2>
+  <form id="set-form" novalidate class="row">
+    <label class="field inline"><span data-i18n="f.warn">Prévenir … minutes avant la fin</span><input name="warnMinutes" inputmode="numeric" autocomplete="off"></label>
+  </form>
+  <div class="row top-gap">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <button class="btn" id="pick-backup" type="button" data-i18n="btn.import">Restaurer…</button>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden" tabindex="-1" aria-hidden="true">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">ParkingSpotMemory ne charge aucune carte et n'envoie rien : le lien de carte n'est ouvert que si vous le touchez. Respectez la signalisation et les règles de stationnement locales.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

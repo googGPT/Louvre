@@ -1,0 +1,12 @@
+{
+  "name": "CommuteCarbon — les émissions de vos trajets",
+  "short_name": "CommuteCarbon",
+  "description": "Estime les émissions de trajets réguliers avec des facteurs saisis par l'utilisateur, et compare des scénarios.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#56690a",
+  "background_color": "#f5f7ee",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

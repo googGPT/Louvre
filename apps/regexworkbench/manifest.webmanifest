@@ -1,0 +1,12 @@
+{
+  "name": "RegexWorkbench — atelier d'expressions régulières",
+  "short_name": "RegexWorkbench",
+  "description": "Teste des expressions régulières JavaScript : correspondances, groupes nommés, remplacement, explication et délai maximal.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#5f3dc4",
+  "background_color": "#f5f4fa",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

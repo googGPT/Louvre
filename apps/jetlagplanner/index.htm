@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JetLagPlanner — Décaler son sommeil pas à pas</title>
+<meta name="description" content="JetLagPlanner : visualisez des horaires de sommeil décalés jour après jour entre deux fuseaux, avec le décalage et le nombre de jours que vous choisissez. Double horloge, graphique. Pas un conseil médical. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#6741d9">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/jetlagplanner/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>JetLagPlanner</strong><small data-i18n="brand.tagline">Décaler son sommeil pas à pas</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">À quelle heure dormir avant et après le vol ?</h1>
+  <p data-i18n="hero.text">Choisissez vos fuseaux, vos horaires habituels, le décalage par jour et le nombre de jours : JetLagPlanner dessine des horaires de coucher et de lever qui glissent progressivement vers l'heure de destination.</p>
+</section>
+<p class="medical" role="note" data-i18n="medical">Ceci n'est pas un conseil médical : ce sont de simples calculs d'horaires à partir de vos réglages. L'appli ne donne aucune recommandation sur la lumière, la mélatonine, les médicaments ni le rythme à suivre. Demandez l'avis d'un professionnel de santé, surtout en cas de traitement, de grossesse ou de trouble du sommeil.</p>
+<p id="warning" class="warning" hidden data-i18n="warning">Les plans enregistrés sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-plan">
+  <div class="row between">
+    <h2 id="h-plan" class="flush" data-i18n="plan.title">Plan</h2>
+    <div class="row">
+      <label class="visually-hidden" for="plan-select" data-i18n="plan.select">Plan affiché</label>
+      <select id="plan-select" class="auto"></select>
+      <button class="btn" id="new-plan" type="button" data-i18n="btn.new">Nouveau</button>
+      <button class="btn" id="delete-plan" type="button" data-i18n="btn.delete">Supprimer</button>
+      <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+    </div>
+  </div>
+  <p class="status" id="plan-status" role="status" aria-live="polite"></p>
+</section>
+
+<div class="grid">
+<div class="col">
+  <section class="panel" aria-labelledby="h-form">
+    <h2 id="h-form" data-i18n="form.title">Réglages</h2>
+    <form id="plan-form" novalidate>
+      <label class="field"><span data-i18n="f.name">Nom du plan</span><input name="name" maxlength="60" data-i18n-attr="placeholder:f.namePh"></label>
+      <div class="form-grid two">
+        <label class="field"><span data-i18n="f.homeZone">Fuseau de départ (IANA)</span><input name="homeZone" list="zones" dir="ltr" maxlength="40" autocomplete="off" spellcheck="false" placeholder="Europe/Paris"></label>
+        <label class="field"><span data-i18n="f.destZone">Fuseau de destination (IANA)</span><input name="destZone" list="zones" dir="ltr" maxlength="40" autocomplete="off" spellcheck="false" placeholder="Asia/Tokyo"></label>
+        <label class="field span2"><span data-i18n="f.departure">Jour du départ</span><input name="departure" type="date"></label>
+        <label class="field"><span data-i18n="f.bedtime">Coucher habituel</span><input name="bedtime" type="time"></label>
+        <label class="field"><span data-i18n="f.wake">Lever habituel</span><input name="wake" type="time"></label>
+        <label class="field"><span data-i18n="f.step">Décalage par jour (min, 0 à 180)</span><input name="stepMin" inputmode="numeric" maxlength="3" placeholder="60"></label>
+        <label class="field"><span data-i18n="f.direction">Sens</span><select name="direction"><option value="auto" data-i18n="dir.auto">Le plus court</option><option value="advance" data-i18n="dir.advance">Avancer (plus tôt)</option><option value="delay" data-i18n="dir.delay">Retarder (plus tard)</option></select></label>
+        <label class="field"><span data-i18n="f.before">Jours avant le départ</span><input name="before" inputmode="numeric" maxlength="2" placeholder="3"></label>
+        <label class="field"><span data-i18n="f.after">Jours après l'arrivée</span><input name="after" inputmode="numeric" maxlength="2" placeholder="5"></label>
+      </div>
+      <datalist id="zones"></datalist>
+      <p class="hint" data-i18n="form.hint">Toutes les valeurs sont les vôtres : l'appli ne recommande aucun rythme.</p>
+      <button class="btn primary" id="save-plan" type="submit" data-i18n="btn.save">Calculer et enregistrer</button>
+      <p class="status" id="form-status" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+</div>
+
+<div class="col">
+  <section class="panel" aria-labelledby="h-clocks">
+    <h2 id="h-clocks" data-i18n="clocks.title">Double horloge</h2>
+    <div class="clocks" id="clocks" dir="ltr"></div>
+    <p class="empty" id="clocks-empty" data-i18n="clocks.empty">Enregistrez un plan pour afficher l'heure des deux fuseaux.</p>
+  </section>
+  <section class="panel" aria-labelledby="h-res">
+    <h2 id="h-res" data-i18n="res.title">Programme</h2>
+    <div class="kpis">
+      <div class="kpi"><span data-i18n="kpi.diff">Décalage horaire</span><strong id="k-diff">—</strong></div>
+      <div class="kpi"><span data-i18n="kpi.shift">À décaler</span><strong id="k-shift">—</strong></div>
+      <div class="kpi"><span data-i18n="kpi.days">Jours nécessaires</span><strong id="k-days">—</strong></div>
+      <div class="kpi"><span data-i18n="kpi.reached">Horaire atteint</span><strong id="k-reached">—</strong></div>
+    </div>
+    <p id="summary" class="verdict" hidden aria-live="polite"></p>
+    <div id="chart" class="chart" dir="ltr"></div>
+    <p class="legend" id="legend" hidden><span class="sw sleep"></span><span data-i18n="legend.sleep">Sommeil prévu</span> <span class="sw target"></span><span data-i18n="legend.target">Horaire habituel à destination</span> <span class="sw here"></span><span data-i18n="legend.here">Fuseau où vous êtes ce jour-là</span></p>
+    <div class="scroll"><table class="tbl" id="days-table" hidden><thead><tr><th data-i18n="th.day">Jour</th><th data-i18n="th.home">Heure de départ</th><th data-i18n="th.dest">Heure de destination</th><th class="num" data-i18n="th.left">Reste</th></tr></thead><tbody></tbody></table></div>
+    <p class="empty" id="res-empty" data-i18n="res.empty">Remplissez les réglages pour voir le programme.</p>
+    <div class="row top-gap"><button class="btn" id="export-ics" type="button" data-i18n="btn.ics">Agenda (.ics)</button><button class="btn" id="export-svg" type="button" data-i18n="btn.svg">Graphique (SVG)</button></div>
+    <p class="status" id="res-status" role="status" aria-live="polite"></p>
+    <p class="hint" data-i18n="res.hint">Fuseaux et heures d'été selon les règles de votre navigateur, au jour du départ.</p>
+  </section>
+</div>
+</div>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <label class="btn file" for="import" data-i18n="btn.import">Restaurer…</label>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">Pas un conseil médical. Vos plans restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

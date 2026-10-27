@@ -1,0 +1,12 @@
+{
+  "name": "ParkingSpotMemory — où est garée ma voiture ?",
+  "short_name": "ParkingSpot",
+  "description": "Note l'emplacement du véhicule (niveau, zone, place, photo, GPS facultatif), minuterie de stationnement et historique.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#087f5b",
+  "background_color": "#f1f7f5",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

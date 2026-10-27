@@ -1,0 +1,12 @@
+{
+  "name": "SurveyComposer — concevoir un questionnaire",
+  "short_name": "SurveyComposer",
+  "description": "Conçoit un questionnaire (sections, Likert, conditions), contrôle sa qualité et exporte le dictionnaire des codes.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#6741d9",
+  "background_color": "#f6f4fb",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

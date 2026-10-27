@@ -1,0 +1,12 @@
+{
+  "name": "IconStudio — petites icônes SVG sur grille",
+  "short_name": "IconStudio",
+  "description": "Compose et exporte de petites icônes SVG réutilisables, forme par forme, sur une grille.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#c2255c",
+  "background_color": "#f7f4f6",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
