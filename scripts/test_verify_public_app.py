@@ -4,8 +4,8 @@ from verify_public_app import verify
 
 JS = b"/* Valid application core */\nwindow.LouvreApp={version:1};\n"
 OLD = b"""<!doctype html><html lang="fr"><head><title>SplitFair - Louvre App Factory</title></head><body><main><h1>App</h1><script src="./core.js"></script></main></body></html>"""
-MODERN = b"""<!doctype html><html lang="fr"><head><title>DecisionDeck — Comparateur multicrit\xc3\xa8re</title></head><body><main><h1>Version 2</h1><script src="core.js?v=2"></script></main></body></html>"""
-EVENT = b"""<!doctype html><html lang="fr"><head><title>EventCount — Invitations et budget</title></head><body><div>App</div><script src="./core.js"></script></body></html>"""
+MODERN = """<!doctype html><html lang="fr"><head><title>DecisionDeck — Comparateur multicritère</title></head><body><main><h1>Version 2</h1><script src="core.js?v=2"></script></main></body></html>""".encode("utf-8")
+EVENT = """<!doctype html><html lang="fr"><head><title>EventCount — Invitations et budget</title></head><body><div>App</div><script src="./core.js"></script></body></html>""".encode("utf-8")
 
 class PublicAppTest(unittest.TestCase):
     def test_legacy_brand_is_accepted(self):
