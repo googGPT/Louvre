@@ -1,7 +1,7 @@
 """QuizCraft v2: end-to-end Chromium, stockage historique et hors ligne."""
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, expect
 import threading, os, json
 ROOT=Path(__file__).resolve().parents[1]
 class H(SimpleHTTPRequestHandler):
@@ -99,12 +99,32 @@ try:
         page.locator('#import').set_input_files(saved)
         page.wait_for_function('document.querySelectorAll("#items .item").length===2')
 
+        # Une lecture de fichier lente ne doit jamais écraser des modifications récentes.
+        page.evaluate("""() => {
+          window._originalFileText=File.prototype.text;
+          window._releaseImport=null;
+          File.prototype.text=function(){
+            const file=this,original=window._originalFileText;
+            return new Promise(resolve=>{window._releaseImport=()=>original.call(file).then(resolve);});
+          };
+        }""")
+        page.locator('#import').set_input_files(saved)
+        page.wait_for_function('typeof window._releaseImport==="function"')
+        page.locator('#items .item').first.get_by_role('button',name='Modifier').click()
+        page.locator('[name="question"]').fill('Modification plus récente à conserver')
+        page.locator('#save-button').click()
+        expect(page.locator('#items')).to_contain_text('Modification plus récente à conserver')
+        page.evaluate('window._releaseImport()')
+        expect(page.locator('#status')).to_contain_text('Import refusé')
+        assert 'Modification plus récente à conserver' in page.locator('#items').inner_text()
+        page.evaluate('() => {File.prototype.text=window._originalFileText;delete window._releaseImport;}')
+
         # Le stockage corrompu doit rester protégé si l'import échoue.
         page.evaluate("() => localStorage.setItem('louvre-factory:quizcraft:v1','not valid JSON')")
         page.reload()
         assert page.locator('#warning').is_visible()
         page.locator('#import').set_input_files({'name':'bad.json','mimeType':'application/json','buffer':b'broken'})
-        assert 'Import refusé' in page.locator('#status').inner_text()
+        expect(page.locator('#status')).to_contain_text('Import refusé')
         assert page.locator('#warning').is_visible()
         page.locator('#import').set_input_files(saved)
         page.wait_for_function('document.querySelectorAll("#items .item").length===2')

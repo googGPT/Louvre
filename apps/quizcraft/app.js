@@ -4,7 +4,7 @@
  const L=AppLogic,KEY='louvre-factory:quizcraft:v1';
  const $=id=>document.getElementById(id);
  const form=$('record-form'),status=$('status');
- let records=[],editing=null,readOnly=false,session=null;
+ let records=[],editing=null,readOnly=false,session=null,importToken=0;
  const node=(tag,cls,text)=>{
   const n=document.createElement(tag);
   if(cls)n.className=cls;
@@ -208,16 +208,21 @@
  });
  $('import').addEventListener('change',async e=>{
   const file=e.target.files?.[0];e.target.value='';if(!file)return;
+  const token=++importToken;
   try{
+   const before=localStorage.getItem(KEY);
    if(file.size>L.STORAGE_LIMIT)throw Error('Fichier trop volumineux');
    const restored=L.validateBackup(JSON.parse(await file.text()));
+   if(token!==importToken)return; // Ignore a superseded asynchronous file read.
+   if(localStorage.getItem(KEY)!==before)throw Error('La bibliothèque a changé pendant la lecture. Import annulé pour éviter un écrasement.');
    if(!confirm('Remplacer les '+records.length+' fiches par '+restored.length+' fiches validées ?'))return;
+   if(token!==importToken||localStorage.getItem(KEY)!==before)throw Error('La bibliothèque a changé pendant l’import. Réessayez.');
    if(save(restored,{recover:true})){
     session=null;sessionRender();reset();
     $('search').value='';$('category-filter').value='all';$('mastery-filter').value='all';$('difficulty-filter').value='all';
     render();renderQuizCategories();tell('Sauvegarde JSON restaurée.');
    }
-  }catch(err){tell('Import refusé : '+err.message,true);}
+  }catch(err){if(token===importToken)tell('Import refusé : '+err.message,true);}
  });
  try{
   const text=localStorage.getItem(KEY);

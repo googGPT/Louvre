@@ -96,6 +96,20 @@ jobs:
           node -e "JSON.parse(require('fs').readFileSync('apps/findmystuff/manifest.webmanifest','utf8'))"
           TZ=Europe/Paris node --test apps/findmystuff/tests/core.test.cjs
 
+      - name: Verify all present Louvre app entrypoints and published-site verifier
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s scripts -p 'test_verify_public_app.py' -v
+          verified=0
+          for app in apps/*/; do
+            if [ ! -f "${app}index.html" ] || [ ! -f "${app}core.js" ]; then continue; fi
+            slug="${app#apps/}"
+            slug="${slug%/}"
+            python scripts/verify_public_app.py --slug "$slug" --html "${app}index.html" --core "${app}core.js"
+            verified=$((verified + 1))
+          done
+          echo "LOUVRE_LOCAL_APP_VERIFY_PASS $verified app(s)"
+
       - name: Test any newly merged Louvre Wave 2 business logic
         run: |
           set -euo pipefail
@@ -115,6 +129,9 @@ jobs:
           if [ -f apps/qrforge/tests/browser.test.py ]; then
             python -m pip install --disable-pip-version-check 'zxing-cpp>=2.2,<4' 'Pillow>=10,<13'
           fi
+
+      - name: Test MoneyUntil budget UI, JSON backups and mobile browser
+        run: python apps/moneyuntil/tests/browser.test.py
 
       - name: Test receipt storage, backup and mobile layout in Chrome
         run: python apps/receiptrescue/tests/browser.test.py
@@ -441,8 +458,8 @@ jobs:
             found=0
             for attempt in $(seq 1 16); do
               if curl --fail --location --silent --show-error --max-time 12 "$site" -o /tmp/louvre-factory-public.html \
-                && grep -q 'Louvre App Factory' /tmp/louvre-factory-public.html \
-                && curl --fail --silent --show-error --max-time 12 "${site}core.js" -o /tmp/louvre-factory-core.js; then
+                && curl --fail --silent --show-error --max-time 12 "${site}core.js" -o /tmp/louvre-factory-core.js \
+                && python scripts/verify_public_app.py --slug "$slug" --html /tmp/louvre-factory-public.html --core /tmp/louvre-factory-core.js; then
                 echo "PUBLIC_SMOKE_PASS $site"
                 found=1
                 break
@@ -461,8 +478,8 @@ jobs:
             live=0
             for check in $(seq 1 18); do
               if curl -fsSL --max-time 12 "$site" -o /tmp/louvre-wave2-live.html \
-                 && grep -q '<main' /tmp/louvre-wave2-live.html \
-                 && curl -fsSL --max-time 12 "${site}core.js" -o /tmp/louvre-wave2-core.js; then
+                 && curl -fsSL --max-time 12 "${site}core.js" -o /tmp/louvre-wave2-core.js \
+                 && python scripts/verify_public_app.py --slug "$slug" --html /tmp/louvre-wave2-live.html --core /tmp/louvre-wave2-core.js; then
                 echo "PUBLIC_SMOKE_PASS $site"
                 live=1
                 break
