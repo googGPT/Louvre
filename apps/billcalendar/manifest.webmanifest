@@ -1,0 +1,12 @@
+{
+  "name": "BillCalendar — factures et abonnements",
+  "short_name": "BillCalendar",
+  "description": "Factures et abonnements récurrents : coût mensuel réel, calendrier des échéances, export agenda.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#c2410c",
+  "background_color": "#f3f7f8",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
