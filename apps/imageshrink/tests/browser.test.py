@@ -22,7 +22,7 @@ def run():
             browser=p.chromium.launch(
                 headless=True,executable_path=os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium'),args=['--no-sandbox'])
             context=browser.new_context(
-                viewport={'width':390,'height':844},accept_downloads=True)
+                viewport={'width':390,'height':844},accept_downloads=True,locale='fr-FR')
             page=context.new_page()
             errors=[]
             outside=[]
@@ -120,7 +120,7 @@ def run():
             assert page.locator('.file-card').count()==2
             page.locator('#process').click()
             page.wait_for_function("() => (document.querySelectorAll('.result-card').length===2)",timeout=30000)
-            assert '2 image(s) traitée(s)' in page.locator('#feedback').inner_text()
+            assert '2 images traitées' in page.locator('#feedback').inner_text()
             assert page.locator('.download').count()==2
 
             # Lot rejeté : format SVG et faux contenu bloqués.
@@ -135,7 +135,7 @@ def run():
             page.locator('#process').click()
             page.wait_for_function("() => (document.querySelector('#process').disabled===false)",timeout=20000)
             assert page.locator('.result-card').count()==0
-            assert '1 échec(s)' in page.locator('#feedback').inner_text()
+            assert '1 échec.' in page.locator('#feedback').inner_text()
 
             # Annuler / effacer les résultats et vider les images de la session.
             page.locator('#reset').click()
@@ -153,8 +153,42 @@ def run():
             assert page.locator('#process').is_disabled()
             assert not errors,errors
             assert not outside,outside
+            context.set_offline(False)
+
+            # --- Langues : détection, 7 langues complètes, arabe RTL, résultats conservés, pas de menu devise.
+            intl=browser.new_context(viewport={'width':390,'height':844},locale='de-DE')
+            ip=intl.new_page()
+            ip.on('pageerror',lambda error:errors.append(str(error)))
+            ip.goto(f'http://127.0.0.1:{server.server_port}/',wait_until='domcontentloaded')
+            assert ip.locator('#settings-title').inner_text()=='Einstellungen'
+            assert ip.locator('#louvre-currency').count()==0
+            assert ip.locator('#quality-output').inner_text().replace('\xa0',' ')=='80 %'
+            ip.locator('#file-input').set_input_files({'name':'bild.png','mimeType':'image/png','buffer':png})
+            ip.locator('#process').click()
+            ip.locator('.result-card').first.wait_for(timeout=25000)
+            ip.wait_for_function("() => document.querySelector('#process').disabled===false",timeout=20000)
+            assert '1 Bild verarbeitet;' in ip.locator('#feedback').inner_text(), ip.locator('#feedback').inner_text()
+            assert 'KB' in ip.locator('.result-details').inner_text()
+            heads={'fr':'Réglages','en':'Settings','es':'Ajustes','ar':'الإعدادات','pt':'Definições','de':'Einstellungen','it':'Impostazioni'}
+            for lang in ['fr','en','es','ar','pt','de','it']:
+                ip.locator('#louvre-lang').select_option(lang)
+                assert ip.evaluate('() => document.documentElement.dir')==('rtl' if lang=='ar' else 'ltr')
+                wide=ip.evaluate('''() => document.documentElement.scrollWidth <= innerWidth + 2 ? [] :
+                  [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 2)
+                    .slice(0, 5).map((e) => `${e.tagName}.${e.className} « ${(e.textContent || '').trim().slice(0, 40)} »`)''')
+                assert not wide,f'débordement en {lang} : {wide}'
+                assert ip.locator('#settings-title').inner_text()==heads[lang]
+                assert ip.locator('.result-card').count()==1 and ip.locator('.file-card').count()==1
+            assert ip.evaluate('() => LouvreI18n.missing()')==[],ip.evaluate('() => LouvreI18n.missing()')
+            ip.locator('#louvre-lang').select_option('en')
+            assert 'Ko' not in ip.locator('.result-details').inner_text() and 'KB' in ip.locator('.result-details').inner_text()
+            ip.locator('#file-input').set_input_files({'name':'x.svg','mimeType':'image/svg+xml','buffer':b'<svg xmlns="http://www.w3.org/2000/svg"/>'})
+            assert ip.locator('#feedback').inner_text()=='Source format not accepted (JPG, PNG, WebP only)'
+            ip.locator('#quality').fill('0.5'); ip.locator('#quality').dispatch_event('input')
+            assert ip.locator('#quality-output').inner_text()=='50%'
+            assert not errors,errors
             browser.close()
-        print('BROWSER PASS ImageShrink: WebP dimension/output/download, JPEG alpha flatten, PNG transparency, 2 images, unsafe MIME, corrupted file, no persistence, mobile 390px, offline')
+        print('BROWSER PASS ImageShrink: WebP dimension/output/download, JPEG alpha flatten, PNG transparency, 2 images, unsafe MIME, corrupted file, no persistence, mobile 390px, offline, 7 languages, RTL')
     finally:
         server.shutdown()
         server.server_close()

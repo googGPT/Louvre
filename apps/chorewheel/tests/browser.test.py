@@ -18,7 +18,7 @@ try:
         kwargs={'headless':True,'args':['--no-sandbox']}
         if exe:kwargs['executable_path']=exe
         browser=p.chromium.launch(**kwargs)
-        context=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True)
+        context=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True,locale='fr-FR')
         page=context.new_page();errors=[]
         page.on('pageerror',lambda e:errors.append(str(e)))
         url=f'http://127.0.0.1:{server.server_address[1]}/'
@@ -82,7 +82,47 @@ try:
         page.get_by_text('Ancienne tâche',exact=True).wait_for(timeout=10000)
         assert page.evaluate('document.documentElement.scrollWidth <= window.innerWidth+2')
         assert not errors,errors
-        context.set_offline(False);browser.close()
-        print('BROWSER PASS: create, complete, reload, edit, search, JSON, CSV, ICS, delete, invalid and legacy import, PWA offline, mobile 390px')
+        context.set_offline(False)
+
+        # --- Languages: 7 complete languages, RTL Arabic, no overflow, translated exports, typed form kept.
+        intl=browser.new_context(viewport={'width':390,'height':844},locale='pt-BR',accept_downloads=True)
+        ip=intl.new_page()
+        ip.on('pageerror',lambda e:errors.append(str(e)))
+        ip.on('dialog',lambda d:d.accept())
+        ip.goto(url,wait_until='domcontentloaded')
+        assert ip.locator('h1 em').inner_text()=='Mais tempo para si.'  # Portuguese browser -> Portuguese
+        assert ip.locator('#louvre-currency').count()==0  # no money: language menu only
+        ip.locator('#example').click()
+        ip.wait_for_function('() => document.querySelector("#count").textContent==="3"')
+        titles={'fr':'Mes tâches','en':'My chores','es':'Mis tareas','ar':'مهامي','pt':'As minhas tarefas','de':'Meine Aufgaben','it':'Le mie faccende'}
+        for lang in ['fr','en','es','ar','pt','de','it']:
+            ip.locator('#louvre-lang').select_option(lang)
+            assert ip.evaluate('() => document.documentElement.dir')==('rtl' if lang=='ar' else 'ltr')
+            wide=ip.evaluate('''() => document.documentElement.scrollWidth <= innerWidth + 2 ? [] :
+              [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 2)
+                .slice(0, 5).map((e) => `${e.tagName}.${e.className} « ${(e.textContent || '').trim().slice(0, 40)} »`)''')
+            assert not wide,f'débordement en {lang} : {wide}'
+            assert ip.locator('.board h2 span').first.inner_text()==titles[lang],lang
+            assert ip.locator('.task').count()==3
+        assert ip.evaluate('() => LouvreI18n.missing()')==[],ip.evaluate('() => LouvreI18n.missing()')
+        # Open form keeps what was typed when the language changes; core errors are translated.
+        ip.locator('#louvre-lang').select_option('en')
+        ip.locator('#add').click();ip.locator('[name="chore"]').fill('   ');ip.locator('[name="person"]').fill('Zoé')
+        assert ip.locator('#editor-title').inner_text()=='Add a chore'
+        ip.evaluate("() => LouvreI18n.setLang('de')")
+        assert ip.locator('#editor-title').inner_text()=='Aufgabe hinzufügen'
+        assert ip.locator('[name="person"]').input_value()=='Zoé'
+        ip.locator('#save').click()
+        assert ip.locator('#form-error').inner_text()=='Aufgabe ungültig (höchstens 100 Zeichen)',ip.locator('#form-error').inner_text()
+        ip.locator('#cancel').click()
+        with ip.expect_download() as d:ip.locator('#export-csv').click()
+        assert d.value.path().read_text(encoding='utf-8-sig').startswith('"Aufgabe";"Zuständig"')
+        ip.locator('#louvre-lang').select_option('en')
+        with ip.expect_download() as d:ip.locator('#export-ics').click()
+        assert 'DESCRIPTION:Room: Cozinha' in d.value.path().read_text(encoding='utf-8')
+        assert 'Next due:' in ip.locator('.task .meta').nth(1).inner_text()
+        assert not errors,errors
+        browser.close()
+        print('BROWSER PASS: create, complete, reload, edit, search, JSON, CSV, ICS, delete, invalid and legacy import, PWA offline, mobile 390px, 7 languages, RTL, translated CSV/ICS')
 finally:
     server.shutdown();server.server_close()

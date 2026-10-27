@@ -11,38 +11,38 @@ test('TVA à 0 donne TTC identique HT',()=>{const r=C.compute(doc({items:[line({
 test('TVA 5,5 % accepte virgule',()=>{const r=C.compute(doc({items:[line({unitPrice:'100',vatRate:'5,5'})]}));a.equal(r.vat,550);});
 test('TVA 10 % et 20 % réparties distinctement',()=>{const r=C.compute(doc({items:[line({vatRate:'10'}),line({vatRate:'20'})]}));a.equal(r.ht,20000);a.equal(r.vat,3000);a.equal(r.vatSummary.length,2);});
 test('prix de zéro accepté pour ligne gratuite',()=>a.equal(C.compute(doc({items:[line({unitPrice:'0'})]})).ttc,0));
-test('prix à plus de 2 décimales refusé',()=>a.throws(()=>C.compute(doc({items:[line({unitPrice:'0.001'})]})),/décimales/));
-test('quantité à plus de 3 décimales refusée',()=>a.throws(()=>C.compute(doc({items:[line({quantity:'0.0001'})]})),/décimales/));
-test('quantité zéro refusée',()=>a.throws(()=>C.item(line({quantity:'0'})),/positive/));
-test('quantités négatives refusées',()=>a.throws(()=>C.item(line({quantity:'-1'})),/invalides|décimales/));
-test('prix négatifs refusés',()=>a.throws(()=>C.item(line({unitPrice:'-10'})),/décimales/));
-test('valeurs numériques non textuelles refusées',()=>a.throws(()=>C.item(line({unitPrice:12.34})),/décimales/));
+test('prix à plus de 2 décimales refusé',()=>a.throws(()=>C.compute(doc({items:[line({unitPrice:'0.001'})]})),/^Error: err\.decimals/));
+test('quantité à plus de 3 décimales refusée',()=>a.throws(()=>C.compute(doc({items:[line({quantity:'0.0001'})]})),/^Error: err\.decimals/));
+test('quantité zéro refusée',()=>a.throws(()=>C.item(line({quantity:'0'})),/err\.qtyPositive/));
+test('quantités négatives refusées',()=>a.throws(()=>C.item(line({quantity:'-1'})),/err\.decimals/));
+test('prix négatifs refusés',()=>a.throws(()=>C.item(line({unitPrice:'-10'})),/err\.decimals/));
+test('valeurs numériques non textuelles refusées',()=>a.throws(()=>C.item(line({unitPrice:12.34})),/err\.decimals\|\{"field":"unitPrice"\}/));
 test('NaN et Infinity refusés',()=>{for(const v of ['NaN','Infinity','1e6'])a.throws(()=>C.item(line({quantity:v})));});
-test('montant au-delà de 100 millions € refusé',()=>a.throws(()=>C.compute(doc({items:Array(11).fill(line({unitPrice:'100000',quantity:'1000'}))})),/Montant total/));
-test('61 lignes refusées',()=>a.throws(()=>C.draft(doc({items:Array(61).fill(line())})),/60 lignes/));
-test('aucune ligne refusée',()=>a.throws(()=>C.draft(doc({items:[]})),/1 à 60/));
-test('intitulé de ligne vide refusé',()=>a.throws(()=>C.item(line({label:'  '})),/obligatoire/));
+test('montant au-delà de 100 millions € refusé',()=>a.throws(()=>C.compute(doc({items:Array(11).fill(line({unitPrice:'100000',quantity:'1000'}))})),/err\.totalLimit/));
+test('61 lignes refusées',()=>a.throws(()=>C.draft(doc({items:Array(61).fill(line())})),/err\.lineCount\|\{"max":60\}/));
+test('aucune ligne refusée',()=>a.throws(()=>C.draft(doc({items:[]})),/err\.lineCount/));
+test('intitulé de ligne vide refusé',()=>a.throws(()=>C.item(line({label:'  '})),/err\.required\|\{"field":"label"\}/));
 test('notes et valeurs HTML préservées comme simple texte',()=>a.equal(C.draft(doc({notes:'<img src=x onerror=alert(1)>'})).notes,'<img src=x onerror=alert(1)>'));
-test('schéma document rejette les propriétés inconnues',()=>a.throws(()=>C.draft({...doc(),admin:true}),/Document invalide/));
+test('schéma document rejette les propriétés inconnues',()=>a.throws(()=>C.draft({...doc(),admin:true}),/err\.document$/));
 test('année bissextile valide',()=>a.equal(C.date('2028-02-29','Date',true),'2028-02-29'));
-test('date 2026-02-29 impossible',()=>a.throws(()=>C.date('2026-02-29','Date',true),/invalide/));
-test('format 2026/10/26 refusé',()=>a.throws(()=>C.date('2026/10/26','Date',true),/AAAA/));
-test('échéance antérieure à émission refusée',()=>a.throws(()=>C.draft(doc({dueDate:'2026-10-25'})),/antérieure/));
-test('SIREN incomplet refusé',()=>a.throws(()=>C.draft(doc({seller:{...doc().seller,siren:'123'}})),/9 chiffres/));
-test('nature non prise en charge refusée',()=>a.throws(()=>C.draft(doc({nature:'transport'})),/Nature/));
-test('brouillon avec numéro déjà attribué refusé',()=>a.throws(()=>C.draft(doc({number:'F-2026-0001'})),/brouillon/));
-test('une copie verrouillée sans conditions ne passe pas',()=>a.throws(()=>C.draft(doc({status:'locked',number:'F-2026-0001',conditions:''})),/Pour verrouiller/));
-test('copie facture verrouillée sans SIREN vendeur est refusée',()=>a.throws(()=>C.draft(doc({status:'locked',number:'F-2026-0001',seller:{...doc().seller,siren:''}})),/SIREN/));
-test('TVA 0 sur copie verrouillée requiert une mention',()=>a.throws(()=>C.draft(doc({status:'locked',number:'F-2026-0001',items:[line({vatRate:'0'})],exemption:''})),/TVA à 0/));
-test('numéro verrouillé cohérent avec type et année',()=>a.throws(()=>C.draft(doc({status:'locked',number:'D-2026-0001'})),/incohérent/));
+test('date 2026-02-29 impossible',()=>a.throws(()=>C.date('2026-02-29','Date',true),/err\.dateInvalid/));
+test('format 2026/10/26 refusé',()=>a.throws(()=>C.date('2026/10/26','Date',true),/err\.dateFormat/));
+test('échéance antérieure à émission refusée',()=>a.throws(()=>C.draft(doc({dueDate:'2026-10-25'})),/err\.dueBefore/));
+test('SIREN incomplet refusé',()=>a.throws(()=>C.draft(doc({seller:{...doc().seller,siren:'123'}})),/err\.siren\|\{"field":"seller"\}/));
+test('nature non prise en charge refusée',()=>a.throws(()=>C.draft(doc({nature:'transport'})),/err\.nature/));
+test('brouillon avec numéro déjà attribué refusé',()=>a.throws(()=>C.draft(doc({number:'F-2026-0001'})),/err\.draftNumber/));
+test('une copie verrouillée sans conditions ne passe pas',()=>a.throws(()=>C.draft(doc({status:'locked',number:'F-2026-0001',conditions:''})),/err\.lockRequired/));
+test('copie facture verrouillée sans SIREN vendeur est refusée',()=>a.throws(()=>C.draft(doc({status:'locked',number:'F-2026-0001',seller:{...doc().seller,siren:''}})),/err\.sirenRequired/));
+test('TVA 0 sur copie verrouillée requiert une mention',()=>a.throws(()=>C.draft(doc({status:'locked',number:'F-2026-0001',items:[line({vatRate:'0'})],exemption:''})),/err\.zeroVat/));
+test('numéro verrouillé cohérent avec type et année',()=>a.throws(()=>C.draft(doc({status:'locked',number:'D-2026-0001'})),/err\.numberMismatch/));
 test('bibliothèque vide versionnée valide',()=>a.deepEqual(C.store(s()),s()));
 test('sauvegardes d’un autre schéma sont rejetées',()=>{for(const v of [null,{},[],{version:2,documents:[]},{version:1,documents:[],other:1}])a.throws(()=>C.store(v));});
-test('identifiants dupliqués rejetés',()=>a.throws(()=>C.store(s([doc(),doc()])),/dupliqué/));
+test('identifiants dupliqués rejetés',()=>a.throws(()=>C.store(s([doc(),doc()])),/err\.dupId/));
 test('120 documents acceptés',()=>{
  const docs=Array.from({length:120},(_,i)=>doc({id:'doc-file-'+String(i).padStart(5,'0')}));
  a.equal(C.store(s(docs)).documents.length,120);
 });
-test('121 documents refusés',()=>a.throws(()=>C.store(s(Array.from({length:121},(_,i)=>doc({id:'doc-file-'+String(i).padStart(5,'0')})))),/120/));
+test('121 documents refusés',()=>a.throws(()=>C.store(s(Array.from({length:121},(_,i)=>doc({id:'doc-file-'+String(i).padStart(5,'0')})))),/err\.maxDocs\|\{"max":120\}/));
 test('enregistrement brouillon conserve ancien si autre id',()=>{
  const a1=add(s()),a2=add(a1,{type:'quote'});a.equal(a2.documents.length,2);a.equal(a1.documents.length,1);
 });
@@ -72,34 +72,34 @@ test('nouvelle année redémarre la série affichée par année',()=>{
 test('backdating après émission verrouillée refusé',()=>{
  let x=add(s());x=C.lock(x,x.documents[0].id);
  x=add(x,{issueDate:'2026-10-01',dueDate:'2026-11-01'});
- a.throws(()=>C.lock(x,x.documents[1].id),/chronologique/);
+ a.throws(()=>C.lock(x,x.documents[1].id),/err\.backdate/);
 });
 test('modifier version verrouillée refusé',()=>{
  let x=add(s());x=C.lock(x,x.documents[0].id);
- a.throws(()=>C.put(x,{...x.documents[0],status:'draft',number:null,notes:'fake'}),/verrouillé/);
+ a.throws(()=>C.put(x,{...x.documents[0],status:'draft',number:null,notes:'fake'}),/err\.lockedEdit/);
 });
 test('supprimer une copie verrouillée refusé',()=>{
- let x=add(s());x=C.lock(x,x.documents[0].id);a.throws(()=>C.remove(x,x.documents[0].id),/verrouillé/);
+ let x=add(s());x=C.lock(x,x.documents[0].id);a.throws(()=>C.remove(x,x.documents[0].id),/err\.lockedDelete/);
 });
 test('supprimer brouillon fonctionne sans modifier l’ancien état',()=>{
  let x=add(s());const d=C.remove(x,x.documents[0].id);a.equal(d.documents.length,0);a.equal(x.documents.length,1);
 });
-test('suppression inconnue refusée',()=>a.throws(()=>C.remove(s(),'doc-not-found'),/introuvable/));
+test('suppression inconnue refusée',()=>a.throws(()=>C.remove(s(),'doc-not-found'),/err\.notFound/));
 test('numérotation dupliquée lors de restauration refusée',()=>{
  const a1=C.lock(add(s()),'doc-unit-test-001').documents[0],a2={...a1,id:'doc-copy-02'};
- a.throws(()=>C.store(s([a1,a2])),/dupliquée/);
+ a.throws(()=>C.store(s([a1,a2])),/err\.dupNumber\|\{"number":"F-2026-0001"\}/);
 });
 test('numéro manquant dans une série de restauration refusé',()=>{
  const d=C.lock(add(s()),'doc-unit-test-001').documents[0];
- a.throws(()=>C.store(s([{...d,number:'F-2026-0002'}])),/discontinue/);
+ a.throws(()=>C.store(s([{...d,number:'F-2026-0002'}])),/err\.gap\|\{"series":"F-2026"\}/);
 });
 test('série numérotée avec dates inversées refusée',()=>{
  const a1=C.lock(add(s()),'doc-unit-test-001').documents[0];
  const a2={...a1,id:'doc-copy-02',number:'F-2026-0002',issueDate:'2026-10-01'};
- a.throws(()=>C.store(s([a1,a2])),/chronologique/);
+ a.throws(()=>C.store(s([a1,a2])),/err\.chrono/);
 });
 test('montant formaté correctement en euros français',()=>a.ok(C.money(123456).includes('1')));
-test('montant non entier ou négatif refusé',()=>{for(const x of [-1,0.1,NaN])a.throws(()=>C.money(x));});
+test('montant non entier ou négatif refusé',()=>{for(const x of [-1,0.1,NaN])a.throws(()=>C.money(x),/err\.cents/);});
 test('jamais de mutation de la bibliothèque d’origine après verrouillage',()=>{
  const x=add(s());const y=C.lock(x,x.documents[0].id);a.equal(x.documents[0].status,'draft');a.equal(y.documents[0].status,'locked');
 });

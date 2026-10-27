@@ -41,6 +41,10 @@ test('rejette des identifiants répétés avant remplacement',()=>assert.throws(
 test('rejette un prêt incomplet dans une sauvegarde',()=>{let a=clone(create());a.loan={borrower:'x'};assert.throws(()=>C.exportBackup([a],d));});
 test('rejette taille de fichier dépassée',()=>assert.throws(()=>C.parseBackup('a'.repeat(C.MAX_EXPORT+1))));
 test('rejette plus de 1000 objets',()=>{const b=C.exportBackup([],d);b.items=Array.from({length:1001},()=>null);assert.throws(()=>C.validateBackup(b));});
-test('CSV possède un entête et le séparateur voulu',()=>{const csv=C.htmlCSV([create()]);assert.match(csv,/^\uFEFF"Nom";"Catégorie"/);assert.match(csv,/Clé de secours/);});
-test('CSV protège contre formule tableur et double les guillemets',()=>{const csv=C.htmlCSV([create({name:'=HYPERLINK("evil")'})]);assert.match(csv,/"'=HYPERLINK\(""evil""\)"/);});
-test('CSV neutre avec cellule commençant par +',()=>{const csv=C.htmlCSV([create({notes:'+SUM(1;2)'})]);assert.match(csv,/"'\+SUM/);});
+const COLS=['Nom','Catégorie','Pièce','Emplacement précis','Quantité','Étiquettes','Prêté à','Date de retour prévue','Notes'];
+test('CSV possède un entête et le séparateur voulu',()=>{const csv=C.htmlCSV([create()],COLS);assert.match(csv,/^\uFEFF"Nom";"Catégorie"/);assert.match(csv,/Clé de secours/);});
+test('CSV protège contre formule tableur et double les guillemets',()=>{const csv=C.htmlCSV([create({name:'=HYPERLINK("evil")'})],COLS);assert.match(csv,/"'=HYPERLINK\(""evil""\)"/);});
+test('CSV neutre avec cellule commençant par +',()=>{const csv=C.htmlCSV([create({notes:'+SUM(1;2)'})],COLS);assert.match(csv,/"'\+SUM/);});test('CSV : titres et catégories dans la langue choisie, valeur enregistrée inchangée',()=>{const csv=C.htmlCSV([create()],['Name','Category','Room','Spot','Qty','Tags','Lent to','Due','Notes'],c=>c==='Maison'?'Household':c);assert.match(csv,/^\uFEFF"Name";"Category"/);assert.match(csv,/"Household"/);assert.throws(()=>C.htmlCSV([create()]),/err\.csvCols/);});
+test('erreurs sous forme de clés de traduction',()=>{assert.throws(()=>create({name:'  '}),/^Error: err\.fields$/);assert.throws(()=>C.parseBackup('{'),/^Error: err\.json$/);assert.throws(()=>C.parseBackup('{}'),/^Error: err\.backup$/);});
+test('recherche aussi sur le nom traduit de la catégorie',()=>{const a=create();assert.equal(C.searchScore(a,'household'),0);assert.ok(C.searchScore(a,'household',c=>c==='Maison'?'Household':c)>0);});
+test('tri alphabétique selon la langue',()=>{const a=create({name:'Ärmel'},'abcdef12'),b=create({name:'Zange'},'abcdef13');assert.deepEqual(C.queryItems([b,a],'','all','name',d,{locale:'de'}).map(x=>x.name),['Ärmel','Zange']);});

@@ -23,7 +23,7 @@ def run():
     try:
         with sync_playwright() as p:
             browser=p.chromium.launch(headless=True,executable_path=os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium'),args=['--no-sandbox'])
-            context=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True)
+            context=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True,locale='fr-FR')
             page=context.new_page()
             errors=[]
             page.on('pageerror',lambda e:errors.append(str(e)))
@@ -142,8 +142,45 @@ def run():
             assert page.locator('main').count()==1
             assert page.locator('#grade-list .grade-row').count()==2
             assert not errors,errors
+            context.set_offline(False)
+
+            # --- Langues : 7 langues complètes, arabe RTL, échelle française sur 20 expliquée, saisies conservées.
+            intl=browser.new_context(viewport={'width':390,'height':844},locale='it-IT',accept_downloads=True)
+            ip=intl.new_page()
+            ip.on('pageerror',lambda e:errors.append(str(e)))
+            ip.on('dialog',lambda d:d.accept())
+            ip.goto(f'http://127.0.0.1:{server.server_port}/',wait_until='domcontentloaded')
+            assert ip.locator('h1 em').inner_text()=='Visualizzate il vostro percorso.'  # navigateur italien -> italien
+            assert 'Scala francese' in ip.locator('#scale-note').inner_text()
+            assert ip.locator('#louvre-currency').count()==0  # pas d'argent : menu de langue seul
+            ip.locator('#label').fill('Finanza');ip.locator('#grade').fill('10');ip.locator('#weight').fill('2');ip.locator('#save').click()
+            ip.wait_for_function("() => (document.querySelectorAll('.grade-row').length===1)")
+            ip.locator('#target').fill('13.5')
+            scale={'fr':'Échelle française','en':'French grading scale','es':'Escala francesa','ar':'السلّم الفرنسي','pt':'Escala francesa','de':'Französische Notenskala','it':'Scala francese'}
+            for lang in ['fr','en','es','ar','pt','de','it']:
+                ip.locator('#louvre-lang').select_option(lang)
+                assert ip.evaluate('() => document.documentElement.dir')==('rtl' if lang=='ar' else 'ltr')
+                wide=ip.evaluate('''() => document.documentElement.scrollWidth <= innerWidth + 2 ? [] :
+                  [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 2)
+                    .slice(0, 5).map((e) => `${e.tagName}.${e.className} « ${(e.textContent || '').trim().slice(0, 40)} »`)''')
+                assert not wide,f'débordement en {lang} : {wide}'
+                assert scale[lang] in ip.locator('#scale-note').inner_text(),lang
+                assert ip.locator('#average').inner_text().endswith('/20')
+                assert ip.locator('#target').input_value()=='13.5'
+                assert ip.locator('#required').inner_text().replace(',','.').startswith('17.00'),ip.locator('#required').inner_text()
+            assert ip.evaluate('() => LouvreI18n.missing()')==[],ip.evaluate('() => LouvreI18n.missing()')
+            ip.locator('#louvre-lang').select_option('en')
+            assert ip.locator('#average').inner_text()=='10.00/20'
+            assert ip.locator('#count').inner_text()=='1 grade'
+            with ip.expect_download() as d:
+                ip.locator('#export-csv').click()
+            assert pathlib.Path(d.value.path()).read_text(encoding='utf-8-sig').startswith('"Assessment";"Grade /20";"Weight"')
+            ip.locator('#louvre-lang').select_option('de')
+            ip.locator('#label').fill('   ');ip.locator('#grade').fill('12');ip.locator('#weight').fill('1');ip.locator('#save').click()
+            assert ip.locator('#feedback').inner_text()=='Ungültiger Name (1 bis 64 Zeichen)',ip.locator('#feedback').inner_text()
+            assert not errors,errors
             browser.close()
-        print('BROWSER PASS GradePilot v2: weighted forecast, simulations, edit, write failure, imports, corrupt recovery, CSV, offline, mobile 390px')
+        print('BROWSER PASS GradePilot v2: weighted forecast, simulations, edit, write failure, imports, corrupt recovery, CSV, offline, mobile 390px, 7 languages, RTL, French /20 scale explained')
     finally:
         server.shutdown()
         server.server_close()

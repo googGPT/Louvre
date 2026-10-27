@@ -19,7 +19,7 @@ def run():
             import shutil
             chrome=os.environ.get('LOUVRE_CHROMIUM') or shutil.which('chromium') or shutil.which('google-chrome')
             browser=p.chromium.launch(headless=True,executable_path=chrome,args=['--no-sandbox'])
-            ctx=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True)
+            ctx=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True,locale='fr-FR')
             page=ctx.new_page();errors=[]
             page.on('pageerror',lambda e:errors.append(str(e)))
             page.goto(url,wait_until='domcontentloaded')
@@ -78,7 +78,49 @@ def run():
             page.wait_for_function('() => (document.querySelectorAll("#items .item").length===2)')
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth+2')
             assert not errors,errors
+            ctx.set_offline(False)
+
+            # --- Langues : détection du navigateur, 7 langues, arabe de droite à gauche, chronomètre et saisie conservés.
+            intl=browser.new_context(viewport={'width':390,'height':844},locale='de-DE')
+            ip=intl.new_page()
+            ip.on('pageerror',lambda e:errors.append(str(e)))
+            ip.on('dialog',lambda d:d.accept())
+            ip.goto(url,wait_until='domcontentloaded')
+            ip.wait_for_function('() => (!!document.querySelector("[name=exercise]"))')
+            assert ip.evaluate('() => LouvreI18n.lang')=='de'
+            assert ip.locator('#louvre-currency').count()==0  # appli sans argent
+            assert ip.title().startswith('RoundPlan — Ihr Training')
+            ip.locator('.preset[data-preset="2"]').click()
+            assert ip.locator('[name=exercise]').input_value()=='Mobilität'
+            ip.locator('#save-button').click()
+            ip.wait_for_function('() => (document.querySelectorAll("#items .item").length===1)')
+            assert json.loads(ip.evaluate("localStorage.getItem('louvre-factory:roundplan:v1')"))['records'][0]['work']==45
+            ip.locator('#timer-start').click()
+            ip.locator('#timer-pause').click()
+            ip.wait_for_function('() => (document.querySelector("#timer-state").textContent === "Pausiert")')
+            remaining=ip.locator('#timer-remaining').inner_text()
+            ip.locator('[name=exercise]').fill('Entwurf')
+            states={'fr':'En pause','en':'Paused','es':'En pausa','ar':'متوقف مؤقتًا','pt':'Em pausa','de':'Pausiert','it':'In pausa'}
+            for lang in ['fr','en','es','ar','pt','de','it']:
+                ip.locator('#louvre-lang').select_option(lang)
+                assert ip.evaluate('() => document.documentElement.lang')==lang
+                assert ip.evaluate('() => document.documentElement.dir')==('rtl' if lang=='ar' else 'ltr')
+                wide=ip.evaluate('''() => document.documentElement.scrollWidth <= innerWidth + 2 ? [] :
+                  [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 2)
+                    .slice(0, 5).map((e) => `${e.tagName}.${e.className} « ${(e.textContent || '').trim().slice(0, 40)} »`)''')
+                assert not wide,f'débordement en {lang} : {wide}'
+                assert ip.locator('#timer-state').inner_text()==states[lang]
+                assert ip.locator('#timer-remaining').inner_text()==remaining  # chronomètre en pause intact
+                assert ip.locator('[name=exercise]').input_value()=='Entwurf'
+                assert ip.evaluate('() => LouvreI18n.missing()')==[],ip.evaluate('() => LouvreI18n.missing()')
+            assert ip.locator('#phase-type').inner_text()=='SFORZO'
+            assert ip.locator('#items .item-meta').inner_text().startswith('5 round · 45 s di sforzo')
+            ip.locator('#louvre-lang').select_option('en')
+            ip.locator('[name=work]').fill('0')
+            ip.evaluate("() => document.getElementById('record-form').dispatchEvent(new Event('submit',{cancelable:true}))")  # contourne la validation native
+            assert ip.locator('#status').inner_text()=='Work: whole number from 1 to 3600 required'
+            assert not errors,errors
             browser.close()
-            print('BROWSER PASS: presets, records, persistence, timer start/pause/skip/resume/reset, search, JSON & CSV, invalid import, offline PWA, mobile 390px')
+            print('BROWSER PASS: presets, records, persistence, timer start/pause/skip/resume/reset, search, JSON & CSV, invalid import, offline PWA, mobile 390px, 7 languages, RTL')
     finally: server.shutdown()
 if __name__=='__main__':run()

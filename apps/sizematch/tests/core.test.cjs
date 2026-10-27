@@ -1,6 +1,7 @@
 const test=require('node:test'),assert=require('node:assert/strict'),L=require('../core.js');
 const base={id:'sample0001',name:'Balade',value:12,from:'km',to:'mile'};
 const r=(x={})=>({...base,...x});
+const CSV_FR={headers:['Nom','Valeur initiale','Unité initiale','Valeur convertie','Unité cible','Catégorie']};
 const near=(actual,expected,tolerance=1e-9)=>assert.ok(Math.abs(actual-expected)<=tolerance,`${actual} ≠ ${expected}`);
 test('identifiant et quatre champs de la v1 conservés',()=>{assert.equal(L.SPEC.slug,'sizematch');assert.equal(L.SPEC.fields.length,4)});
 test('conservation sans mutation des anciennes fiches',()=>{assert.deepEqual(L.normalizeRecord(base),base)});
@@ -59,31 +60,36 @@ test('zéro affiché simplement',()=>assert.equal(L.formatValue(0),'0'));
 test('valeur d’affichage invalide refusée',()=>assert.throws(()=>L.formatValue(Infinity)));
 test('petite température positive conservée en Kelvin',()=>assert.equal(L.convert(1e-13,'K','K'),1e-13));
 test('petite température signée conservée en Celsius',()=>assert.equal(L.convert(-1e-13,'°C','°C'),-1e-13));
-test('Kelvin légèrement négatif interdit sans tolérance arbitraire',()=>assert.throws(()=>L.convert(-1e-13,'K','K'),/zéro absolu/));
-test('Celsius juste sous zéro absolu interdit',()=>assert.throws(()=>L.convert(-273.15000000000003,'°C','K'),/zéro absolu/));
-test('Fahrenheit juste sous zéro absolu interdit',()=>assert.throws(()=>L.convert(-459.6700000000001,'°F','K'),/zéro absolu/));
+test('Kelvin légèrement négatif interdit sans tolérance arbitraire',()=>assert.throws(()=>L.convert(-1e-13,'K','K'),/err\.absoluteZero/));
+test('Celsius juste sous zéro absolu interdit',()=>assert.throws(()=>L.convert(-273.15000000000003,'°C','K'),/err\.absoluteZero/));
+test('Fahrenheit juste sous zéro absolu interdit',()=>assert.throws(()=>L.convert(-459.6700000000001,'°F','K'),/err\.absoluteZero/));
 test('CSV ne transforme pas une petite température positive en zéro',()=>{
-  const csv=L.toCSV([r({name:'Cryogénie',value:1e-13,from:'K',to:'K'})]);
+  const csv=L.toCSV([r({name:'Cryogénie',value:1e-13,from:'K',to:'K'})],CSV_FR);
   assert.match(csv,/"Cryogénie";1e-13;"K";1e-13;"K"/);
 });
-test('CSV exportable, Unicode et BOM',()=>{const csv=L.toCSV([base]);assert.ok(csv.startsWith('\uFEFF'));assert.ok(csv.includes('Balade'));assert.ok(csv.includes('Valeur convertie'))});
-test('CSV protège les formules',()=>{const csv=L.toCSV([r({name:'=IMPORTXML("x")'})]);assert.match(csv,/"'=IMPORTXML/)});
-test('CSV sépare et échappe les guillemets',()=>assert.match(L.toCSV([r({name:'un "nom"; étrange'})]),/"un ""nom""; étrange"/));
+test('CSV exportable, Unicode et BOM',()=>{const csv=L.toCSV([base],CSV_FR);assert.ok(csv.startsWith('\uFEFF'));assert.ok(csv.includes('Balade'));assert.ok(csv.includes('Valeur convertie'))});
+test('CSV protège les formules',()=>{const csv=L.toCSV([r({name:'=IMPORTXML("x")'})],CSV_FR);assert.match(csv,/"'=IMPORTXML/)});
+test('CSV sépare et échappe les guillemets',()=>assert.match(L.toCSV([r({name:'un "nom"; étrange'})],CSV_FR),/"un ""nom""; étrange"/));
 test('les anciennes fiches ne sont pas modifiées par compute',()=>{const raw=JSON.stringify(base);L.compute([base]);assert.equal(JSON.stringify(base),raw)});
 test('aucune dépendance réseau ou variable navigateur dans le cœur',()=>assert.equal(typeof L.convert,'function'));
 test('CSV garde les températures négatives en cellules numériques',()=>{
-  const csv=L.toCSV([r({name:'Froid',from:'°C',to:'°F',value:-20})]);
+  const csv=L.toCSV([r({name:'Froid',from:'°C',to:'°F',value:-20})],CSV_FR);
   assert.match(csv,/"Froid";-20;"°C";-4;"°F"/);
   assert.doesNotMatch(csv,/;"'-20"/);
 });
 test('CSV fournit la virgule décimale pour Excel français',()=>{
-  const csv=L.toCSV([r({name:'Essai',from:'km',to:'m',value:1.5})]);
+  const csv=L.toCSV([r({name:'Essai',from:'km',to:'m',value:1.5})],CSV_FR);
   assert.match(csv,/"Essai";1,5;"km";1500;"m"/);
 });
 test('CSV continue à neutraliser les noms qui commencent par moins',()=>{
-  const csv=L.toCSV([r({name:'-HYPERLINK("https://example.com")'})]);
+  const csv=L.toCSV([r({name:'-HYPERLINK("https://example.com")'})],CSV_FR);
   assert.match(csv,/"'-HYPERLINK/);
 });
 test('notation exponentielle produit neuf chiffres significatifs',()=>{
   assert.equal(L.formatValue(0.000000000123456789),'1.23456789e-10');
 });
+test('erreurs sous forme de clés de traduction',()=>{assert.throws(()=>L.convert(1,'kg','m'),/^Error: err\.sameCategory$/);assert.throws(()=>L.convert(1,'other','km'),/^Error: err\.unknownUnit\|\{"unit":"other"\}$/);assert.throws(()=>L.normalizeRecord(r({name:' '})),/^Error: err\.name$/)});
+test('libellés KPI sous forme de clés',()=>assert.deepEqual(L.compute([base]).kpis.map(k=>k[0]),['kpi.conversions','kpi.compatible','kpi.categories']));
+test('affichage selon la langue',()=>{assert.equal(L.formatValue(1234.5,'en-GB'),'1,234.5');assert.equal(L.formatValue(1234.5,'de-DE'),'1.234,5')});
+test('chaque unité a une clé de traduction',()=>{for(const u of Object.values(L.UNITS))assert.match(u.key,/^[A-Za-z]+$/)});
+test('CSV en anglais : titres, catégorie traduite et point décimal',()=>{const csv=L.toCSV([r({name:'Essai',from:'km',to:'m',value:1.5})],{headers:['Name','Initial value','Initial unit','Converted value','Target unit','Category'],catName:c=>c==='distance'?'Distance':c,decimal:'.'});assert.ok(csv.startsWith('\uFEFF"Name";'));assert.match(csv,/"Essai";1\.5;"km";1500;"m";"Distance"/);assert.throws(()=>L.toCSV([base]),/err\.csvHeaders/)});

@@ -11,7 +11,7 @@ try:
  with sync_playwright() as p:
   exe=os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium') if os.path.exists(os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium')) else '/usr/bin/google-chrome' if os.path.exists('/usr/bin/google-chrome') else None
   browser=p.chromium.launch(executable_path=exe,headless=True,args=['--no-sandbox'])
-  page=browser.new_page(viewport={'width':390,'height':844},accept_downloads=True)
+  page=browser.new_page(viewport={'width':390,'height':844},accept_downloads=True,locale='fr-FR')
   errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
   page.goto(f'http://127.0.0.1:{port}/',wait_until='domcontentloaded')
   page.wait_for_selector('#record-form input')
@@ -37,6 +37,37 @@ try:
   page.wait_for_timeout(1200);page.reload();page.wait_for_timeout(450)
   page.context.set_offline(True);page.reload(wait_until='domcontentloaded');page.wait_for_selector('#record-form input')
   assert page.locator('#items .item').count()==1
+
+  # --- Langues : détection, 7 langues sans débordement, saisie conservée, valeurs stockées traduites à l'affichage.
+  ip=browser.new_page(viewport={'width':390,'height':844},locale='pt-BR')
+  ip.on('pageerror',lambda e:errors.append(str(e)))
+  ip.goto(f'http://127.0.0.1:{port}/',wait_until='domcontentloaded')
+  ip.wait_for_selector('#record-form input')
+  assert ip.locator('[data-i18n="subtitle"]').inner_text()=='Medir as suas sessões de concentração'  # navigateur portugais -> portugais
+  assert ip.locator('#louvre-currency').count()==0  # appli sans argent : pas de menu devise
+  ip.locator('[name="task"]').fill('Tese');ip.locator('[name="minutes"]').fill('50');ip.locator('[name="day"]').fill('2026-11-10')
+  ip.locator('#save-button').click();ip.wait_for_function('() => (document.querySelectorAll("#items .item").length===1)')
+  ip.locator('[name="task"]').fill('Rascunho')  # saisie en cours
+  for lang in ['fr','en','es','ar','pt','de','it']:
+   ip.locator('#louvre-lang').select_option(lang)
+   assert ip.evaluate('() => document.documentElement.dir')==('rtl' if lang=='ar' else 'ltr')
+   assert ip.locator('[data-i18n="s2.title"]').inner_text()==ip.evaluate(f"() => LouvreMessages['{lang}']['s2.title']")
+   assert ip.locator('#items .item dd').nth(3).inner_text()==ip.evaluate(f"() => LouvreMessages['{lang}']['yes']")  # « oui » stocké, traduit
+   assert ip.locator('[name="task"]').input_value()=='Rascunho'
+   wide=ip.evaluate('''() => document.documentElement.scrollWidth <= innerWidth + 2 ? [] :
+     [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 2)
+       .slice(0, 5).map((e) => `${e.tagName}.${e.className} « ${(e.textContent || '').trim().slice(0, 40)} »`)''')
+   assert not wide,f'débordement en {lang} : {wide}'
+  assert ip.evaluate('() => LouvreI18n.missing()')==[],ip.evaluate('() => LouvreI18n.missing()')
+  ip.locator('#louvre-lang').select_option('en')
+  assert '10 Nov 2026' in ip.locator('#items .item').inner_text()
+  assert ip.locator('#insights li').first.inner_text()=='Tese: 50 min'
+  assert ip.locator('#summary .stat-value').nth(2).inner_text()=='0.8'
+  ip.locator('#louvre-lang').select_option('de')
+  assert ip.locator('#summary .stat-value').nth(2).inner_text()=='0,8'
+  ip.locator('[name="minutes"]').fill('2000');ip.locator('[name="day"]').fill('2026-11-11');ip.locator('#save-button').click()
+  assert ip.locator('#status').inner_text()=='Dauer zwischen 1 und 1440 Minuten', ip.locator('#status').inner_text()
+  assert not errors, errors
   browser.close()
- print('BROWSER PASS: create, reload, search, edit, delete, JSON export/import, offline reload, 390px mobile; app=focusforge')
+ print('BROWSER PASS: create, reload, search, edit, delete, JSON export/import, offline reload, 390px mobile, 7 languages, RTL; app=focusforge')
 finally:server.shutdown();server.server_close()

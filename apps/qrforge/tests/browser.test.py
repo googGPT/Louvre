@@ -25,7 +25,7 @@ def run():
  try:
   with sync_playwright() as p:
    browser=p.chromium.launch(headless=True,executable_path=os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium'),args=['--no-sandbox'])
-   context=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True)
+   context=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True,locale='fr-FR')
    page=context.new_page();errors=[];external=[]
    page.on('pageerror',lambda e:errors.append(str(e)))
    origin=f'http://127.0.0.1:{server.server_port}/'
@@ -127,8 +127,53 @@ def run():
    assert page.locator('#kind').input_value()=='url'
    assert not errors,errors
    assert not external,external
+   context.set_offline(False)
+
+   # --- Langues : détection automatique, 7 langues complètes, arabe de droite à gauche ; le contenu encodé ne change jamais.
+   intl=browser.new_context(viewport={'width':390,'height':844},locale='de-DE',accept_downloads=True)
+   ip=intl.new_page()
+   ip.on('pageerror',lambda e:errors.append(str(e)))
+   ip.on('request',lambda req:external.append(req.url) if req.url.startswith('http') and not req.url.startswith(origin) else None)
+   ip.goto(origin,wait_until='domcontentloaded')
+   ip.locator('#preview').wait_for(state='visible')
+   assert ip.locator('h1').inner_text().startswith('Ein nützlicher QR-Code.'), ip.locator('h1').inner_text()  # navigateur allemand -> allemand
+   assert ip.locator('#louvre-currency').count()==0  # appli sans argent : pas de menu devise
+   def ip_png():
+    with ip.expect_download() as d:ip.locator('#download-png').click()
+    return pathlib.Path(d.value.path()).read_bytes()
+   ip.locator('#kind').select_option('wifi')
+   ip.locator('#ssid').fill('Café;Maison')
+   ip.locator('#wifi-password').fill('mot;passe:123')
+   wifi_i18n='WIFI:T:WPA;S:Café\\;Maison;P:mot\\;passe\\:123;;'
+   expected={'fr':('Un QR code utile.','Réseau Wi-Fi'),'en':('A useful QR code.','Wi-Fi network'),'es':('Un código QR útil.','Red Wi-Fi'),'ar':('رمز QR مفيد.','شبكة Wi-Fi'),
+             'pt':('Um código QR útil.','Rede Wi-Fi'),'de':('Ein nützlicher QR-Code.','WLAN-Netz'),'it':('Un codice QR utile.','Rete Wi-Fi')}
+   for lang in ['fr','en','es','ar','pt','de','it']:
+    ip.locator('#louvre-lang').select_option(lang)
+    assert ip.evaluate('() => document.documentElement.dir')==('rtl' if lang=='ar' else 'ltr')
+    wide=ip.evaluate('''() => document.documentElement.scrollWidth <= innerWidth + 2 ? [] :
+      [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 2)
+        .slice(0, 5).map((e) => `${e.tagName}.${e.className} « ${(e.textContent || '').trim().slice(0, 40)} »`)''')
+    assert not wide, f'débordement en {lang} : {wide}'
+    title,kind=expected[lang]
+    assert ip.locator('h1').inner_text().startswith(title), (lang, ip.locator('h1').inner_text())
+    assert ip.locator('#kind option:checked').inner_text()==kind, (lang, ip.locator('#kind option:checked').inner_text())
+    assert ip.locator('#ssid').input_value()=='Café;Maison'  # saisie conservée
+    assert ip.evaluate('() => LouvreI18n.missing()')==[], ip.evaluate('() => LouvreI18n.missing()')
+    if lang in ('ar','de'):
+     assert decoded(ip_png())==wifi_i18n, lang  # contenu encodé identique quelle que soit la langue
+   ip.locator('#louvre-lang').select_option('en')
+   with ip.expect_download() as d2:ip.locator('#download-svg').click()
+   assert 'aria-label="QR code"' in pathlib.Path(d2.value.path()).read_text()
+   assert 'UTF-8 bytes' in ip.locator('#result-info').inner_text(), ip.locator('#result-info').inner_text()
+   ip.locator('#louvre-lang').select_option('es')
+   ip.locator('#ssid').fill('')
+   assert ip.locator('#status').inner_text()=='Nombre de la red Wi-Fi obligatorio', ip.locator('#status').inner_text()
+   ip.locator('#toggle-password').click()
+   assert ip.locator('#toggle-password').inner_text()=='Ocultar la contraseña'
+   assert not errors,errors
+   assert not external,external
    browser.close()
-  print('BROWSER PASS QRForge: decoded PNG+SVG URL, Unicode, email, phone, Wi-Fi escaped/open, limits, contrasts, no persistence, offline, mobile 390px')
+  print('BROWSER PASS QRForge: decoded PNG+SVG URL, Unicode, email, phone, Wi-Fi escaped/open, limits, contrasts, no persistence, offline, mobile 390px, 7 languages, RTL, encoded content unchanged by language')
  finally:server.shutdown();server.server_close()
 
 if __name__=='__main__':run()

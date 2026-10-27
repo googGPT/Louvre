@@ -12,7 +12,7 @@ test('calcul stable et source intacte',()=>{const before=JSON.stringify(base),a=
 test('dates réelles et changement d’heure',()=>{assert.equal(L.diffDays('2026-03-30','2026-03-29'),1);assert.equal(L.addDays('2026-03-28',2),'2026-03-30')});
 test('entrée non fiable ne peut générer HTML dans les vues',()=>{assert.equal(typeof L.normalizeRecord(mk({[L.SPEC.fields.find(f=>f.type==='text')?.key || 'id']:'<script>alert(1)</script>'})).id,'string')});
 
-test('résultat métier concret',()=>{const m=L.compute([base],today);assert.equal(m.kpis[0][1],L.eur(2009));assert.ok(m.rows[0].includes('passager'))});
+test('résultat métier concret',()=>{const m=L.compute([base],today);assert.deepEqual(m.kpis[0],{key:'kpi.total',value:2009,type:'money'});assert.equal(m.rows[0].route,'Exemple');assert.equal(m.rows[0].people,2)});
 
 test('répartition conserve chaque centime pour un nombre pair de passagers',()=>{
  const cost=L.tripCostCents(base);assert.equal(cost,2009);
@@ -20,7 +20,7 @@ test('répartition conserve chaque centime pour un nombre pair de passagers',()=
  assert.deepEqual(s,{high:1005,highCount:1,low:1004,lowCount:1});
  assert.equal(s.high*s.highCount+s.low*s.lowCount,cost);
  const rows=L.compute([base],today).rows;
- assert.ok(rows[0].includes('10,05'));assert.ok(rows[0].includes('10,04'));
+ assert.deepEqual(rows[0].split,{high:1005,highCount:1,low:1004,lowCount:1});
 });
 test('répartition égale et résidu pour 3 passagers',()=>{
  const s=L.splitCents(2001,3);
@@ -33,7 +33,7 @@ test('les coûts agrégés résultent de la somme des trajets arrondis',()=>{
  const two=mk({id:'route0002',route:'Petit trajet',km:1,litres:5,price:1.55,people:3});
  assert.equal(L.tripCostCents(two),8);
  const data=L.compute([base,two],today);
- assert.equal(data.kpis[0][1],L.eur(2009+8));
+ assert.equal(data.kpis[0].value,2009+8);
 });
 test('refuse les valeurs de carburant irréalistes ou numériquement dangereuses',()=>{
  for(const invalid of [{people:0},{people:1.5},{people:101},{km:100001},{litres:101},{price:101}]){
@@ -63,3 +63,11 @@ test('aller-retour ne double pas le parking',()=>{
 test('contrôles des nouvelles entrées',()=>{
  for(const item of [{tolls:-1},{parking:Infinity},{returnTrip:'autre'},{tolls:100001},{parking:100001}])assert.throws(()=>L.normalizeRecord({...base,...item}));
 });
+
+test('erreurs sous forme de clés, avec le champ concerné',()=>{
+ assert.throws(()=>L.normalizeRecord(mk({people:0})),/^Error: err\.people$/);
+ assert.throws(()=>L.normalizeRecord(mk({route:' '})),/err\.text\|\{"field":"route","max":160\}/);
+ assert.throws(()=>L.normalizeRecord(mk({km:-1})),/err\.number\|\{"field":"km"\}/);
+ assert.throws(()=>L.validateBackup({app:'x'}),/err\.backup/);
+});
+test('notes et indicateurs désignés par des clés',()=>{const m=L.compute([base],today);assert.deepEqual(m.notes,['note.people','note.estimate','note.cents']);assert.deepEqual(m.kpis.map(k=>k.type),['money','money','liters','km','moneyPerKm']);assert.equal(m.kpis[4].value,11)});

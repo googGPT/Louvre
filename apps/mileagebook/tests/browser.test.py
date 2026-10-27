@@ -13,7 +13,7 @@ try:
     with sync_playwright() as pw, tempfile.TemporaryDirectory() as temp:
         exe=next((p for p in [os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium'),'/usr/bin/google-chrome'] if Path(p).exists()),None)
         browser=pw.chromium.launch(executable_path=exe,headless=True,args=['--no-sandbox'])
-        page=browser.new_page(viewport={'width':390,'height':844},accept_downloads=True)
+        page=browser.new_page(viewport={'width':390,'height':844},accept_downloads=True,locale='fr-FR')
         errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
         page.on('dialog',lambda d:d.accept())
         page.goto(f'http://127.0.0.1:{server.server_port}/',wait_until='domcontentloaded')
@@ -88,7 +88,51 @@ try:
         page.reload(wait_until='domcontentloaded');page.locator('#items .item').first.wait_for()
         assert 'Ancien trajet' in page.locator('#items').inner_text()
         assert not errors,errors
+        page.context.set_offline(False)
+
+        # --- Langues : détection, 7 langues sans débordement, devise choisie, saisie conservée, données françaises traduites à l'affichage.
+        ip=browser.new_page(viewport={'width':390,'height':844},accept_downloads=True,locale='en-US')
+        ip.on('pageerror',lambda e:errors.append(str(e)))
+        ip.on('dialog',lambda d:d.accept())
+        ip.goto(f'http://127.0.0.1:{server.server_port}/',wait_until='domcontentloaded')
+        expect(ip.locator('h1')).to_contain_text('Your trips, your figures.')  # navigateur anglais -> anglais
+        assert ip.evaluate('() => LouvreI18n.currency')=='USD'  # région US -> dollar
+        expect(ip.locator('#fields label').nth(3)).to_contain_text('Personal rate (US$/km)')
+        ip.locator('#import').set_input_files(str(legacy))  # ancienne sauvegarde (valeurs françaises)
+        ip.locator('#items .item').first.wait_for()
+        expect(ip.locator('#items .item').first).to_contain_text('Not specified')  # « Non précisé » traduit à l'affichage
+        expect(ip.locator('#items .item').first).to_contain_text('$32.00')
+        ip.locator('[name="purpose"]').fill('Draft')  # saisie en cours
+        ip.locator('[name="km"]').fill('10')
+        ip.locator('[name="rate"]').fill('0.5')
+        for lang in ['fr','en','es','ar','pt','de','it']:
+            ip.locator('#louvre-lang').select_option(lang)
+            assert ip.evaluate('() => document.documentElement.dir')==('rtl' if lang=='ar' else 'ltr')
+            expect(ip.locator('#counter')).to_have_text(ip.evaluate(f"() => LouvreI18n.t('counter', {{n: 1}})"))
+            expect(ip.locator('#editor-title')).to_have_text(ip.evaluate(f"() => LouvreMessages['{lang}']['s1.title']"))
+            assert ip.locator('[name="purpose"]').input_value()=='Draft'
+            wide=ip.evaluate('''() => document.documentElement.scrollWidth <= innerWidth + 2 ? [] :
+              [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 2)
+                .slice(0, 5).map((e) => `${e.tagName}.${e.className} « ${(e.textContent || '').trim().slice(0, 40)} »`)''')
+            assert not wide,f'débordement en {lang} : {wide}'
+        assert ip.evaluate('() => LouvreI18n.missing()')==[],ip.evaluate('() => LouvreI18n.missing()')
+        ip.locator('#louvre-lang').select_option('de')
+        ip.locator('#louvre-currency').select_option('CHF')
+        expect(ip.locator('#live-preview')).to_contain_text('CHF')
+        expect(ip.locator('#summary')).to_contain_text('CHF')
+        expect(ip.locator('#fields label').nth(3)).to_contain_text('CHF/km')
+        ip.locator('[name="km"]').fill('0')
+        ip.locator('#save-button').click()
+        expect(ip.locator('#status')).to_have_text('Die Strecke muss größer als null sein')
+        ip.locator('[name="purpose"]').fill('')
+        ip.locator('[name="km"]').fill('5')
+        ip.locator('#save-button').click()
+        expect(ip.locator('#status')).to_have_text('Zweck der Fahrt: Text erforderlich (höchstens 160 Zeichen)')
+        with ip.expect_download() as d:ip.locator('#export-csv').click()
+        csv=Path(d.value.path()).read_text(encoding='utf-8-sig')
+        assert 'Betrag CHF' in csv and '"Nein"' in csv and '"Nicht angegeben"' in csv, csv[:300]
+        assert not errors,errors
         browser.close()
-    print('BROWSER PASS: cents, search, year/month/status filters, reimburse toggle, edit, CSV and JSON, legacy and invalid imports, offline PWA, responsive 390px')
+    print('BROWSER PASS: cents, search, year/month/status filters, reimburse toggle, edit, CSV and JSON, legacy and invalid imports, offline PWA, responsive 390px, 7 languages, RTL, currency, translated CSV')
 finally:
     server.shutdown();server.server_close()

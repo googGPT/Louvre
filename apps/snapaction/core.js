@@ -9,7 +9,6 @@
   const MAX_TASKS = 2000;
   const MAX_IMAGE_CHARS = 1600000;
   const DAY = 86400000;
-  const DAYNAMES = { dimanche:0,lundi:1,mardi:2,mercredi:3,jeudi:4,vendredi:5,samedi:6 };
   const PRIORITIES = ['normal','high'];
   const REPEATS = ['none','daily','weekly','monthly'];
   function isObj(v){return v !== null && typeof v==='object' && !Array.isArray(v);}
@@ -30,59 +29,87 @@
   function cleanTitle(v){return String(v||'').trim().replace(/\s+/g,' ');}
   function createTask(data, now=new Date(), uid){
     const title=cleanTitle(data.title);
-    if(!title||title.length>180) throw new Error('Le titre doit contenir entre 1 et 180 caractères.');
+    if(!title||title.length>180) throw new Error('err.title|{"max":180}');
     const task={
       id:uid||('task-'+now.getTime()+'-'+Math.floor(Math.random()*1e9)),title,
       note:String(data.note||'').trim(),
       dueAt:data.dueAt||null,createdAt:now.toISOString(),updatedAt:now.toISOString(),
       completedAt:null,priority:data.priority||'normal',repeat:data.repeat||'none',image:data.image||null
     };
-    if(!validTask(task)) throw new Error('Les données de la tâche sont invalides.');
+    if(!validTask(task)) throw new Error('err.taskData');
     return task;
   }
   function localDate(y,m,d,h=9,min=0){
     const x=new Date(y,m-1,d,h,min,0,0);
     return x.getFullYear()===y && x.getMonth()+1===m && x.getDate()===d && x.getHours()===h && x.getMinutes()===min ? x : null;
   }
+  // Mots reconnus dans les 7 langues de l'interface (fr, en, es, ar, pt, de, it), en minuscules.
+  // Les limites de mots sont « Unicode » (\b ne connaît pas les lettres accentuées ni l'arabe).
+  const W='(?<![\\p{L}\\p{N}_])', E='(?![\\p{L}\\p{N}_])';
+  const words=(list)=>list.join('|');
+  const REL_PREFIX=['dans','in','en','em','tra','fra','entre','بعد','خلال'];
+  const REL_UNITS={
+    minute:['minutes?','mins?','minutos?','minuten?','minut[io]','دقيقة','دقيقه','دقائق'],
+    hour:['heures?','hours?','hrs?','horas?','stunden?','or[ae]','ساعة','ساعه','ساعات'],
+    day:['jours?','days?','días?','dias?','tag(?:en?)?','giorn[io]','يوم','يومين','أيام','ايام']
+  };
+  const UNIT_MS={minute:60000,hour:3600000,day:DAY};
+  const AFTER_TOMORROW=['après-demain','apres-demain','day after tomorrow','pasado mañana','depois de amanhã','übermorgen','dopodomani','بعد غد','بعد الغد'];
+  const TOMORROW=['demain','tomorrow','mañana','amanhã','morgen','domani','غدا','غداً','بكرة'];
+  const TODAY=["aujourd['’]hui",'today','hoy','hoje','heute','oggi','اليوم'];
+  // Jours de la semaine : index 0 = dimanche.
+  const WEEKDAYS=[
+    ['dimanche','sunday','domingo','sonntag','domenica','الأحد','الاحد'],
+    ['lundi','monday','lunes','segunda(?:-feira)?','montag','lunedì','lunedi','الاثنين','الإثنين'],
+    ['mardi','tuesday','martes','terça(?:-feira)?','terca(?:-feira)?','dienstag','martedì','martedi','الثلاثاء'],
+    ['mercredi','wednesday','miércoles','miercoles','quarta(?:-feira)?','mittwoch','mercoledì','mercoledi','الأربعاء','الاربعاء'],
+    ['jeudi','thursday','jueves','quinta(?:-feira)?','donnerstag','giovedì','giovedi','الخميس'],
+    ['vendredi','friday','viernes','sexta(?:-feira)?','freitag','venerdì','venerdi','الجمعة'],
+    ['samedi','saturday','sábado','sabado','samstag','sonnabend','sabato','السبت']
+  ];
+  const has=(list,text)=>new RegExp(W+'(?:'+words(list)+')'+E,'u').test(text);
   function parseCommand(input, now=new Date()){
     if(typeof input!=='string') return {dueAt:null,reason:'',inferred:false};
     const text=input.toLowerCase().normalize('NFC');
     if(text.length>2000) return {dueAt:null,reason:'',inferred:false};
-    const relative=text.match(/\bdans\s+(\d{1,3})\s*(minutes?|mins?|heures?|hrs?|jours?)\b/i);
+    const relative=text.match(new RegExp(W+'(?:'+words(REL_PREFIX)+')\\s+(\\d{1,3})\\s*('+Object.values(REL_UNITS).map(words).join('|')+')'+E,'u'));
     if(relative){
-      const n=Number(relative[1]),unit=relative[2];
+      const n=Number(relative[1]),unitWord=relative[2];
       if(n<1) return {dueAt:null,reason:'',inferred:false};
-      const ms=unit.startsWith('j')?n*DAY:unit.startsWith('h')?n*3600000:n*60000;
-      return {dueAt:new Date(now.getTime()+ms).toISOString(),reason:'Délai relatif détecté',inferred:false};
+      const unit=Object.keys(REL_UNITS).find(k=>new RegExp('^(?:'+words(REL_UNITS[k])+')$','u').test(unitWord));
+      return {dueAt:new Date(now.getTime()+n*UNIT_MS[unit]).toISOString(),reason:'relative',inferred:false};
     }
-    const tm=text.match(/(?:\b(?:à|vers)\s*)?\b([01]?\d|2[0-3])\s*(?:h\s*([0-5]?\d)?|:([0-5]\d))\b/i);
-    const hasTime=Boolean(tm);
-    let h=hasTime?Number(tm[1]):9,minute=hasTime?Number(tm[2]??tm[3]??0):0;
+    // Heure : « 14h30 », « 14:30 », « 14 Uhr », « 2pm », « 2:30 pm ».
+    let h=9,minute=0,hasTime=false;
+    const ampm=text.match(/\b(1[0-2]|0?[1-9])(?::([0-5]\d))?\s*([ap])\.?m\b\.?/);
+    const tm=text.match(/\b([01]?\d|2[0-3])\s*(?:h\s*([0-5]?\d)?|:([0-5]\d)|uhr(?:\s*([0-5]?\d))?)(?![\p{L}\p{N}_])/u);
+    if(ampm){hasTime=true;h=Number(ampm[1])%12+(ampm[3]==='p'?12:0);minute=Number(ampm[2]??0);}
+    else if(tm){hasTime=true;h=Number(tm[1]);minute=Number(tm[2]??tm[3]??tm[4]??0);}
     let target=null,reason='',inferred=!hasTime;
     const isoMatch=text.match(/\b(20\d{2})-(\d{2})-(\d{2})\b/);
-    const frMatch=text.match(/\b(\d{1,2})\/(\d{1,2})(?:\/(20\d{2}))?\b/);
-    if(isoMatch){target=localDate(Number(isoMatch[1]),Number(isoMatch[2]),Number(isoMatch[3]),h,minute);reason='Date explicite reconnue';}
+    const frMatch=text.match(/\b(\d{1,2})\/(\d{1,2})(?:\/(20\d{2}))?\b/); // jour/mois
+    if(isoMatch){target=localDate(Number(isoMatch[1]),Number(isoMatch[2]),Number(isoMatch[3]),h,minute);reason='explicit';}
     else if(frMatch){
       const d=Number(frMatch[1]),m=Number(frMatch[2]);let y=frMatch[3]?Number(frMatch[3]):now.getFullYear();
       target=localDate(y,m,d,h,minute);
       if(target && !frMatch[3] && target<now) target=localDate(y+1,m,d,h,minute);
-      reason='Date explicite reconnue';
+      reason='explicit';
     }
-    else if(/\baprès-demain\b/.test(text)){target=new Date(now.getFullYear(),now.getMonth(),now.getDate()+2,h,minute);reason='Après-demain reconnu';}
-    else if(/\bdemain\b/.test(text)){target=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1,h,minute);reason='Demain reconnu';}
-    else if(/\baujourd['’]hui\b/.test(text)){target=new Date(now.getFullYear(),now.getMonth(),now.getDate(),h,minute);reason="Aujourd'hui reconnu";}
+    else if(has(AFTER_TOMORROW,text)){target=new Date(now.getFullYear(),now.getMonth(),now.getDate()+2,h,minute);reason='afterTomorrow';}
+    else if(has(TOMORROW,text)){target=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1,h,minute);reason='tomorrow';}
+    else if(has(TODAY,text)){target=new Date(now.getFullYear(),now.getMonth(),now.getDate(),h,minute);reason='today';}
     else {
-      const dayMatch=text.match(/\b(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)(?:\s+prochain)?\b/);
-      if(dayMatch){
-        let step=(DAYNAMES[dayMatch[1]]-now.getDay()+7)%7;
-        if(step===0 || (step===0 && /prochain/.test(dayMatch[0]))) step=7;
+      const day=WEEKDAYS.findIndex(list=>has(list,text));
+      if(day>=0){
+        let step=(day-now.getDay()+7)%7;
+        if(step===0) step=7; // « lundi » dit un lundi : le lundi suivant
         target=new Date(now.getFullYear(),now.getMonth(),now.getDate()+step,h,minute);
         if(target<=now) target.setDate(target.getDate()+7);
-        reason='Jour de semaine reconnu';
+        reason='weekday';
       } else if(hasTime){
         target=new Date(now.getFullYear(),now.getMonth(),now.getDate(),h,minute);
         if(target<=now) target.setDate(target.getDate()+1);
-        reason='Heure seule : aujourd’hui ou demain';
+        reason='timeOnly';
         inferred=true;
       }
     }
@@ -101,9 +128,9 @@
     return d.toISOString();
   }
   function changeStatus(t, completed, now=new Date()){
-    if(!validTask(t)) throw new Error('Tâche invalide.');
+    if(!validTask(t)) throw new Error('err.task');
     const updated={...t,completedAt:completed?now.toISOString():null,updatedAt:now.toISOString()};
-    if(!validTask(updated))throw new Error('Horodatage incohérent.');
+    if(!validTask(updated))throw new Error('err.timestamp');
     return updated;
   }
   function statistics(tasks, now=new Date()){
@@ -130,10 +157,10 @@
     });
   }
   function validateBackup(o){
-    if(!exactKeys(o,['version','createdAt','tasks']) || o.version!==VERSION || !isoDate(o.createdAt) || !Array.isArray(o.tasks) || o.tasks.length>MAX_TASKS)throw new Error('Format de sauvegarde non reconnu.');
+    if(!exactKeys(o,['version','createdAt','tasks']) || o.version!==VERSION || !isoDate(o.createdAt) || !Array.isArray(o.tasks) || o.tasks.length>MAX_TASKS)throw new Error('err.backupFormat');
     const ids=new Set();
     for(const t of o.tasks){
-      if(!validTask(t)||ids.has(t.id))throw new Error('Tâche incorrecte ou identifiant répété.');
+      if(!validTask(t)||ids.has(t.id))throw new Error('err.backupTask');
       ids.add(t.id);
     }
     return o.tasks;

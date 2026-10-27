@@ -71,9 +71,10 @@
 
   const locale = () => LANGS[lang].locale;
   function number(n, opts) { return new Intl.NumberFormat(locale(), opts).format(n); }
+  // opts.currency force une devise (ex. règle légale en euros) : les décimales suivent cette devise-là.
   function money(cents, opts = {}) {
-    const digits = ZERO_DECIMALS.has(currency) ? 0 : 2;
-    return new Intl.NumberFormat(locale(), { style: 'currency', currency, minimumFractionDigits: digits, maximumFractionDigits: digits, ...opts }).format(cents / 100);
+    const cur = opts.currency || currency, digits = ZERO_DECIMALS.has(cur) ? 0 : 2;
+    return new Intl.NumberFormat(locale(), { style: 'currency', minimumFractionDigits: digits, maximumFractionDigits: digits, ...opts, currency: cur }).format(cents / 100);
   }
   function currencySymbol() {
     const part = new Intl.NumberFormat(locale(), { style: 'currency', currency }).formatToParts(1).find((p) => p.type === 'currency');

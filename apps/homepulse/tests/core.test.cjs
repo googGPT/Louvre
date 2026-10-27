@@ -36,6 +36,11 @@ test('supprimer équipement enlève historique associé',()=>{const v=C.removeEq
 test('sommaire calcule coût',()=>{const v=C.summary(ss([mk({nextDue:'2026-10-20'})],[ev()]),'2026-10-25');assert.equal(v.late,1);assert.equal(v.totalCents,1299)});
 test('import JSON invalide rejeté',()=>assert.throws(()=>C.validBackupText('{err')));
 test('import JSON propre conservé',()=>assert.deepEqual(C.validBackupText(JSON.stringify(ss())),ss()));
-test('ICS contient VEVENT et date',()=>{const text=C.makeICS([mk()]);assert.match(text,/BEGIN:VEVENT/);assert.match(text,/DTSTART;VALUE=DATE:20261115/)});
-test('ICS échappe titres pour éviter injection lignes',()=>{const s=C.makeICS([mk({name:'A\nBEGIN:VALARM'})]);assert.match(s,/SUMMARY:Entretien : A\\nBEGIN:VALARM/)});
-test('entrées historique non attendues rejetées',()=>assert.throws(()=>C.cleanEvent({...ev(),admin:true})));
+const ICS_FR={summary:n=>'Entretien : '+n,description:'HomePulse — échéance personnelle, à confirmer selon le fabricant.'};
+test('ICS contient VEVENT et date',()=>{const text=C.makeICS([mk()],ICS_FR);assert.match(text,/BEGIN:VEVENT/);assert.match(text,/DTSTART;VALUE=DATE:20261115/)});
+test('ICS échappe titres pour éviter injection lignes',()=>{const s=C.makeICS([mk({name:'A\nBEGIN:VALARM'})],ICS_FR);assert.match(s,/SUMMARY:Entretien : A\\nBEGIN:VALARM/)});
+test('entrées historique non attendues rejetées',()=>assert.throws(()=>C.cleanEvent({...ev(),admin:true})));test('ICS dans la langue choisie ; textes obligatoires',()=>{const s=C.makeICS([mk()],{summary:n=>'Maintenance: '+n,description:'Personal due date'});assert.match(s,/SUMMARY:Maintenance: Hotte/);assert.match(s,/DESCRIPTION:Personal due date/);assert.throws(()=>C.makeICS([mk()]),/err\.icsText/)});
+test('erreurs sous forme de clés de traduction',()=>{assert.throws(()=>C.moneyCents('hello'),/^Error: err\.amount$/);assert.throws(()=>C.cleanEquipment(mk({name:'  '})),/^Error: err\.nameRequired$/);assert.throws(()=>C.validBackupText('{err'),/^Error: err\.json$/);assert.throws(()=>C.cleanState({version:2,equipment:[],history:[]}),/^Error: err\.backup$/)});
+test('statut sans texte figé : jours et nature seulement',()=>assert.deepEqual(C.status(mk({nextDue:'2026-10-20'}),'2026-10-25'),{days:-5,kind:'late'}));
+test('idées : clé de traduction et catégorie enregistrée valide',()=>{for(const s of C.SUGGESTIONS){assert.match(s.key,/^[a-z]+$/);assert.ok(C.CATEGORIES.includes(s.category))}});
+test('tri à échéance égale selon la langue',()=>assert.deepEqual(C.byUrgency([mk({id:'ab123456',name:'Zange'}),mk({id:'ab123457',name:'Ärmel'})],'2026-10-25','de').map(x=>x.name),['Ärmel','Zange']));

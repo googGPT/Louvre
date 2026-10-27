@@ -1,50 +1,50 @@
 <!doctype html>
 <html lang="fr"><head>
 <meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#153549"><meta name="description" content="KeyboardCoach : entraînez votre vitesse et votre précision de frappe en français ou anglais, avec statistiques transparentes et sans compte.">
+<meta name="theme-color" content="#153549"><meta name="description" content="KeyboardCoach : entraînez votre vitesse et votre précision de frappe dans 7 langues, avec statistiques transparentes et sans compte.">
 <title>KeyboardCoach — Entraînement de frappe</title>
-<link rel="icon" href="./icon.svg" type="image/svg+xml"><link rel="stylesheet" href="./style.css"><link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml"><link rel="stylesheet" href="./style.css"><link rel="stylesheet" href="./louvre-i18n.css"><link rel="manifest" href="./manifest.webmanifest">
 </head><body>
-<header class="site-header"><div class="brand"><span class="logo" aria-hidden="true"><span>⌨</span></span><div><strong>KeyboardCoach</strong><small>L’atelier de frappe précise</small></div></div><span class="privacy">Local · Sans compte · Pas de télémétrie</span></header>
+<header class="site-header"><div class="brand"><span class="logo" aria-hidden="true"><span>⌨</span></span><div><strong>KeyboardCoach</strong><small data-i18n="brand.tagline">L’atelier de frappe précise</small></div></div><div class="header-side"><span class="privacy" data-i18n="privacy">Local · Sans compte · Pas de télémétrie</span><div data-louvre-locale="lang-only"></div></div></header>
 <main>
-<section class="hero"><p class="eyebrow">APPLICATION 31 · LOUVRE VAGUE 2</p><h1>Gagnez en vitesse.<br><em>Privilégiez la précision.</em></h1><p>Entraînez-vous sur un texte réel, mesurez votre vitesse de frappe et repérez vos erreurs. Le chronomètre démarre à la première saisie et s’arrête à la fin du texte ou à la limite de temps.</p><div class="hero-tags"><span>FR / EN</span><span>30, 60 ou 120 secondes</span><span>Vitesse corrigée</span><span>Hors ligne*</span></div></section>
+<section class="hero"><p class="eyebrow" data-i18n="hero.eyebrow">APPLICATION 31 · LOUVRE VAGUE 2</p><h1><span data-i18n="hero.h1a">Gagnez en vitesse.</span><br><em data-i18n="hero.h1b">Privilégiez la précision.</em></h1><p data-i18n="hero.text">Entraînez-vous sur un texte réel, mesurez votre vitesse de frappe et repérez vos erreurs. Le chronomètre démarre à la première saisie et s’arrête à la fin du texte ou à la limite de temps.</p><div class="hero-tags"><span data-i18n="tag.langs">Textes en 7 langues</span><span data-i18n="tag.durations">30, 60 ou 120 secondes</span><span data-i18n="tag.net">Vitesse corrigée</span><span data-i18n="tag.offline">Hors ligne*</span></div></section>
 <section class="panel practice">
-<div class="section-heading"><span>01</span><div><h2>Votre séance</h2><p>Choisissez un texte et une durée avant de commencer.</p></div></div>
+<div class="section-heading"><span>01</span><div><h2 data-i18n="s1.title">Votre séance</h2><p data-i18n="s1.text">Choisissez un texte et une durée avant de commencer.</p></div></div>
 <div class="settings">
-<label for="language">Langue<select id="language"><option value="fr">Français</option><option value="en">English</option></select></label>
-<label for="level">Difficulté<select id="level"><option value="facile">Facile</option><option value="moyen" selected>Intermédiaire</option><option value="avance">Avancé</option></select></label>
-<label for="duration">Temps maximal<select id="duration"><option value="30">30 secondes</option><option value="60" selected>60 secondes</option><option value="120">120 secondes</option></select></label>
-<label for="passage">Texte<select id="passage"></select></label>
+<label for="language"><span data-i18n="set.language">Langue du texte</span><select id="language"></select></label>
+<label for="level"><span data-i18n="set.level">Difficulté</span><select id="level"><option value="facile" data-i18n="lvl.facile">Facile</option><option value="moyen" selected data-i18n="lvl.moyen">Intermédiaire</option><option value="avance" data-i18n="lvl.avance">Avancé</option></select></label>
+<label for="duration"><span data-i18n="set.duration">Temps maximal</span><select id="duration"><option value="30">30 secondes</option><option value="60" selected>60 secondes</option><option value="120">120 secondes</option></select></label>
+<label for="passage"><span data-i18n="set.passage">Texte</span><select id="passage"></select></label>
 </div>
-<div class="progress-header"><div><span class="section-tag">TEXTE À REPRODUIRE</span><p id="passage-title" class="passage-title">Recherche et méthode</p></div><div class="state" id="session-state">Prêt</div></div>
+<div class="progress-header"><div><span class="section-tag" data-i18n="target.tag">TEXTE À REPRODUIRE</span><p id="passage-title" class="passage-title">Recherche et méthode</p></div><div class="state" id="session-state">Prêt</div></div>
 <div class="target-wrapper"><p id="target" class="target" aria-label="Texte à reproduire"></p></div>
-<div class="progress-track" role="progressbar" aria-label="Progression du texte" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress"><div id="progress-fill"></div></div>
-<div class="typing-heading"><label for="typing">Votre saisie</label><span>Copier-coller désactivé pendant le test</span></div>
-<textarea id="typing" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" rows="4" maxlength="400" disabled placeholder="Cliquez sur « Commencer », puis tapez le texte ci-dessus. Le temps débute au premier caractère."></textarea>
-<div class="toolbar"><button id="start" class="primary" type="button">Commencer</button><button id="pause" type="button" class="secondary" disabled>Pause</button><button id="restart" type="button" class="secondary">Recommencer</button><button id="another" type="button" class="subtle">Autre texte</button></div>
+<div class="progress-track" role="progressbar" aria-label="Progression du texte" data-i18n-attr="aria-label:progress.aria" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress"><div id="progress-fill"></div></div>
+<div class="typing-heading"><label for="typing" data-i18n="typing.label">Votre saisie</label><span data-i18n="typing.note">Copier-coller désactivé pendant le test</span></div>
+<textarea id="typing" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" rows="4" maxlength="400" disabled data-i18n-attr="placeholder:typing.ph" placeholder="Cliquez sur « Commencer », puis tapez le texte ci-dessus. Le temps débute au premier caractère."></textarea>
+<div class="toolbar"><button id="start" class="primary" type="button">Commencer</button><button id="pause" type="button" class="secondary" disabled>Pause</button><button id="restart" type="button" class="secondary" data-i18n="btn.restart">Recommencer</button><button id="another" type="button" class="subtle" data-i18n="btn.another">Autre texte</button></div>
 <p id="feedback" class="feedback" role="status" aria-live="polite">La précision compte les caractères corrects à la position attendue. Corrigez vos fautes avec Retour arrière.</p>
 </section>
 <section class="panel results">
-<div class="section-heading"><span>02</span><div><h2>Votre tableau de bord</h2><p>Résultats calculés en continu, à partir du temps actif.</p></div></div>
+<div class="section-heading"><span>02</span><div><h2 data-i18n="s2.title">Votre tableau de bord</h2><p data-i18n="s2.text">Résultats calculés en continu, à partir du temps actif.</p></div></div>
 <div class="stats">
-<div><span>TEMPS RESTANT</span><strong id="time-left" class="time">60,0 s</strong></div>
-<div><span>VITESSE BRUTE</span><strong id="gross-wpm">0,0</strong><small>mots/min</small></div>
-<div><span>VITESSE CORRIGÉE</span><strong id="net-wpm">0,0</strong><small>mots/min</small></div>
-<div><span>PRÉCISION</span><strong id="accuracy">0,00 %</strong></div>
-<div><span>ERREURS ACTUELLES</span><strong id="errors">0</strong></div>
-<div><span>PROGRESSION</span><strong id="completion">0,00 %</strong></div>
+<div><span data-i18n="st.time">TEMPS RESTANT</span><strong id="time-left" class="time">60,0 s</strong></div>
+<div><span data-i18n="st.gross">VITESSE BRUTE</span><strong id="gross-wpm">0,0</strong><small data-i18n="st.wpm">mots/min</small></div>
+<div><span data-i18n="st.net">VITESSE CORRIGÉE</span><strong id="net-wpm">0,0</strong><small data-i18n="st.wpm">mots/min</small></div>
+<div><span data-i18n="st.accuracy">PRÉCISION</span><strong id="accuracy">0,00 %</strong></div>
+<div><span data-i18n="st.errors">ERREURS ACTUELLES</span><strong id="errors">0</strong></div>
+<div><span data-i18n="st.progress">PROGRESSION</span><strong id="completion">0,00 %</strong></div>
 </div>
-<p class="formula"><strong>Calcul transparent :</strong> 1 mot standard = 5 caractères Unicode, espaces et ponctuation compris. Vitesse brute = caractères saisis ÷ 5 ÷ minutes actives ; vitesse corrigée = caractères actuellement corrects ÷ 5 ÷ minutes actives. Précision = caractères actuellement corrects ÷ caractères saisis. Les erreurs corrigées ne restent pas pénalisées. Le temps de calcul est plafonné à la durée du test, avec un minimum de 1 seconde pour éviter les vitesses infinies.</p>
+<p class="formula"><strong data-i18n="formula.title">Calcul transparent :</strong> <span data-i18n="formula.text">1 mot standard = 5 caractères Unicode, espaces et ponctuation compris. Vitesse brute = caractères saisis ÷ 5 ÷ minutes actives ; vitesse corrigée = caractères actuellement corrects ÷ 5 ÷ minutes actives. Précision = caractères actuellement corrects ÷ caractères saisis. Les erreurs corrigées ne restent pas pénalisées. Le temps de calcul est plafonné à la durée du test, avec un minimum de 1 seconde pour éviter les vitesses infinies.</span></p>
 <div id="finish-summary" class="finish-summary" hidden role="status"></div>
 </section>
 <section class="panel history-panel">
-<div class="section-heading"><span>03</span><div><h2>Historique facultatif</h2><p>Par défaut, aucune statistique n’est conservée après fermeture de la page.</p></div></div>
-<label class="history-optin"><input type="checkbox" id="save-history"> Enregistrer localement uniquement les résultats terminés (jusqu’à 30 séances)</label>
-<p class="history-help">Les textes saisis et les frappes individuelles ne sont jamais enregistrés. Si vous activez cette option, seules la date, la durée et les statistiques de séance sont stockées dans ce navigateur. Aucune synchronisation ni comparaison entre utilisateurs.</p>
-<div class="history-buttons"><button id="export-history" class="secondary" type="button" disabled>Télécharger les résultats CSV</button><button id="clear-history" class="danger" type="button" disabled>Effacer l’historique</button><button id="raw-history" class="secondary" type="button" hidden>Exporter les données brutes</button></div>
-<div id="history-warning" class="warning" hidden role="alert">L’historique local est illisible. Il ne sera pas écrasé. Vous pouvez le récupérer sous forme brute ou le réinitialiser explicitement.</div>
-<div class="history-scroll"><table class="history-table"><thead><tr><th>Date</th><th>Texte</th><th>Temps</th><th>Net (MPM)</th><th>Précision</th></tr></thead><tbody id="history-rows"><tr><td colspan="5">Aucune séance sauvegardée.</td></tr></tbody></table></div>
+<div class="section-heading"><span>03</span><div><h2 data-i18n="s3.title">Historique facultatif</h2><p data-i18n="s3.text">Par défaut, aucune statistique n’est conservée après fermeture de la page.</p></div></div>
+<label class="history-optin"><input type="checkbox" id="save-history"> <span data-i18n="hist.optin">Enregistrer localement uniquement les résultats terminés (jusqu’à 30 séances)</span></label>
+<p class="history-help" data-i18n="hist.help">Les textes saisis et les frappes individuelles ne sont jamais enregistrés. Si vous activez cette option, seules la date, la durée et les statistiques de séance sont stockées dans ce navigateur. Aucune synchronisation ni comparaison entre utilisateurs.</p>
+<div class="history-buttons"><button id="export-history" class="secondary" type="button" disabled data-i18n="hist.csv">Télécharger les résultats CSV</button><button id="clear-history" class="danger" type="button" disabled data-i18n="hist.clear">Effacer l’historique</button><button id="raw-history" class="secondary" type="button" hidden data-i18n="hist.raw">Exporter les données brutes</button></div>
+<div id="history-warning" class="warning" hidden role="alert" data-i18n="hist.warning">L’historique local est illisible. Il ne sera pas écrasé. Vous pouvez le récupérer sous forme brute ou le réinitialiser explicitement.</div>
+<div class="history-scroll"><table class="history-table"><thead><tr><th data-i18n="th.date">Date</th><th data-i18n="th.text">Texte</th><th data-i18n="th.time">Temps</th><th data-i18n="th.net">Net (mots/min)</th><th data-i18n="th.accuracy">Précision</th></tr></thead><tbody id="history-rows"><tr><td colspan="5">Aucune séance sauvegardée.</td></tr></tbody></table></div>
 </section>
 </main>
-<footer>* Mode hors ligne après un premier chargement réussi et uniquement avec les navigateurs compatibles. La mesure vise l'entraînement, et non une certification de compétences. Les résultats à partir de quelques caractères sont instables ; clavier, autocorrection et accessibilité peuvent influencer les mesures. Aucune API externe, publicité ni compte requis.</footer>
-<script src="./core.js"></script><script src="./app.js"></script></body></html>
+<footer data-i18n="footer">* Mode hors ligne après un premier chargement réussi et uniquement avec les navigateurs compatibles. La mesure vise l'entraînement, et non une certification de compétences. Les résultats à partir de quelques caractères sont instables ; clavier, autocorrection et accessibilité peuvent influencer les mesures. Aucune API externe, publicité ni compte requis.</footer>
+<script src="./louvre-i18n.js"></script><script src="./messages.js"></script><script src="./core.js"></script><script src="./app.js"></script></body></html>

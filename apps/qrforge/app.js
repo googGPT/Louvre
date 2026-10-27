@@ -1,6 +1,7 @@
-/* QRForge UI: no network, remote code, persistence, or hidden link opening. */
+/* QRForge UI: no network, remote code, persistence, or hidden link opening. Texts via LouvreI18n (messages.js). */
 (()=>{'use strict';
 const C=window.QRForgeCore,by=id=>document.getElementById(id);
+const L=window.LouvreI18n.init(window.LouvreMessages),t=L.t; // langue et traductions (le contenu encodé ne dépend jamais de la langue)
 let result=null,previewUrl=null,nonce=0;
 const modeFields={text:'text-fields',url:'url-fields',wifi:'wifi-fields',email:'email-fields',telephone:'telephone-fields'};
 function status(message,error=false){const e=by('status');e.className=error?'status error':'status success';e.textContent=message;}
@@ -27,15 +28,15 @@ function render(){
  invalidate();
  try{
   const item=C.matrix(source(),options());
-  const svg=C.svg(item);
+  const svg=C.svg(item,t('svg.label'));
   const blob=new Blob([svg],{type:'image/svg+xml'});
   previewUrl=URL.createObjectURL(blob);
   by('preview').src=previewUrl;
   by('preview').hidden=false;by('placeholder').hidden=true;
   by('download-svg').disabled=false;by('download-png').disabled=false;
-  by('result-info').textContent='QR '+item.size+' × '+item.size+' modules · '+item.bytes+' octets UTF-8 · correction '+item.options.ecc+' · '+(item.size+2*item.options.margin)*item.options.scale+' px (PNG)';
-  result=item;status('QR généré localement. Vérifiez son décodage avec un second appareil avant diffusion.');
- }catch(e){status(e.message,true);}
+  by('result-info').textContent=t('res.info',{size:L.number(item.size),bytes:L.number(item.bytes),ecc:item.options.ecc,px:L.number((item.size+2*item.options.margin)*item.options.scale)});
+  result=item;status(t('st.generated'));
+ }catch(e){status(L.error(e),true);}
 }
 function download(blob,name){
  const u=URL.createObjectURL(blob),a=document.createElement('a');
@@ -44,8 +45,8 @@ function download(blob,name){
 }
 by('download-svg').addEventListener('click',()=>{
  if(!result)return;
- download(new Blob([C.svg(result)],{type:'image/svg+xml'}),'qrforge-code.svg');
- status('Fichier SVG téléchargé.');
+ download(new Blob([C.svg(result,t('svg.label'))],{type:'image/svg+xml'}),'qrforge-code.svg');
+ status(t('st.svg'));
 });
 by('download-png').addEventListener('click',()=>{
  if(!result)return;
@@ -55,10 +56,10 @@ by('download-png').addEventListener('click',()=>{
   canvas.toBlob(blob=>{
    canvas.width=0;canvas.height=0;
    if(token!==nonce)return;
-   if(!blob||blob.type!=='image/png'){status('Impossible d’exporter en PNG sur ce navigateur.',true);return;}
-   download(blob,'qrforge-code.png');status('Fichier PNG téléchargé.');
+   if(!blob||blob.type!=='image/png'){status(t('st.pngFail'),true);return;}
+   download(blob,'qrforge-code.png');status(t('st.png'));
   },'image/png');
- }catch(e){status(e.message,true);}
+ }catch(e){status(L.error(e),true);}
 });
 const controls=['content-text','content-url','ssid','wifi-password','security','email','telephone','ecc','margin','scale','dark','light','kind'];
 for(const id of controls){const element=by(id);
@@ -67,14 +68,15 @@ for(const id of controls){const element=by(id);
  });
  if(['margin','scale'].includes(id))element.addEventListener('change',render);
 }
+function toggleLabel(){by('toggle-password').textContent=by('wifi-password').type==='text'?t('btn.hidePassword'):t('btn.showPassword');}
 by('toggle-password').addEventListener('click',()=>{
  const input=by('wifi-password'),visible=input.type==='text';
  input.type=visible?'password':'text';
- by('toggle-password').textContent=visible?'Afficher le mot de passe':'Masquer le mot de passe';
+ toggleLabel();
  by('toggle-password').setAttribute('aria-pressed',String(!visible));
 });
 by('security').addEventListener('change',()=>{
- if(by('security').value==='nopass')status('Attention : le réseau déclaré sans mot de passe est un réseau ouvert.');
+ if(by('security').value==='nopass')status(t('st.openNetwork'));
 });
 by('swap-colors').addEventListener('click',()=>{
  const dark=by('dark').value;by('dark').value=by('light').value;by('light').value=dark;
@@ -84,14 +86,16 @@ by('reset').addEventListener('click',()=>{
  by('kind').value='url';
  by('content-text').value='';by('content-url').value='https://example.com';
  by('ssid').value='';by('wifi-password').value='';by('security').value='WPA';
- by('wifi-password').type='password';by('toggle-password').textContent='Afficher le mot de passe';by('toggle-password').setAttribute('aria-pressed','false');
+ by('wifi-password').type='password';toggleLabel();by('toggle-password').setAttribute('aria-pressed','false');
  by('email').value='';by('telephone').value='';
  by('ecc').value='M';by('margin').value='4';by('scale').value='10';
  by('dark').value='#102B43';by('light').value='#FFFFFF';
  refreshFields();render();
 });
 window.addEventListener('pagehide',()=>{nonce++;releasePreview();});
-refreshFields();render();
+// Nouvelle langue : libellés et messages réaffichés ; champs saisis et QR (contenu encodé) inchangés.
+L.onChange(()=>{toggleLabel();render();});
+toggleLabel();refreshFields();render();
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))
  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 })();

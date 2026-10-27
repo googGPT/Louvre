@@ -11,6 +11,9 @@ const appDir = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const html = readFileSync(resolve(appDir, 'index.html'), 'utf8');
 const htmlHtm = readFileSync(resolve(appDir, 'index.htm'), 'utf8');
 const script = html.match(/<script>\s*([\s\S]*?)<\/script>/)?.[1];
+// Mécanisme multilingue et textes, chargés avant le script de la page (comme dans index.html).
+const i18n = readFileSync(resolve(appDir, 'louvre-i18n.js'), 'utf8');
+const messages = readFileSync(resolve(appDir, 'messages.js'), 'utf8');
 const end = '    render();\n    if(!state.configured)settingsOpen();';
 const expose = `    globalThis.__test__={validateBackup,calculateBudget,purchaseScenario,defaultState,persist,totals,getState:()=>state,getLocalOK:()=>localOK};`;
 assert.ok(script?.includes(end), 'Attendu : fin du script de production');
@@ -27,9 +30,13 @@ function contextWith(stored = null, options = {}) {
     getItem(k) {if(options.blocked) throw Error('blocked');return storage.get(k)??null},
     setItem(k,v) {if(options.blocked) throw Error('blocked');writes++;storage.set(k,String(v))}
   };
-  const sandbox = {document: {getElementById:element,querySelectorAll(){return []}},localStorage,
-    crypto:{randomUUID(){return 'generated-id'}},setTimeout(){},clearTimeout(){},Intl,Date,console};
-  vm.runInNewContext(script.replace(end,expose),sandbox,{timeout:2000});
+  const sandbox = {document: {getElementById:element,querySelectorAll(){return []},querySelector(){return null},documentElement:{}},localStorage,
+    navigator:{languages:['fr-FR']},crypto:{randomUUID(){return 'generated-id'}},setTimeout(){},clearTimeout(){},Intl,Date,URL,console};
+  sandbox.window = sandbox;
+  vm.createContext(sandbox);
+  vm.runInContext(i18n,sandbox,{timeout:2000});
+  vm.runInContext(messages,sandbox,{timeout:2000});
+  vm.runInContext(script.replace(end,expose),sandbox,{timeout:2000});
   return {api:sandbox.__test__,storage,element,writes:()=>writes};
 }
 const initial = () => ({version:1,configured:true,balance:1200,payday:'2026-11-04',reserve:100,currency:'EUR',
@@ -39,7 +46,8 @@ const asOf='2026-10-25';
 
 test('index.htm et index.html : exactement le même code, sans librairie payante', () => {
   assert.equal(html,htmlHtm);
-  assert.ok(!/<script\s+src=/i.test(html));
+  const sources=[...html.matchAll(/<script\s+src="([^"]+)"/gi)].map(m=>m[1]);
+  assert.deepEqual(sources,['./louvre-i18n.js','./messages.js']); // seulement les fichiers locaux du mécanisme multilingue
   assert.ok(!/https:\/\/[^"\s]*\.(js|css)/i.test(html));
 });
 
@@ -128,4 +136,14 @@ test('restauration explicite après JSON corrompu peut rétablir le stockage', (
   assert.equal(api.persist(true),true);
   assert.equal(api.getLocalOK(),true);
   assert.equal(JSON.parse(storage.get('moneyuntil:v1')).version,1);
+});
+
+test('les erreurs de stockage sont des clés traduites, pas du texte en dur', () => {
+  const {element}=contextWith('{ invalid json');
+  assert.match(element('storage-alert').textContent,/illisible/);
+});
+
+test('une sauvegarde v1 dans une devise d’origine (TND) reste lisible ; une devise inconnue est refusée', () => {
+  const {api}=contextWith();const a=initial();a.currency='TND';assert.equal(api.validateBackup(a),true);
+  a.currency='XYZ';assert.equal(api.validateBackup(a),false);
 });

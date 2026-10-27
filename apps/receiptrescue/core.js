@@ -76,7 +76,8 @@
     return { tracked, returnSoon, warrantySoon };
   }
   // Adaptation Louvre : dérivations calculées sans état d'interface dupliqué.
-  function upcomingDeadlines(records, today, daysAhead = 30) {
+  // locale : langue de l'interface, pour départager deux articles par ordre alphabétique.
+  function upcomingDeadlines(records, today, daysAhead = 30, locale = 'fr') {
     if (dateMs(today) === null || !Number.isInteger(daysAhead) || daysAhead < 0 || daysAhead > 365) return [];
     const items = [];
     for (const record of records) {
@@ -88,7 +89,7 @@
           items.push({ recordId: record.id, item: record.item, merchant: record.merchant, kind, due, days });
       }
     }
-    return items.sort((a, b) => a.days - b.days || (a.kind === 'return' ? -1 : 1) || a.item.localeCompare(b.item, 'fr'));
+    return items.sort((a, b) => a.days - b.days || (a.kind === 'return' ? -1 : 1) || a.item.localeCompare(b.item, locale));
   }
   function categoryBreakdown(records, month) {
     if (typeof month !== 'string' || !/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) return [];
@@ -104,29 +105,24 @@
     return String(s).replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/;/g, '\\;').replace(/,/g, '\\,');
   }
   // Export de dates saisies par l'utilisateur. Aucun serveur, aucune notification implicite.
-  function calendarIcs(records) {
+  // text : libellés traduits fournis par l'interface, { summary(kind, item), description(merchant) } avec kind 'return' ou 'warranty'.
+  function calendarIcs(records, text) {
     const lines = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Louvre//ReceiptRescue//FR','CALSCALE:GREGORIAN','METHOD:PUBLISH'];
     let count = 0;
     for (const r of records) {
       if (!cleanRecord(r)) continue;
-      for (const [kind, date] of [['Retour',r.returnBy],['Garantie',r.warrantyUntil]]) {
+      // uidKind reste en français : l'identifiant d'un événement ne doit pas changer d'un export à l'autre.
+      for (const [kind, uidKind, date] of [['return','retour',r.returnBy],['warranty','garantie',r.warrantyUntil]]) {
         if (!date) continue;
         const day = date.replace(/-/g,'');
         // Identifiant déterministe, aucune donnée personnelle envoyée sur Internet.
-        const uid = `${r.id}-${kind.toLowerCase()}-${day}@receiptrescue.local`;
-        lines.push('BEGIN:VEVENT',`UID:${icsEscape(uid)}`,`DTSTART;VALUE=DATE:${day}`,`SUMMARY:${icsEscape(kind + ' : ' + r.item)}`,`DESCRIPTION:${icsEscape('Magasin : ' + r.merchant + ' — date renseignée dans ReceiptRescue')}`,'END:VEVENT');
+        const uid = `${r.id}-${uidKind}-${day}@receiptrescue.local`;
+        lines.push('BEGIN:VEVENT',`UID:${icsEscape(uid)}`,`DTSTART;VALUE=DATE:${day}`,`SUMMARY:${icsEscape(text.summary(kind, r.item))}`,`DESCRIPTION:${icsEscape(text.description(r.merchant))}`,'END:VEVENT');
         count++;
       }
     }
     lines.push('END:VCALENDAR');
     return { content: lines.join('\r\n') + '\r\n', count };
-  }
-  function formatMoney(cents, currency = 'EUR') {
-    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency }).format(cents / 100);
-  }
-  function dateLabel(iso) {
-    const ms = dateMs(iso);
-    return ms == null ? '—' : new Intl.DateTimeFormat('fr-FR', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' }).format(ms);
   }
   function validateBackup(input) {
     if (!input || typeof input !== 'object' || Array.isArray(input) || input.version !== 1 || !Array.isArray(input.records) || input.records.length > MAX_RECORDS) return null;
@@ -145,5 +141,5 @@
     }
     return records;
   }
-  return { MAX_PHOTO_BYTES, MAX_BACKUP_BYTES, MAX_RECORDS, VALID_MIMES, CATEGORIES, dateMs, todayLocal, daysUntil, eurosToCents, cleanRecord, status, summarize, formatMoney, dateLabel, validateBackup, upcomingDeadlines, categoryBreakdown, calendarIcs };
+  return { MAX_PHOTO_BYTES, MAX_BACKUP_BYTES, MAX_RECORDS, VALID_MIMES, CATEGORIES, dateMs, todayLocal, daysUntil, eurosToCents, cleanRecord, status, summarize, validateBackup, upcomingDeadlines, categoryBreakdown, calendarIcs };
 });

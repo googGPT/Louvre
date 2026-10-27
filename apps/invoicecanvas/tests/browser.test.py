@@ -16,7 +16,7 @@ def run():
     try:
         with sync_playwright() as p:
             browser=p.chromium.launch(headless=True,executable_path=os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium'),args=['--no-sandbox'])
-            context=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True)
+            context=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True,locale='fr-FR')
             page=context.new_page();errors=[];external=[];dialogs=[]
             origin=f'http://127.0.0.1:{server.server_port}/'
             page.on('pageerror',lambda e:errors.append(str(e)))
@@ -177,8 +177,52 @@ def run():
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth+2')
             assert not external,external
             assert not errors,errors
+
+            # --- Languages: 7 complete languages, RTL Arabic, French legal mentions kept, amounts always in euros.
+            intl=browser.new_context(viewport={'width':390,'height':844},locale='en-US')
+            ip=intl.new_page()
+            ip.on('pageerror',lambda e:errors.append(str(e)))
+            ip.on('dialog',lambda d:d.accept())
+            ip.goto(origin,wait_until='domcontentloaded')
+            expect(ip.locator('#edit-title')).to_have_text('Prepare your document')  # English browser -> English
+            assert ip.evaluate('() => LouvreI18n.currency')=='USD'  # detected currency is ignored: French VAT model
+            assert ip.locator('#louvre-currency').count()==0  # no currency menu (lang-only)
+            expect(ip.locator('#rules-notice')).to_contain_text('French rules')
+            ip.locator('#seller-name').fill('Atelier Test')
+            ip.locator('#line-items [data-field=label]').fill('Consulting')
+            ip.locator('#line-items [data-field=unitPrice]').fill('19.99')
+            ip.locator('#line-items [data-field=vatRate]').fill('5.5')
+            ip.locator('#issueDate').fill('2026-10-26')
+            expect(ip.locator('#print-ttc')).to_have_text('€21.09')
+            expect(ip.locator('#print-type')).to_have_text('QUOTE (DEVIS)')
+            expect(ip.locator('#print-dates')).to_contain_text('26 October 2026')
+            titles={'fr':'Préparer votre document','en':'Prepare your document','es':'Preparar su documento','ar':'إعداد المستند',
+                    'pt':'Preparar o seu documento','de':'Dokument vorbereiten','it':'Preparare il documento'}
+            for lang in ['fr','en','es','ar','pt','de','it']:
+                ip.locator('#louvre-lang').select_option(lang)
+                assert ip.evaluate('() => document.documentElement.dir')==('rtl' if lang=='ar' else 'ltr')
+                wide=ip.evaluate('''() => document.documentElement.scrollWidth <= innerWidth + 2 ? [] :
+                  [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 2)
+                    .slice(0, 5).map((e) => `${e.tagName}.${e.className} « ${(e.textContent || '').trim().slice(0, 40)} »`)''')
+                assert not wide,f'débordement en {lang} : {wide}'
+                expect(ip.locator('#edit-title')).to_have_text(titles[lang])
+                assert '€' in ip.locator('#print-ttc').inner_text() and '$' not in ip.locator('#print-ttc').inner_text(),lang
+                assert '21.09' in ip.locator('#print-ttc').inner_text() or '21,09' in ip.locator('#print-ttc').inner_text(),lang
+                if lang!='fr':expect(ip.locator('.total-ttc span')).to_contain_text('(TTC)')  # exact French legal term kept
+                assert ip.locator('#seller-name').input_value()=='Atelier Test'  # typing kept
+                assert ip.locator('#line-items [data-field=unitPrice]').input_value()=='19.99'
+            assert ip.evaluate('() => LouvreI18n.missing()')==[],ip.evaluate('() => LouvreI18n.missing()')
+            ip.locator('#louvre-lang').select_option('de')
+            expect(ip.locator('.line-row label span').nth(2)).to_have_text('Nettopreis (€)')
+            ip.locator('#line-items [data-field=unitPrice]').fill('abc')
+            expect(ip.locator('#print-items')).to_contain_text('Nettopreis: ungültige Dezimalstellen')
+            ip.locator('#save').click()
+            expect(ip.locator('#feedback')).to_have_text('Ungültiger Entwurf: Nettopreis: ungültige Dezimalstellen')
+            ip.reload(wait_until='domcontentloaded')
+            expect(ip.locator('#edit-title')).to_have_text('Dokument vorbereiten')  # choice remembered
+            assert not errors,errors
             browser.close()
-        print('BROWSER PASS InvoiceCanvas: 20.09 HT / 1.11 VAT / 21.20 TTC, centimes, local drafts, sequential lock, immutable versions, print CSS, JSON backup, XSS, quota/corruption recovery, mobile 390px, offline')
+        print('BROWSER PASS InvoiceCanvas: 20.09 HT / 1.11 VAT / 21.20 TTC, centimes, local drafts, sequential lock, immutable versions, print CSS, JSON backup, XSS, quota/corruption recovery, mobile 390px, offline, 7 languages, RTL, euros kept')
     finally:
         server.shutdown();server.server_close()
 

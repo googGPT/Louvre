@@ -47,8 +47,11 @@ test('sauvegarde autre application rejetée',()=>assert.throws(()=>L.validateBac
 test('sauvegarde ID dupliqué rejetée',()=>assert.throws(()=>L.validateBackup({app:'worldmeet',version:1,records:[base,base]})));
 test('plus de 500 fiches rejeté',()=>assert.throws(()=>L.validateBackup({app:'worldmeet',version:1,records:Array(501).fill(base)})));
 test('changement de date et heure d’été jour calendaire',()=>{assert.equal(L.diffDays('2026-03-30','2026-03-29'),1);assert.equal(L.addDays('2026-03-28',2),'2026-03-30')});
-test('indicateurs conservant Correspondances initiale',()=>{const c=L.compute([base],'2026-11-01');assert.deepEqual(c.kpis[0],['Correspondances','1']);assert.ok(c.rows[0].includes('15:00'))});
+test('indicateurs conservant Correspondances initiale',()=>{const c=L.compute([base],'2026-11-01');assert.deepEqual(c.kpis[0],['kpi.records','1']);assert.ok(c.rows[0].includes('15:00'))});
 test('calcul ne modifie pas l’entrée',()=>{const before=JSON.stringify(base);L.compute([base]);assert.equal(JSON.stringify(base),before)});
 test('ICS UTC conforme',()=>{const s=L.calendarICS({meeting:'Projet',utc:base.utc},60);assert.match(s,/DTSTART:20261110T140000Z/);assert.match(s,/DTEND:20261110T150000Z/);assert.match(s,/BEGIN:VEVENT/)});
 test('ICS évite injection de séparateur',()=>{const s=L.calendarICS({meeting:'A;B, C',utc:base.utc},60);assert.match(s,/SUMMARY:A\\;B\\, C/)});
 test('ICS rejette 0 minute',()=>assert.throws(()=>L.calendarICS({meeting:'Test',utc:base.utc},0)));
+test('erreurs levées sous forme de clés de traduction',()=>{assert.throws(()=>L.normalizeRecord(mk({zone:'Mars/Base'})),/^Error: err\.zone$/);assert.throws(()=>L.asInstant('2026-11-10T24:00'),/^Error: err\.utc$/)});
+test('ICS : description traduite fournie par l’interface',()=>{const s=L.calendarICS({meeting:'Projet',utc:base.utc},60,'Planned with WorldMeet');assert.match(s,/DESCRIPTION:Planned with WorldMeet/)});
+test('tri des réunions selon la langue fournie',()=>{const g=L.groupMeetings([mk({meeting:'Zèbre'}),mk({id:'sample0002',meeting:'Ábaco'})],'es');assert.deepEqual(g.map(x=>x.meeting),['Ábaco','Zèbre'])});

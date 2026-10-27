@@ -2,18 +2,22 @@
 'use strict';
 const AppLogic=(()=>{
   const SPEC=Object.freeze({
-    slug:'goalladder',title:'GoalLadder',subtitle:'Découper un objectif en étapes',
-    description:'Suivre les jalons terminés et les échéances',
+    // Libellés : clés de traduction (messages.js). Les valeurs des listes (non/oui, haute/normale/basse)
+    // restent en français dans les données enregistrées et sont traduites à l'affichage.
+    slug:'goalladder',title:'GoalLadder',subtitle:'meta.title',
+    description:'meta.description',
     fields:[
-      {key:'goal',label:'Objectif',type:'text',sample:'Réussir mon mémoire'},
-      {key:'milestone',label:'Étape',type:'text',sample:'Finaliser la bibliographie'},
-      {key:'due',label:'Échéance',type:'date',sample:'2026-11-10'},
-      {key:'done',label:'Terminée ?',type:'select',options:['non','oui'],sample:'non'},
-      {key:'priority',label:'Priorité',type:'select',options:['haute','normale','basse'],sample:'haute'}
+      {key:'goal',label:'f.goal',type:'text',sample:'Réussir mon mémoire'},
+      {key:'milestone',label:'f.milestone',type:'text',sample:'Finaliser la bibliographie'},
+      {key:'due',label:'f.due',type:'date',sample:'2026-11-10'},
+      {key:'done',label:'f.done',type:'select',options:['non','oui'],sample:'non'},
+      {key:'priority',label:'f.priority',type:'select',options:['haute','normale','basse'],sample:'haute'}
     ]
   });
   const MAX=500,STORAGE_LIMIT=900000;
   const PRIORITIES=Object.freeze({haute:0,normale:1,basse:2});
+  // Erreurs : clés de traduction (« err.x » ou « err.x|{json} »), traduites par l'interface.
+  const fail=(k,p)=>{throw Error(p?k+'|'+JSON.stringify(p):k);};
   function dayKey(date=new Date()){
     const f=n=>String(n).padStart(2,'0');
     return date.getFullYear()+'-'+f(date.getMonth()+1)+'-'+f(date.getDate());
@@ -33,29 +37,28 @@ const AppLogic=(()=>{
     return z.getUTCFullYear()===y&&z.getUTCMonth()+1===m&&z.getUTCDate()===d;
   }
   function diffDays(a,b){
-    if(!validDate(a)||!validDate(b))throw Error('Date invalide');
+    if(!validDate(a)||!validDate(b))fail('err.date');
     return Math.round((dateUTC(a).getTime()-dateUTC(b).getTime())/86400000);
   }
   function addDays(s,n){
-    if(!validDate(s)||!Number.isSafeInteger(n)||Math.abs(n)>100000)throw Error('Décalage de date invalide');
+    if(!validDate(s)||!Number.isSafeInteger(n)||Math.abs(n)>100000)fail('err.dayShift');
     const d=dateUTC(s);d.setUTCDate(d.getUTCDate()+n);
     return String(d.getUTCFullYear()).padStart(4,'0')+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');
   }
-  function eur(n){return (n/100).toLocaleString('fr-FR',{style:'currency',currency:'EUR'});}
   function normalizeRecord(r){
     if(!r||typeof r!=='object'||Array.isArray(r)||typeof r.id!=='string'||!/^[a-zA-Z0-9_-]{4,80}$/.test(r.id))
-      throw Error('Identifiant invalide');
+      fail('err.id');
     const out={id:r.id};
     for(const f of SPEC.fields){
       const v=r[f.key];
       if(f.type==='text'){
-        if(typeof v!=='string'||!v.trim()||v.length>160)throw Error(f.label+' : texte requis (160 caractères maximum)');
+        if(typeof v!=='string'||!v.trim()||v.length>160)fail('err.'+f.key,{max:160});
         out[f.key]=v.trim();
       }else if(f.type==='date'){
-        if(!validDate(v))throw Error(f.label+' : date invalide');
+        if(!validDate(v))fail('err.'+f.key);
         out[f.key]=v;
       }else if(f.type==='select'){
-        if(!f.options.includes(v))throw Error(f.label+' : choix invalide');
+        if(!f.options.includes(v))fail('err.'+f.key);
         out[f.key]=v;
       }
     }
@@ -64,12 +67,12 @@ const AppLogic=(()=>{
   function validateBackup(data){
     if(!data||typeof data!=='object'||Array.isArray(data)||data.app!==SPEC.slug||data.version!==1||
        !Array.isArray(data.records)||data.records.length>MAX)
-      throw Error('Sauvegarde incompatible ou nombre de fiches dépassé');
-    if(JSON.stringify(data).length>STORAGE_LIMIT)throw Error('Sauvegarde trop volumineuse');
+      fail('err.backup');
+    if(JSON.stringify(data).length>STORAGE_LIMIT)fail('err.backupBig');
     const ids=new Set();
     return data.records.map(raw=>{
       const item=normalizeRecord(raw);
-      if(ids.has(item.id))throw Error('Identifiant dupliqué');
+      if(ids.has(item.id))fail('err.duplicateId');
       ids.add(item.id);return item;
     });
   }
@@ -84,8 +87,9 @@ const AppLogic=(()=>{
     if(remaining<=7)return 'soon';
     return 'future';
   }
-  function compute(records,today=dayKey()){
-    if(!validDate(today))throw Error('Date du jour invalide');
+  // locale : langue de l'interface, pour l'ordre alphabétique des objectifs.
+  function compute(records,today=dayKey(),locale='fr'){
+    if(!validDate(today))fail('err.today');
     const items=validateBackup({app:SPEC.slug,version:1,records});
     // Map protège les noms tels que "constructor", "toString" et "__proto__".
     const groups=new Map();
@@ -104,20 +108,21 @@ const AppLogic=(()=>{
     }
     const goalStats=[...groups.values()].map(g=>({
       ...g,progress:Math.round(100*g.done/g.total)
-    })).sort((a,b)=>a.name.localeCompare(b.name,'fr'));
-    return {
-      kpis:[['Objectifs',String(groups.size)],['Étapes terminées',String(done)],
-        ['À faire sous 7 jours',String(soon)],['En retard',String(overdue)]],
-      notes:['Chaque étape a le même poids dans la progression de son objectif. Les échéances passées sont comptées séparément.'],
+    })).sort((a,b)=>a.name.localeCompare(b.name,locale));
+    return { // libellés et notes : clés de traduction
+      kpis:[['kpi.goals',String(groups.size)],['kpi.done',String(done)],
+        ['kpi.soon',String(soon)],['kpi.overdue',String(overdue)]],
+      notes:['note.weight'],
       goalStats,
-      rows:goalStats.map(g=>g.name+' : '+g.progress+' % · '+g.done+'/'+g.total+' terminées · '+g.overdue+' en retard')
+      rows:goalStats.map(g=>g.name+' · '+g.progress+' % · '+g.done+'/'+g.total)
     };
   }
   function fold(s){return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('fr').trim();}
-  function filterRecords(records,{query='',status='all',sort='due',today=dayKey()}={}){
+  // describe(item) : texte traduit supplémentaire pour la recherche (ex. priorité dans la langue choisie).
+  function filterRecords(records,{query='',status='all',sort='due',today=dayKey(),describe=()=>''}={}){
     if(!['all','todo','done','soon','overdue'].includes(status)||!['due','priority','recent'].includes(sort))
-      throw Error('Filtre ou ordre invalide');
-    if(!validDate(today))throw Error('Date du jour invalide');
+      fail('err.filter');
+    if(!validDate(today))fail('err.today');
     const needle=fold(query),items=validateBackup({app:SPEC.slug,version:1,records});
     return items.map((item,index)=>({item,index})).filter(({item})=>{
       const current=recordStatus(item,today);
@@ -125,7 +130,7 @@ const AppLogic=(()=>{
       if(status==='todo'&&current==='done')return false;
       if(status==='soon'&&current!=='soon')return false;
       if(status==='overdue'&&current!=='overdue')return false;
-      return fold(item.goal+' '+item.milestone+' '+item.priority+' '+item.due).includes(needle);
+      return fold(item.goal+' '+item.milestone+' '+item.priority+' '+item.due+' '+describe(item)).includes(needle);
     }).sort((a,b)=>{
       if(sort==='recent')return b.index-a.index;
       if(sort==='priority')return PRIORITIES[a.item.priority]-PRIORITIES[b.item.priority]||a.item.due.localeCompare(b.item.due)||a.index-b.index;
@@ -137,13 +142,15 @@ const AppLogic=(()=>{
     const safe=/^\s*[=+@\-\t\r]/.test(value)?"'"+value:value;
     return '"'+safe.replaceAll('"','""')+'"';
   }
-  function toCSV(records){
+  // text : en-têtes et valeurs traduits fournis par l'interface ; par défaut, ceux d'origine (français).
+  function toCSV(records,text={}){
     const items=validateBackup({app:SPEC.slug,version:1,records});
-    const rows=[['Objectif','Étape','Échéance','Terminée','Priorité']];
-    for(const r of items)rows.push([r.goal,r.milestone,r.due,r.done,r.priority]);
+    const header=text.header||['Objectif','Étape','Échéance','Terminée','Priorité'],value=text.value||((key,v)=>v);
+    const rows=[header];
+    for(const r of items)rows.push([r.goal,r.milestone,r.due,value('done',r.done),value('priority',r.priority)]);
     return '\uFEFF'+rows.map(row=>row.map(csvCell).join(';')).join('\r\n');
   }
-  return Object.freeze({SPEC,MAX,STORAGE_LIMIT,dayKey,validDate,diffDays,addDays,eur,
+  return Object.freeze({SPEC,MAX,STORAGE_LIMIT,dayKey,validDate,diffDays,addDays,
     normalizeRecord,validateBackup,backup,recordStatus,compute,filterRecords,toCSV});
 })();
 if(typeof module!=='undefined'&&module.exports)module.exports=AppLogic;

@@ -9,27 +9,28 @@ const AppLogic = (() => {
     {key:'to',label:'Unité d’arrivée',type:'select',sample:'mile'}
   ] });
   // Valeurs reconnues : mètre, kilogramme et litre comme unité de référence.
+  // key : nom de l'unité traduit par l'interface (messages.js, unit.<key>).
   // 1 inch = 0,0254 m (définition internationale) ; 1 mile = 1609,344 m.
   const UNITS = Object.freeze({
-    km: {dim:'distance',factor:1000,label:'Kilomètre (km)'},
-    mile:{dim:'distance',factor:1609.344,label:'Mile international (mi)'},
-    m:{dim:'distance',factor:1,label:'Mètre (m)'},
-    ft:{dim:'distance',factor:0.3048,label:'Pied international (ft)'},
-    cm:{dim:'distance',factor:0.01,label:'Centimètre (cm)'},
-    mm:{dim:'distance',factor:0.001,label:'Millimètre (mm)'},
-    in:{dim:'distance',factor:0.0254,label:'Pouce (in)'},
-    yd:{dim:'distance',factor:0.9144,label:'Yard (yd)'},
-    kg:{dim:'masse',factor:1,label:'Kilogramme (kg)'},
-    lb:{dim:'masse',factor:0.45359237,label:'Livre (lb)'},
-    g:{dim:'masse',factor:0.001,label:'Gramme (g)'},
-    oz:{dim:'masse',factor:0.028349523125,label:'Once de masse (oz)'},
-    L:{dim:'volume',factor:1,label:'Litre (L)'},
-    mL:{dim:'volume',factor:0.001,label:'Millilitre (mL)'},
-    'gal US':{dim:'volume',factor:3.785411784,label:'Gallon américain (gal US)'},
-    'fl oz US':{dim:'volume',factor:0.0295735295625,label:'Once liquide américaine (fl oz US)'},
-    '°C':{dim:'température',label:'Degré Celsius (°C)'},
-    '°F':{dim:'température',label:'Degré Fahrenheit (°F)'},
-    K:{dim:'température',label:'Kelvin (K)'}
+    km: {dim:'distance',factor:1000,key:'km'},
+    mile:{dim:'distance',factor:1609.344,key:'mile'},
+    m:{dim:'distance',factor:1,key:'m'},
+    ft:{dim:'distance',factor:0.3048,key:'ft'},
+    cm:{dim:'distance',factor:0.01,key:'cm'},
+    mm:{dim:'distance',factor:0.001,key:'mm'},
+    in:{dim:'distance',factor:0.0254,key:'in'},
+    yd:{dim:'distance',factor:0.9144,key:'yd'},
+    kg:{dim:'masse',factor:1,key:'kg'},
+    lb:{dim:'masse',factor:0.45359237,key:'lb'},
+    g:{dim:'masse',factor:0.001,key:'g'},
+    oz:{dim:'masse',factor:0.028349523125,key:'oz'},
+    L:{dim:'volume',factor:1,key:'l'},
+    mL:{dim:'volume',factor:0.001,key:'ml'},
+    'gal US':{dim:'volume',factor:3.785411784,key:'galUS'},
+    'fl oz US':{dim:'volume',factor:0.0295735295625,key:'flozUS'},
+    '°C':{dim:'température',key:'c'},
+    '°F':{dim:'température',key:'f'},
+    K:{dim:'température',key:'k'}
   });
   const GROUPS = Object.freeze({
     distance:['km','mile','m','ft','cm','mm','in','yd'],
@@ -42,21 +43,20 @@ const AppLogic = (() => {
   function toDay(s){const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d,12);}
   function diffDays(s,t){return Math.round((toDay(s)-toDay(t))/86400000);}
   function addDays(s,n){const d=toDay(s);d.setDate(d.getDate()+n);return dayKey(d);}
-  function eur(cents){return (cents/100).toLocaleString('fr-FR',{style:'currency',currency:'EUR'});}
-  function assertNumber(value){if(typeof value!=='number'||!Number.isFinite(value)||Math.abs(value)>100000000)throw Error('La valeur doit être un nombre fini entre -100 000 000 et 100 000 000');}
-  function category(unit){if(!Object.hasOwn(UNITS,unit))throw Error('Unité inconnue : '+String(unit));return UNITS[unit].dim;}
+  function assertNumber(value){if(typeof value!=='number'||!Number.isFinite(value)||Math.abs(value)>100000000)throw Error('err.number');}
+  function category(unit){if(!Object.hasOwn(UNITS,unit))throw Error('err.unknownUnit|'+JSON.stringify({unit:String(unit)}));return UNITS[unit].dim;}
   function toKelvin(v,unit){return unit==='°C'?v+273.15:unit==='°F'?(v+459.67)*5/9:v;}
   function fromKelvin(k,unit){return unit==='°C'?k-273.15:unit==='°F'?k*9/5-459.67:k;}
   function convert(value,from,to){
     assertNumber(value);
     const dim=category(from);
-    if(category(to)!==dim)throw Error('Les unités doivent appartenir à la même catégorie');
+    if(category(to)!==dim)throw Error('err.sameCategory');
     let answer;
     if(dim==='température'){
       // Contrôle des bornes dans l'unité source : aucune tolérance permettant
       // d'accepter des températures physiques négatives en kelvins.
       if((from==='K'&&value<0)||(from==='°C'&&value< -273.15)||(from==='°F'&&value< -459.67))
-        throw Error('Température sous le zéro absolu');
+        throw Error('err.absoluteZero');
       const kelvin=toKelvin(value,from);
       // Celsius ↔ Fahrenheit utilise une transformation affine directe :
       // évite l'erreur flottante d'un aller-retour artificiel via Kelvin
@@ -68,54 +68,56 @@ const AppLogic = (() => {
       // Ne jamais écraser une température valide proche de zéro :
       // 1e-13 K et -1e-13 °C doivent rester inchangés si les unités sont identiques.
     } else {
-      if(value<0)throw Error('Une longueur, masse ou quantité négative est impossible');
+      if(value<0)throw Error('err.negative');
       answer=value*UNITS[from].factor/UNITS[to].factor;
     }
-    if(!Number.isFinite(answer))throw Error('Conversion numérique hors limites');
+    if(!Number.isFinite(answer))throw Error('err.overflow');
     return answer;
   }
-  function formatValue(value){
-    if(!Number.isFinite(value))throw Error('Valeur à afficher invalide');
+  // locale : langue d'affichage (séparateurs décimaux et de milliers).
+  function formatValue(value,locale='fr-FR'){
+    if(!Number.isFinite(value))throw Error('err.display');
     if(value===0)return '0';
     const a=Math.abs(value);
     if(a<0.00000001||a>=1000000000)return value.toExponential(8).replace('e+','e');
-    return new Intl.NumberFormat('fr-FR',{maximumSignificantDigits:9,useGrouping:true}).format(value);
+    return new Intl.NumberFormat(locale,{maximumSignificantDigits:9,useGrouping:true}).format(value);
   }
   function normalizeRecord(raw){
-    if(!raw||typeof raw!=='object'||Array.isArray(raw)||typeof raw.id!=='string'||!/^[A-Za-z0-9_-]{4,80}$/.test(raw.id))throw Error('Identifiant invalide');
-    if(typeof raw.name!=='string'||!raw.name.trim()||raw.name.length>160)throw Error('Nom requis, 160 caractères maximum');
+    if(!raw||typeof raw!=='object'||Array.isArray(raw)||typeof raw.id!=='string'||!/^[A-Za-z0-9_-]{4,80}$/.test(raw.id))throw Error('err.id');
+    if(typeof raw.name!=='string'||!raw.name.trim()||raw.name.length>160)throw Error('err.name');
     assertNumber(raw.value);
     const dim=category(raw.from);
-    if(category(raw.to)!==dim)throw Error('Choisir deux unités de la même catégorie');
+    if(category(raw.to)!==dim)throw Error('err.sameCategory');
     convert(raw.value,raw.from,raw.to);
     return {id:raw.id,name:raw.name.trim(),value:raw.value,from:raw.from,to:raw.to};
   }
   function validateBackup(json){
-    if(!json||typeof json!=='object'||Array.isArray(json)||json.app!=='sizematch'||json.version!==1||!Array.isArray(json.records)||json.records.length>MAX)throw Error('Sauvegarde incompatible (SizeMatch v1 requis)');
-    if(JSON.stringify(json).length>STORAGE_LIMIT)throw Error('Sauvegarde trop volumineuse');
-    const used=new Set();return json.records.map(o=>{const n=normalizeRecord(o);if(used.has(n.id))throw Error('Identifiant en double');used.add(n.id);return n;});
+    if(!json||typeof json!=='object'||Array.isArray(json)||json.app!=='sizematch'||json.version!==1||!Array.isArray(json.records)||json.records.length>MAX)throw Error('err.backup');
+    if(JSON.stringify(json).length>STORAGE_LIMIT)throw Error('err.backupBig');
+    const used=new Set();return json.records.map(o=>{const n=normalizeRecord(o);if(used.has(n.id))throw Error('err.duplicate');used.add(n.id);return n;});
   }
   function backup(records){const r=validateBackup({app:'sizematch',version:1,records});return JSON.stringify({app:'sizematch',version:1,exportedAt:new Date().toISOString(),records:r},null,2);}
   function compute(records,today=dayKey()){
-    if(!validDate(today))throw Error('Date du jour invalide');
+    if(!validDate(today))throw Error('err.date');
     const r=validateBackup({app:'sizematch',version:1,records});
     const types=new Set(r.map(x=>category(x.from)));
-    return {kpis:[['Conversions',String(r.length)],['Compatibles',String(r.length)],['Catégories',String(types.size)]],
-      notes:['Calculs hors ligne. Facteurs internationaux ou unités américaines explicitement identifiées ; les affichages sont arrondis, pas les valeurs enregistrées.'],
+    // kpis : [clé de traduction, valeur] ; l'interface traduit le libellé.
+    return {kpis:[['kpi.conversions',String(r.length)],['kpi.compatible',String(r.length)],['kpi.categories',String(types.size)]],
       rows:r.slice(-20).reverse().map(x=>x.name+' : '+formatValue(x.value)+' '+x.from+' → '+formatValue(convert(x.value,x.from,x.to))+' '+x.to)};
   }
   // Les mesures numériques demeurent des nombres dans Excel (y compris les négatives).
   // Seules les chaînes peuvent contenir une formule hostile ; elles sont protégées.
-  function csvCell(v){
+  function csvCell(v,decimal=','){
     if(typeof v==='number'){
-      if(!Number.isFinite(v))throw Error('Nombre CSV invalide');
-      return String(v).replace('.',','); // décimale française, séparateur CSV « ; »
+      if(!Number.isFinite(v))throw Error('err.csvNumber');
+      return String(v).replace('.',decimal); // virgule décimale (Excel français, allemand…) ou point ; séparateur CSV « ; »
     }
     const value=String(v);
     const safe=/^[\s]*[=+@\-\t\r]/.test(value)?"'"+value:value;
     return '"'+safe.replaceAll('"','""')+'"';
   }
-  function toCSV(records){const r=validateBackup({app:'sizematch',version:1,records});let rows=[['Nom','Valeur initiale','Unité initiale','Valeur convertie','Unité cible','Catégorie']];for(const item of r){rows.push([item.name,item.value,item.from,convert(item.value,item.from,item.to),item.to,category(item.from)])}return '\uFEFF'+rows.map(row=>row.map(csvCell).join(';')).join('\r\n');}
-  return Object.freeze({SPEC,MAX,STORAGE_LIMIT,UNITS,GROUPS,dayKey,validDate,diffDays,addDays,eur,category,convert,formatValue,normalizeRecord,validateBackup,backup,compute,toCSV});
+  // opts (fourni par l'interface) : headers = 6 titres de colonnes, catName = nom affiché d'une catégorie, decimal = ',' ou '.'.
+  function toCSV(records,opts){if(!opts||!Array.isArray(opts.headers)||opts.headers.length!==6)throw Error('err.csvHeaders');const decimal=opts.decimal==='.'?'.':',',catName=opts.catName||(c=>c);const r=validateBackup({app:'sizematch',version:1,records});let rows=[opts.headers];for(const item of r){rows.push([item.name,item.value,item.from,convert(item.value,item.from,item.to),item.to,catName(category(item.from))])}return '\uFEFF'+rows.map(row=>row.map(v=>csvCell(v,decimal)).join(';')).join('\r\n');}
+  return Object.freeze({SPEC,MAX,STORAGE_LIMIT,UNITS,GROUPS,dayKey,validDate,diffDays,addDays,category,convert,formatValue,normalizeRecord,validateBackup,backup,compute,toCSV});
 })();
 if(typeof module!=='undefined'&&module.exports)module.exports=AppLogic;

@@ -21,7 +21,7 @@ def main():
     try:
         with sync_playwright() as p:
             browser=p.chromium.launch(headless=True,executable_path=os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium'),args=['--no-sandbox'])
-            context=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True)
+            context=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True,locale='fr-FR')
             page=context.new_page()
             errors=[];external=[];dialogs=[]
             origin=f'http://127.0.0.1:{server.server_port}/'
@@ -205,8 +205,53 @@ def main():
             assert page.locator('#area-filled').inner_text()=='1,09 m²'
             assert not external,external
             assert not errors,errors
+
+            # --- Languages: 7 complete languages, RTL Arabic, no overflow, default furniture names translated on display only.
+            intl=browser.new_context(viewport={'width':390,'height':844},locale='es-MX',accept_downloads=True)
+            ip=intl.new_page()
+            ip.on('pageerror',lambda e:errors.append(str(e)))
+            ip.on('dialog',lambda d:d.accept())
+            ip.goto(origin,wait_until='domcontentloaded')
+            expect(ip.locator('h1 em')).to_have_text('Respete las dimensiones.')  # Spanish browser -> Spanish
+            assert ip.locator('#louvre-currency').count()==0  # no money: language menu only
+            ip.locator('#furniture-kind').select_option('table');ip.locator('#add-furniture').click()
+            ip.locator('#furniture-kind').select_option('chair');ip.locator('#add-furniture').click()
+            expect(ip.locator('#plan-view g[data-id]')).to_have_count(2)
+            expect(ip.locator('#plan-view')).to_contain_text('Mesa')
+            stored=ip.evaluate('JSON.parse(localStorage.getItem("'+KEY+'")).objects.map(o=>o.label)')
+            assert stored==['Table','Chaise'],stored  # stored names unchanged (French presets, compatible)
+            ip.locator('#room-width').fill('650')  # typed but not applied: must survive language changes
+            titles={'fr':'Configurer la pièce','en':'Set up the room','es':'Configurar la habitación','ar':'إعداد الغرفة',
+                    'pt':'Configurar a divisão','de':'Raum einrichten','it':'Configurare la stanza'}
+            chairs={'fr':'Chaise','en':'Chair','es':'Silla','ar':'كرسي','pt':'Cadeira','de':'Stuhl','it':'Sedia'}
+            for lang in ['fr','en','es','ar','pt','de','it']:
+                ip.locator('#louvre-lang').select_option(lang)
+                assert ip.evaluate('() => document.documentElement.dir')==('rtl' if lang=='ar' else 'ltr')
+                wide=ip.evaluate('''() => document.documentElement.scrollWidth <= innerWidth + 2 ? [] :
+                  [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 2)
+                    .slice(0, 5).map((e) => `${e.tagName}.${e.className} « ${(e.textContent || '').trim().slice(0, 40)} »`)''')
+                assert not wide,f'débordement en {lang} : {wide}'
+                expect(ip.locator('h2').first).to_have_text(titles[lang])
+                expect(ip.locator('#plan-view')).to_contain_text(chairs[lang])
+                expect(ip.locator('#selected-id option:checked')).to_contain_text(chairs[lang])
+                assert ip.locator('#room-width').input_value()=='650'
+            assert ip.evaluate('() => LouvreI18n.missing()')==[],ip.evaluate('() => LouvreI18n.missing()')
+            # Translated core errors (field names and furniture names) and translated SVG export.
+            ip.locator('#louvre-lang').select_option('it')
+            ip.locator('#edit-x').fill('0');ip.locator('#apply-furniture').click()
+            expect(ip.locator('#feedback')).to_contain_text('Collisione tra «Sedia» e «Tavolo»')
+            ip.locator('#louvre-lang').select_option('de')
+            ip.locator('#room-width').fill('100');ip.locator('#resize-room').click()
+            expect(ip.locator('#feedback')).to_have_text('Breite: ganze Zahl von 200 bis 1500 cm erforderlich')
+            with ip.expect_download() as d:ip.locator('#export-svg').click()
+            exported=pathlib.Path(d.value.path()).read_text(encoding='utf-8')
+            assert '<title>RoomSketch — Raumplan</title>' in exported and '>Tisch</text>' in exported,exported[:300]
+            # Applying with the translated default name keeps the stored French preset.
+            ip.locator('#edit-x').fill('300');ip.locator('#apply-furniture').click()
+            assert ip.evaluate('JSON.parse(localStorage.getItem("'+KEY+'")).objects[1].label')=='Chaise'
+            assert not errors,errors
             browser.close()
-        print('BROWSER PASS RoomSketch: metric scale, collisions, 90° rotation, keyboard, drag, SVG XML, JSON, XSS, invalid backups, quota, A4 print, mobile 390px, offline')
+        print('BROWSER PASS RoomSketch: metric scale, collisions, 90° rotation, keyboard, drag, SVG XML, JSON, XSS, invalid backups, quota, A4 print, mobile 390px, offline, 7 languages, RTL, translated SVG')
     finally:
         server.shutdown()
         server.server_close()

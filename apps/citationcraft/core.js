@@ -7,57 +7,59 @@ const BIB_FIELDS=Object.freeze({author:'authors',title:'title',year:'year',journ
 const RIS_TYPES=Object.freeze({JOUR:'article',BOOK:'book',CONF:'inproceedings',GEN:'misc'});
 const TO_RIS=Object.freeze({article:'JOUR',book:'BOOK',inproceedings:'CONF',misc:'GEN'});
 const enc=new TextEncoder();
-function fail(s){throw Error(s);}
+// Erreurs sous forme de clés traduisibles : « err.cle » ou « err.cle|{"param":…} » (voir messages.js).
+function fail(key,params){throw Error(params?key+'|'+JSON.stringify(params):key);}
+const code=(key,params)=>key+'|'+JSON.stringify(params); // avertissement traduisible
 function bytes(s){return enc.encode(s).length;}
-function source(s){if(typeof s!=='string'||bytes(s)>MAX_BYTES)fail('Fichier trop volumineux (512 Ko maximum)');return s.replace(/^\uFEFF/,'');}
+function source(s){if(typeof s!=='string'||bytes(s)>MAX_BYTES)fail('err.fileBig');return s.replace(/^\uFEFF/,'');}
 function field(s,name,required=false){
- if(typeof s!=='string'||s.length>MAX_FIELD||/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/.test(s))fail('Champ invalide : '+name);
- const t=s.trim();if(required&&!t)fail('Champ requis : '+name);return t;
+ if(typeof s!=='string'||s.length>MAX_FIELD||/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/.test(s))fail('err.field',{field:name});
+ const t=s.trim();if(required&&!t)fail('err.required',{field:name});return t;
 }
 function normalize(raw){
- if(!raw||typeof raw!=='object'||Array.isArray(raw)||Object.keys(raw).some(k=>!FIELDS.includes(k)))fail('Référence invalide ou champ non reconnu');
- const id=field(raw.id,'clé',true);
- if(!/^[A-Za-z0-9_:-]{1,72}$/.test(id))fail('Clé : lettres, chiffres, tirets, deux-points ou soulignements (72 maximum)');
- if(!TYPES.includes(raw.type))fail('Type bibliographique non pris en charge');
- if(!Array.isArray(raw.authors)||raw.authors.length>30)fail('Liste des auteurs invalide');
- const authors=raw.authors.map(v=>field(v,'auteur',true));
- const result={id,type:raw.type,authors,title:field(raw.title,'titre',true)};
+ if(!raw||typeof raw!=='object'||Array.isArray(raw)||Object.keys(raw).some(k=>!FIELDS.includes(k)))fail('err.refInvalid');
+ const id=field(raw.id,'id',true);
+ if(!/^[A-Za-z0-9_:-]{1,72}$/.test(id))fail('err.key',{max:72});
+ if(!TYPES.includes(raw.type))fail('err.type');
+ if(!Array.isArray(raw.authors)||raw.authors.length>30)fail('err.authors',{max:30});
+ const authors=raw.authors.map(v=>field(v,'author',true));
+ const result={id,type:raw.type,authors,title:field(raw.title,'title',true)};
  for(const key of ['year','source','publisher','volume','number','pages','doi','url','note'])result[key]=field(raw[key]??'',key);
- if(result.year&&!/^\d{4}$/.test(result.year))fail('Année : quatre chiffres ou valeur vide (s. d.)');
+ if(result.year&&!/^\d{4}$/.test(result.year))fail('err.year');
  if(result.doi){
   result.doi=result.doi.replace(/^https?:\/\/(?:dx\.)?doi\.org\//i,'');
-  if(!/^10\.\d{4,9}\/[^\s<>"]+$/i.test(result.doi))fail('DOI invalide (ex. 10.1234/abc)');
+  if(!/^10\.\d{4,9}\/[^\s<>"]+$/i.test(result.doi))fail('err.doi');
  }
  if(result.url){
-  let url;try{url=new URL(result.url);}catch(e){fail('URL invalide');}
-  if(!['http:','https:'].includes(url.protocol)||!url.hostname||url.username||url.password)fail('URL HTTP(S) requise, sans identifiants');
+  let url;try{url=new URL(result.url);}catch(e){fail('err.url');}
+  if(!['http:','https:'].includes(url.protocol)||!url.hostname||url.username||url.password)fail('err.urlProto');
   result.url=url.href;
  }
  return result;
 }
 function validateLibrary(input){
- if(!input||typeof input!=='object'||Array.isArray(input)||input.version!==1||!Array.isArray(input.items)||Object.keys(input).some(k=>!['version','items'].includes(k)))fail('Sauvegarde JSON v1 invalide');
- if(input.items.length>MAX_ITEMS)fail('Limite de 200 références dépassée');
+ if(!input||typeof input!=='object'||Array.isArray(input)||input.version!==1||!Array.isArray(input.items)||Object.keys(input).some(k=>!['version','items'].includes(k)))fail('err.backup');
+ if(input.items.length>MAX_ITEMS)fail('err.tooMany',{max:MAX_ITEMS});
  const seen=new Set(),dois=new Set(),items=[];
  for(const raw of input.items){
   const item=normalize(raw),key=item.id.toLowerCase();
-  if(seen.has(key))fail('Clé bibliographique dupliquée : '+item.id);
+  if(seen.has(key))fail('err.dupKey',{id:item.id});
   seen.add(key);
   if(item.doi){
    const d=item.doi.toLowerCase();
-   if(dois.has(d))fail('DOI dupliqué : '+item.doi);
+   if(dois.has(d))fail('err.dupDoi',{doi:item.doi});
    dois.add(d);
   }
   items.push(item);
  }
  const clean={version:1,items};
- if(bytes(JSON.stringify(clean))>MAX_BYTES)fail('Bibliothèque trop volumineuse (512 Ko maximum)');
+ if(bytes(JSON.stringify(clean))>MAX_BYTES)fail('err.libBig');
  return clean;
 }
 function readerBib(s){
  const value=source(s);let i=0;const warnings=[],items=[];
  const skip=()=>{while(i<value.length&&/\s/.test(value[i]))i++;};
- const ident=()=>{const m=/^[A-Za-z][A-Za-z0-9_-]*/.exec(value.slice(i));if(!m)fail('Identifiant BibTeX attendu à la position '+i);i+=m[0].length;return m[0].toLowerCase();};
+ const ident=()=>{const m=/^[A-Za-z][A-Za-z0-9_-]*/.exec(value.slice(i));if(!m)fail('err.bibIdent',{pos:i});i+=m[0].length;return m[0].toLowerCase();};
  function dataValue(){
   skip();const marker=value[i];let out='';
   if(marker==='{'){
@@ -69,7 +71,7 @@ function readerBib(s){
     else if(c==='}'){depth--;if(depth)out+=c;}
     else out+=c;
    }
-   if(depth)fail('Accolades BibTeX non fermées');
+   if(depth)fail('err.bibBraces');
   }else if(marker==='"'){
    i++;let closed=false;
    while(i<value.length){
@@ -78,77 +80,77 @@ function readerBib(s){
     if(c==='"'){closed=true;break;}
     out+=c;
    }
-   if(!closed)fail('Guillemets BibTeX non fermés');
+   if(!closed)fail('err.bibQuotes');
   }else{
    // Bare values permitted only for numeric years; @string/macros not interpreted.
    const start=i;
    while(i<value.length&&!/[\s,})]/.test(value[i]))i++;
    out=value.slice(start,i);
-   if(!/^\d{4}$/.test(out))fail('Macro BibTeX non prise en charge : '+out);
+   if(!/^\d{4}$/.test(out))fail('err.bibMacro',{value:out});
   }
   return out.trim();
  }
  while(true){
   skip();if(i>=value.length)break;
-  if(value[i]!=='@')fail('Déclaration @ BibTeX attendue à la position '+i);
+  if(value[i]!=='@')fail('err.bibAt',{pos:i});
   i++;const type=ident();
-  if(!TYPES.includes(type))fail('Type BibTeX non pris en charge : '+type);
+  if(!TYPES.includes(type))fail('err.bibType',{type});
   skip();const open=value[i++],close=open==='{'?'}':open==='('?')':null;
-  if(!close)fail('Début d’entrée BibTeX invalide');
+  if(!close)fail('err.bibStart');
   skip();const start=i;while(i<value.length&&value[i]!==','&&value[i]!==close)i++;
-  const id=value.slice(start,i).trim();if(value[i]!==',')fail('Entrée sans liste de champs : '+id);
+  const id=value.slice(start,i).trim();if(value[i]!==',')fail('err.bibNoFields',{id});
   i++;
   const raw={id,type,authors:[],title:''};
   const used=new Set();
   while(true){
    skip();if(value[i]===close){i++;break;}
-   if(i>=value.length)fail('Entrée BibTeX non fermée');
+   if(i>=value.length)fail('err.bibUnclosed');
    const name=ident();skip();
-   if(value[i++]!=='=')fail('Signe = attendu après '+name);
+   if(value[i++]!=='=')fail('err.bibEquals',{name});
    const v=dataValue();
-   if(used.has(name))fail('Champ BibTeX dupliqué : '+name);
+   if(used.has(name))fail('err.bibDupField',{name});
    used.add(name);
    if(Object.hasOwn(BIB_FIELDS,name)){
     const target=BIB_FIELDS[name];
     if(name==='author')raw.authors=v?v.split(/\s+and\s+/i).map(x=>x.trim()):[];
     else if(name==='journal'||name==='booktitle'){
-     if(raw.source&&raw.source!==v)fail('journal et booktitle incompatibles');
+     if(raw.source&&raw.source!==v)fail('err.bibSourceConflict');
      raw.source=v;
     }else raw[target]=v;
-   }else warnings.push('Champ BibTeX ignoré pour '+id+' : '+name);
+   }else warnings.push(code('warn.bib',{id,name}));
    skip();
    if(value[i]===','){i++;continue;}
    if(value[i]===close){i++;break;}
-   fail('Virgule ou fin d’entrée attendue pour '+id);
+   fail('err.bibComma',{id});
   }
   items.push(normalize(raw));
-  if(items.length>MAX_ITEMS)fail('Plus de 200 références');
+  if(items.length>MAX_ITEMS)fail('err.tooMany',{max:MAX_ITEMS});
  }
- if(!items.length)fail('Aucune entrée BibTeX trouvée');
+ if(!items.length)fail('err.bibEmpty');
  return {library:validateLibrary({version:1,items}),warnings};
 }
 function readerRis(s){
  const value=source(s),lines=value.replace(/\r\n?/g,'\n').split('\n');
  let raw=null,entries=[],warnings=[],number=0,sp='',ep='';
  function finish(){
-  if(!raw)fail('RIS : ER sans TY');
+  if(!raw)fail('err.risErNoTy');
   if(sp||ep)raw.pages=sp&&ep?sp+'-'+ep:(sp||ep);
   entries.push(normalize(raw));
-  if(entries.length>MAX_ITEMS)fail('Plus de 200 références');
+  if(entries.length>MAX_ITEMS)fail('err.tooMany',{max:MAX_ITEMS});
   raw=null;sp='';ep='';
  }
  for(const line of lines){
   number++;
   if(!line.trim())continue;
   const m=/^([A-Z][A-Z0-9])  -(?: ?)(.*)$/.exec(line);
-  if(!m)fail('Ligne RIS invalide '+number+' (tags XX  - valeur attendus)');
+  if(!m)fail('err.risLine',{line:number});
   const [,tag,body]=m;const v=body.trim();
   if(tag==='TY'){
-   if(raw)fail('RIS : entrée précédente sans ER (ligne '+number+')');
-   if(!Object.hasOwn(RIS_TYPES,v))fail('Type RIS non pris en charge : '+v);
+   if(raw)fail('err.risNoEr',{line:number});
+   if(!Object.hasOwn(RIS_TYPES,v))fail('err.risType',{type:v});
    raw={id:'ref'+(entries.length+1),type:RIS_TYPES[v],authors:[],title:''};continue;
   }
-  if(!raw)fail('RIS : TY doit précéder les champs (ligne '+number+')');
+  if(!raw)fail('err.risTyFirst',{line:number});
   if(tag==='ER'){finish();continue;}
   if(['AU','A1'].includes(tag))raw.authors.push(v);
   else if(['TI','T1'].includes(tag))raw.title=v;
@@ -163,10 +165,10 @@ function readerRis(s){
   else if(tag==='UR')raw.url=v;
   else if(tag==='N1')raw.note=v;
   else if(tag==='ID')raw.id=v;
-  else warnings.push('Champ RIS ignoré ligne '+number+' : '+tag);
+  else warnings.push(code('warn.ris',{line:number,tag}));
  }
- if(raw)fail('RIS : entrée sans balise ER');
- if(!entries.length)fail('Aucune entrée RIS trouvée');
+ if(raw)fail('err.risUnclosed');
+ if(!entries.length)fail('err.risEmpty');
  return {library:validateLibrary({version:1,items:entries}),warnings};
 }
 function emitBib(lib){
@@ -183,13 +185,13 @@ function emitBib(lib){
       for(let i=0;i<value.length;i++){
        if(value[i]==='\\'){i++;continue;}
        if(value[i]==='{')depth++;
-       if(value[i]==='}'){depth--;if(depth<0)fail('Accolade non équilibrée dans '+key);}
+       if(value[i]==='}'){depth--;if(depth<0)fail('err.bibUnbalanced',{name:key});}
       }
-      if(depth)fail('Accolade non équilibrée dans '+key);
+      if(depth)fail('err.bibUnbalanced',{name:key});
       return '  '+key+' = {'+value+'}';
     });
   // For BOOK/MISC we have no standard source mapping: do not silently discard.
-  if(r.source&&!label[r.type])fail('Le champ revue/conférence ne peut pas être exporté pour '+r.type);
+  if(r.source&&!label[r.type])fail('err.bibSourceType',{type:r.type});
   out.push('@'+r.type+'{'+r.id+',\n'+parts.join(',\n')+'\n}');
  }
  return out.join('\n\n')+(out.length?'\n':'');
@@ -197,7 +199,7 @@ function emitBib(lib){
 function emitRis(lib){
  const {items}=validateLibrary(lib),lines=[];
  for(const r of items){
-  const add=(code,v)=>{if(v){if(/[\r\n\u2028\u2029]/u.test(v))fail('RIS : champ multiligne non exportable sans perte ('+code+'). Utilisez BibTeX ou JSON.');lines.push(code+'  - '+v);}};
+  const add=(code,v)=>{if(v){if(/[\r\n\u2028\u2029]/u.test(v))fail('err.risMultiline',{code});lines.push(code+'  - '+v);}};
   add('TY',TO_RIS[r.type]);add('ID',r.id);
   for(const author of r.authors)add('AU',author);
   add('TI',r.title);add('PY',r.year);
@@ -211,10 +213,13 @@ function emitRis(lib){
  }
  return lines.join('\r\n');
 }
-function preview(ref){
- const r=normalize(ref);const authors=r.authors.join(', ')||'Auteur non indiqué';
- const when=r.year||'s. d.';
- const extra=[r.source,r.volume&&(r.number?r.volume+'('+r.number+')':r.volume),r.pages,r.publisher,r.doi?'DOI : '+r.doi:''].filter(Boolean).join(', ');
+// Aperçu auteur-date indicatif. Les mentions conventionnelles (« s. d. » = sans date, auteur absent,
+// libellé DOI) suivent la langue de l'interface quand l'appli les fournit ; français par défaut.
+const PREVIEW_FR=Object.freeze({noAuthor:'Auteur non indiqué',noDate:'s. d.',doi:'DOI : '});
+function preview(ref,labels=PREVIEW_FR){
+ const r=normalize(ref);const authors=r.authors.join(', ')||labels.noAuthor;
+ const when=r.year||labels.noDate;
+ const extra=[r.source,r.volume&&(r.number?r.volume+'('+r.number+')':r.volume),r.pages,r.publisher,r.doi?labels.doi+r.doi:''].filter(Boolean).join(', ');
  return authors+' ('+when+'). '+r.title+'.'+(extra?' '+extra+'.':'');
 }
 root.CitationCore=Object.freeze({MAX_ITEMS,MAX_BYTES,MAX_FIELD,TYPES,FIELDS,normalize,validateLibrary,readerBib,readerRis,emitBib,emitRis,preview,bytes});

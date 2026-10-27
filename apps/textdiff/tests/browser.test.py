@@ -16,7 +16,7 @@ def run():
     try:
         with sync_playwright() as p:
             browser=p.chromium.launch(headless=True,executable_path=os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium'),args=['--no-sandbox'])
-            context=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True)
+            context=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True,locale='fr-FR')
             page=context.new_page();errors=[];external=[]
             origin=f'http://127.0.0.1:{server.server_port}/'
             page.on('pageerror', lambda e: errors.append(str(e)))
@@ -39,7 +39,7 @@ def run():
             with page.expect_download() as download:
                 page.locator('#export').click()
             d=download.value
-            assert d.suggested_filename=='textdiff-rapport.txt'
+            assert d.suggested_filename=='textdiff-report.txt'
             report=pathlib.Path(d.path()).read_text(encoding='utf-8')
             assert '- "Commande : 8"' in report
             assert '+ "Commande : 12"' in report
@@ -141,8 +141,43 @@ def run():
             assert page.locator('#original').input_value() == ''
             assert not errors,errors
             assert not external,external
+            context.set_offline(False)
+
+            # --- Langues : détection du navigateur, 7 langues complètes, arabe de droite à gauche (pas d'argent : menu langue seul).
+            intl=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True,locale='es-MX')
+            ip=intl.new_page()
+            ip.on('pageerror', lambda e: errors.append(str(e)))
+            ip.goto(origin,wait_until='domcontentloaded')
+            assert ip.locator('h1').inner_text().startswith('Detecta cada cambio.'), ip.locator('h1').inner_text()  # navigateur espagnol
+            assert ip.locator('#louvre-currency').count()==0
+            ip.locator('#example').click()
+            assert [ip.locator('#'+i).inner_text() for i in ['stat-original','stat-revised','stat-add','stat-remove','stat-blocks']]==['4','5','3','2','2']
+            assert 'Pedido: 12' in ip.locator('#result').inner_text()
+            titles={'fr':'Repérez chaque changement.','en':'Spot every change.','es':'Detecta cada cambio.','ar':'التقط كل تغيير.','pt':'Detete cada alteração.','de':'Jede Änderung erkennen.','it':'Individua ogni modifica.'}
+            for lang in ['fr','en','es','ar','pt','de','it']:
+                ip.locator('#louvre-lang').select_option(lang)
+                assert ip.evaluate('() => document.documentElement.dir')==('rtl' if lang=='ar' else 'ltr')
+                wide=ip.evaluate('''() => document.documentElement.scrollWidth <= innerWidth + 2 ? [] :
+                  [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 2)
+                    .slice(0, 5).map((e) => `${e.tagName}.${e.className} « ${(e.textContent || '').trim().slice(0, 40)} »`)''')
+                assert not wide, f'débordement en {lang} : {wide}'
+                assert ip.locator('h1').inner_text().startswith(titles[lang]),(lang,ip.locator('h1').inner_text())
+                assert 'Pedido: 12' in ip.locator('#revised').input_value()  # textes saisis conservés
+                assert ip.locator('.diff-table tbody tr').count()==7  # résultat conservé et réaffiché
+            missing=ip.evaluate('() => LouvreI18n.missing()')
+            assert missing==[],missing
+            ip.locator('#louvre-lang').select_option('de')
+            assert ip.locator('.diff-table th').nth(1).inner_text()=='Ursprünglicher Text'
+            assert ip.locator('#stat-similarity').inner_text().replace('\u00a0',' ')=='44,44 %', ip.locator('#stat-similarity').inner_text()
+            with ip.expect_download() as dg:
+                ip.locator('#export').click()
+            rep=pathlib.Path(dg.value.path()).read_text(encoding='utf-8')
+            assert rep.startswith('TextDiff — Vergleichsbericht\nModus: Zeilen\n') and '+ "Pedido: 12"' in rep, rep[:200]
+            ip.locator('#original').fill('x\n'*701);ip.locator('#compare').click()
+            assert 'Zu viele Zeilen (höchstens 700 pro Text)' in ip.locator('#feedback').inner_text(), ip.locator('#feedback').inner_text()
+            assert not errors,errors
             browser.close()
-        print('BROWSER PASS TextDiff: line/word LCS, download, ignored-text preservation, stale invalidation, 700-unit guard, XSS, local imports, reset, mobile 390px, offline')
+        print('BROWSER PASS TextDiff: line/word LCS, download, ignored-text preservation, stale invalidation, 700-unit guard, XSS, local imports, reset, mobile 390px, offline, 7 languages, RTL')
     finally:
         server.shutdown()
         server.server_close()

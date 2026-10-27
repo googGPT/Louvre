@@ -15,7 +15,7 @@ def run():
         with sync_playwright() as p:
             exe=os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium') if os.path.exists(os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium')) else None
             b=p.chromium.launch(headless=True,executable_path=exe,args=['--no-sandbox'])
-            ctx=b.new_context(viewport={'width':390,'height':844},accept_downloads=True)
+            ctx=b.new_context(viewport={'width':390,'height':844},accept_downloads=True,locale='fr-FR')
             page=ctx.new_page();errors=[]
             page.on('pageerror',lambda e:errors.append(str(e)))
             page.goto(f'http://127.0.0.1:{srv.server_port}/',wait_until='domcontentloaded')
@@ -74,8 +74,50 @@ def run():
             page.wait_for_function('() => (document.querySelectorAll(".guest").length===3)')
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth+2')
             assert not errors,errors
+            ctx.set_offline(False)
+
+            # --- Languages: 7 complete languages, RTL Arabic, no overflow, chosen currency, translated replies and CSV.
+            intl=b.new_context(viewport={'width':390,'height':844},locale='de-CH',accept_downloads=True)
+            ip=intl.new_page()
+            ip.on('pageerror',lambda e:errors.append(str(e)))
+            ip.on('dialog',lambda d:d.accept())
+            ip.goto(f'http://127.0.0.1:{srv.server_port}/',wait_until='domcontentloaded')
+            assert ip.locator('h1 em').inner_text()=='Ohne Rechnerei.'  # German browser -> German
+            assert ip.evaluate('() => LouvreI18n.currency')=='CHF'  # Switzerland -> Swiss franc
+            ip.locator('#demo').click()
+            ip.wait_for_function('() => (document.querySelectorAll(".guest").length===4)')
+            assert 'CHF' in ip.locator('#budget-range').inner_text()
+            ip.locator('[name=guest]').fill('Zoé')  # typed, not saved: kept across language changes
+            pills={'fr':'✓ Confirmé','en':'✓ Confirmed','es':'✓ Confirmado','ar':'✓ مؤكَّد','pt':'✓ Confirmado','de':'✓ Bestätigt','it':'✓ Confermato'}
+            for lang in ['fr','en','es','ar','pt','de','it']:
+                ip.locator('#louvre-lang').select_option(lang)
+                assert ip.evaluate('() => document.documentElement.dir')==('rtl' if lang=='ar' else 'ltr')
+                wide=ip.evaluate('''() => document.documentElement.scrollWidth <= innerWidth + 2 ? [] :
+                  [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 2)
+                    .slice(0, 5).map((e) => `${e.tagName}.${e.className} « ${(e.textContent || '').trim().slice(0, 40)} »`)''')
+                assert not wide,f'débordement en {lang} : {wide}'
+                assert ip.locator('.guest .pill.yes').first.inner_text()==pills[lang],lang
+                assert ip.locator('[name=guest]').input_value()=='Zoé'
+                assert ip.locator('.guest').count()==4
+            assert ip.evaluate('() => LouvreI18n.missing()')==[],ip.evaluate('() => LouvreI18n.missing()')
+            ip.locator('#louvre-lang').select_option('en')
+            ip.locator('#louvre-currency').select_option('USD')
+            assert '$' in ip.locator('#budget-range').inner_text()
+            assert ip.locator('#cur-symbol').inner_text()=='US$' or ip.locator('#cur-symbol').inner_text()=='$'
+            ip.locator('#louvre-lang').select_option('it')
+            with ip.expect_download() as dl:
+                ip.locator('#export-csv').click()
+            csv=Path(dl.value.path()).read_text(encoding='utf-8-sig')
+            assert csv.startswith('"Evento";"Invitato / gruppo"') and 'Budget unitario (USD)' in csv and '"sì"' in csv,csv[:200]
+            stored=ip.evaluate("() => JSON.parse(localStorage.getItem('louvre-factory:eventcount:v1')).records.map(r=>r.reply)")
+            assert sorted(set(stored))==['non','oui','peut-être'],stored  # stored values unchanged
+            ip.locator('#louvre-lang').select_option('de')
+            ip.locator('[name=event]').fill('demo-geburtstag');ip.locator('[name=guest]').fill('camille')
+            ip.locator('#save-button').click()
+            assert ip.locator('#status').inner_text()=='Dieser Gast ist für diese Veranstaltung bereits erfasst. Bearbeiten Sie den vorhandenen Eintrag.'
+            assert not errors,errors
             b.close()
-            print('BROWSER PASS: RSVP and budgets, normalization, duplicate prevention, event isolation, quick reply, CSV, JSON, rejected import, mobile 390px, PWA offline')
+            print('BROWSER PASS: RSVP and budgets, normalization, duplicate prevention, event isolation, quick reply, CSV, JSON, rejected import, mobile 390px, PWA offline, 7 languages, RTL, currency, translated CSV')
     finally:
         srv.shutdown();srv.server_close()
 if __name__=='__main__':run()

@@ -24,7 +24,7 @@ def main():
         with sync_playwright() as p:
             exe = os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium')
             browser = p.chromium.launch(headless=True, executable_path=exe if os.path.exists(exe) else None, args=['--no-sandbox'])
-            context = browser.new_context(viewport={'width': 390, 'height': 844}, accept_downloads=True)
+            context = browser.new_context(viewport={'width': 390, 'height': 844}, accept_downloads=True, locale='fr-FR')
             page = context.new_page()
             errors, external = [], []
             page.on('pageerror', lambda e: errors.append(str(e)))
@@ -88,7 +88,7 @@ def main():
             page.locator('#add').click()
             assert page.evaluate(f"() => localStorage.getItem('{KEY}')") == 'oups'
             page.locator('#import').set_input_files({'name': 'b.json', 'mimeType': 'application/json', 'buffer': backup.encode('utf-8')})
-            expect(page.locator('#backup-status')).to_contain_text('2 habitude(s)')
+            expect(page.locator('#backup-status')).to_contain_text('2 habitudes')
 
             # Hors ligne.
             page.reload()
@@ -100,8 +100,40 @@ def main():
 
             assert not external, external
             assert not errors, errors
+
+            # --- Langues : détection, 7 langues complètes, arabe RTL, saisie conservée, pas de menu devise.
+            intl = browser.new_context(viewport={'width': 390, 'height': 844}, locale='it-IT')
+            ip = intl.new_page()
+            ip.on('pageerror', lambda e: errors.append(str(e)))
+            ip.goto(origin)
+            expect(ip.locator('h1')).to_have_text('Un piccolo passo ogni giorno, una serie che cresce.')
+            assert ip.locator('#louvre-currency').count() == 0
+            ip.locator('#sample').click()
+            expect(ip.locator('.habit')).to_have_count(2)
+            expect(ip.locator('.habit').nth(1)).to_contain_text('3 volte a settimana')
+            ip.locator('[name=name]').fill('Bozza')
+            heads = {'fr': 'Nouvelle habitude', 'en': 'New habit', 'es': 'Nuevo hábito', 'ar': 'عادة جديدة', 'pt': 'Novo hábito', 'de': 'Neue Gewohnheit', 'it': 'Nuova abitudine'}
+            for lang in ['fr', 'en', 'es', 'ar', 'pt', 'de', 'it']:
+                ip.locator('#louvre-lang').select_option(lang)
+                assert ip.evaluate('() => document.documentElement.dir') == ('rtl' if lang == 'ar' else 'ltr')
+                wide = ip.evaluate('''() => document.documentElement.scrollWidth <= innerWidth + 2 ? [] :
+                  [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 2)
+                    .slice(0, 5).map((e) => `${e.tagName}.${e.className} « ${(e.textContent || '').trim().slice(0, 40)} »`)''')
+                assert not wide, f'débordement en {lang} : {wide}'
+                expect(ip.locator('#h-form')).to_have_text(heads[lang])
+                expect(ip.locator('.habit')).to_have_count(2)
+                assert ip.locator('[name=name]').input_value() == 'Bozza'
+            assert ip.evaluate('() => LouvreI18n.missing()') == [], ip.evaluate('() => LouvreI18n.missing()')
+            ip.locator('#louvre-lang').select_option('en')
+            expect(ip.locator('.habit').nth(1)).to_contain_text('3 times a week')
+            expect(ip.locator('.habit').first.locator('.mini')).to_contain_text('Best streak')
+            ip.locator('#louvre-lang').select_option('pt')
+            ip.locator('[name=name]').fill('')
+            ip.locator('#add').click()
+            expect(ip.locator('#form-status')).to_have_text('Nome do hábito obrigatório')
+            assert not errors, errors
             browser.close()
-        print('BROWSER PASS HabitSteps: create, check/uncheck, catch-up via grid, streaks, weekly goal, rename, archive, backup/restore, corrupted storage, offline, mobile')
+        print('BROWSER PASS HabitSteps: create, check/uncheck, catch-up via grid, streaks, weekly goal, rename, archive, backup/restore, corrupted storage, offline, mobile, 7 languages, RTL')
     finally:
         server.shutdown()
         server.server_close()

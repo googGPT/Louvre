@@ -21,13 +21,13 @@ test('série quotidienne : aujourd\'hui pas encore pointé ne casse pas la séri
   assert.equal(C.streaks(daily(['2026-10-25', '2026-10-26']), T).current, 0); // hier manqué : série cassée
   const s = C.streaks(daily(['2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04', '2026-10-05', '2026-10-27', '2026-10-28']), T);
   assert.equal(s.best, 5);
-  assert.equal(s.unit, 'jour');
+  assert.equal(s.unit, 'day');
 });
 
 test('série hebdomadaire : semaines réussies consécutives, semaine en cours « en jeu »', () => {
   const checks = ['2026-10-06', '2026-10-13', '2026-10-14', '2026-10-15', '2026-10-20', '2026-10-22', '2026-10-26'];
   const h = weekly(2, checks);
-  assert.deepEqual(C.streaks(h, T), { current: 2, best: 2, unit: 'semaine' }); // semaines du 12 et du 19
+  assert.deepEqual(C.streaks(h, T), { current: 2, best: 2, unit: 'week' }); // semaines du 12 et du 19
   assert.equal(C.weekProgress(h, T), 1);
   assert.equal(C.streaks(weekly(2, [...checks, '2026-10-27']), T).current, 3); // semaine en cours réussie
 });
@@ -47,8 +47,8 @@ test('pointer : bascule, pas de futur, pas trop ancien, rattrapage avant la cré
   h = C.toggle(h, '2026-10-26', T);
   assert.deepEqual(h.checks, ['2026-10-26', T]); // toujours triés
   assert.deepEqual(C.toggle(h, T, T).checks, ['2026-10-26']); // second appui : annule
-  assert.throws(() => C.toggle(h, '2026-10-29', T), /futur/);
-  assert.throws(() => C.toggle(h, '2025-01-01', T), /ancienne/);
+  assert.throws(() => C.toggle(h, '2026-10-29', T), /err\.future/);
+  assert.throws(() => C.toggle(h, '2025-01-01', T), /err\.tooOld/);
   assert.equal(C.toggle(h, '2026-10-15', T).created, '2026-10-15');
 });
 
@@ -63,15 +63,15 @@ test('grille de 12 semaines : dernière colonne = semaine en cours', () => {
 });
 
 test('saisies refusées et sauvegarde validée', () => {
-  assert.throws(() => C.makeHabit({ name: ' ', goal: { type: 'daily' } }, T, 'habit-0003'), /obligatoire/);
-  assert.throws(() => C.makeHabit({ name: 'X', goal: { type: 'weekly', times: 8 } }, T, 'habit-0003'), /1 à 7/);
-  assert.throws(() => C.makeHabit({ name: 'X', goal: { type: 'monthly' } }, T, 'habit-0003'), /inconnu/);
+  assert.throws(() => C.makeHabit({ name: ' ', goal: { type: 'daily' } }, T, 'habit-0003'), /^Error: err\.nameRequired$/);
+  assert.throws(() => C.makeHabit({ name: 'X', goal: { type: 'weekly', times: 8 } }, T, 'habit-0003'), /^Error: err\.weeklyTimes\|\{"min":1,"max":7\}$/);
+  assert.throws(() => C.makeHabit({ name: 'X', goal: { type: 'monthly' } }, T, 'habit-0003'), /err\.goalType/);
   const habits = [daily(['2026-10-27', T]), weekly(3, ['2026-10-26'])];
   assert.deepEqual(C.validateBackup(JSON.parse(C.backup(habits))), habits);
   const ok = { app: 'habitsteps', version: 1, habits };
-  assert.throws(() => C.validateBackup({ ...ok, app: 'x' }), /pas une sauvegarde/);
-  assert.throws(() => C.validateBackup({ ...ok, habits: [{ ...habits[0], checks: [T, '2026-10-27'] }] }), /triées/);
-  assert.throws(() => C.validateBackup({ ...ok, habits: [{ ...habits[0], checks: ['2026-08-01'] }] }), /après la création/);
-  assert.throws(() => C.validateBackup({ ...ok, habits: [{ ...habits[0], goal: { type: 'daily', times: 3 } }] }), /Objectif/);
-  assert.throws(() => C.validateBackup({ ...ok, habits: [habits[0], habits[0]] }), /double/);
+  assert.throws(() => C.validateBackup({ ...ok, app: 'x' }), /err\.notBackup/);
+  assert.throws(() => C.validateBackup({ ...ok, habits: [{ ...habits[0], checks: [T, '2026-10-27'] }] }), /err\.checks/);
+  assert.throws(() => C.validateBackup({ ...ok, habits: [{ ...habits[0], checks: ['2026-08-01'] }] }), /err\.checks/);
+  assert.throws(() => C.validateBackup({ ...ok, habits: [{ ...habits[0], goal: { type: 'daily', times: 3 } }] }), /err\.goal/);
+  assert.throws(() => C.validateBackup({ ...ok, habits: [habits[0], habits[0]] }), /err\.duplicate/);
 });

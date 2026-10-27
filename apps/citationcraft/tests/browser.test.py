@@ -17,7 +17,7 @@ def main():
     try:
         with sync_playwright() as p:
             browser=p.chromium.launch(headless=True,executable_path=os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium'),args=['--no-sandbox'])
-            context=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True)
+            context=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True,locale='fr-FR')
             page=context.new_page()
             errors=[];external=[]
             origin=f'http://127.0.0.1:{server.server_port}/'
@@ -126,7 +126,7 @@ def main():
             expect(page.locator('.reference-card')).to_have_count(1)
             expect(page.locator('.ref-top strong')).to_have_text('Économie et IA')
             assert any('Champ RIS ignoré' in d for d in dialogs)
-            assert '1 champ(s) ignoré(s)' in page.locator('#feedback').inner_text()
+            assert '1 champ ignoré' in page.locator('#feedback').inner_text()
 
             # Append duplicate DOI: reject whole batch with no partial import.
             page.locator('#import-format').select_option('bib')
@@ -198,8 +198,50 @@ def main():
             expect(page.locator('.reference-card')).to_have_count(1)
             assert not external,external
             assert not errors,errors
+            context.set_offline(False)
+
+            # --- Langues : détection, 7 langues complètes, arabe RTL, formats d'échange jamais traduits.
+            intl=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True,locale='es-MX')
+            ip=intl.new_page()
+            ip.on('pageerror',lambda e:errors.append(str(e)))
+            ip.on('dialog',lambda d:d.accept())
+            ip.goto(origin,wait_until='domcontentloaded')
+            expect(ip.locator('#form-title')).to_have_text('Añadir una referencia')
+            assert ip.locator('#louvre-currency').count()==0  # pas d'argent : menu langue seul
+            ip.locator('#ref-id').fill('Sans2020')
+            ip.locator('#ref-title').fill('Undated & anonymous')
+            ip.locator('#ref-doi').fill('10.1234/x.1')
+            ip.locator('#save').click()
+            expect(ip.locator('.reference-card')).to_have_count(1)
+            expect(ip.locator('.ref-preview')).to_have_text('Autor no indicado (s. f.). Undated & anonymous. DOI: 10.1234/x.1.')
+            with ip.expect_download() as d:ip.locator('#export-ris').click()
+            ris_es=pathlib.Path(d.value.path()).read_text(encoding='utf-8')
+            ip.locator('#ref-title').fill('Draft kept')  # saisie en cours conservée au changement de langue
+            no_date={'fr':'s. d.','en':'n.d.','es':'s. f.','ar':'د.ت.','pt':'s.d.','de':'o. J.','it':'s.d.'}
+            heads={'fr':'Ma bibliothèque','en':'My library','es':'Mi biblioteca','ar':'مكتبتي','pt':'A minha biblioteca','de':'Meine Bibliothek','it':'La mia biblioteca'}
+            for lang in ['fr','en','es','ar','pt','de','it']:
+                ip.locator('#louvre-lang').select_option(lang)
+                assert ip.evaluate('() => document.documentElement.dir')==('rtl' if lang=='ar' else 'ltr')
+                wide=ip.evaluate('''() => document.documentElement.scrollWidth <= innerWidth + 2 ? [] :
+                  [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 2)
+                    .slice(0, 5).map((e) => `${e.tagName}.${e.className} « ${(e.textContent || '').trim().slice(0, 40)} »`)''')
+                assert not wide,f'débordement en {lang} : {wide}'
+                expect(ip.locator('#library-title')).to_have_text(heads[lang])
+                assert '('+no_date[lang]+')' in ip.locator('.ref-preview').inner_text(),(lang,ip.locator('.ref-preview').inner_text())
+                assert ip.locator('#ref-title').input_value()=='Draft kept'
+            assert ip.evaluate('() => LouvreI18n.missing()')==[],ip.evaluate('() => LouvreI18n.missing()')
+            # Le format RIS exporté est identique quelle que soit la langue.
+            with ip.expect_download() as d:ip.locator('#export-ris').click()
+            assert pathlib.Path(d.value.path()).read_text(encoding='utf-8')==ris_es
+            # Erreur du cœur traduite, nom de champ compris.
+            ip.locator('#louvre-lang').select_option('de')
+            ip.locator('#ref-id').fill('X1'); ip.locator('#ref-title').fill('  ')
+            ip.locator('#save').click()
+            expect(ip.locator('#feedback')).to_have_text('Pflichtfeld: Titel')
+            expect(ip.locator('#count')).to_have_text('1 / 200 Quelle')
+            assert not errors,errors
             browser.close()
-        print('BROWSER PASS CitationCraft: transactional CRUD, real BibTeX/RIS/JSON, unknown-field warning, duplicate rejection, malicious URL/XSS, corrupt recovery, quota, mobile 390px, offline')
+        print('BROWSER PASS CitationCraft: transactional CRUD, real BibTeX/RIS/JSON, unknown-field warning, duplicate rejection, malicious URL/XSS, corrupt recovery, quota, mobile 390px, offline, 7 languages, RTL, untranslated exchange formats')
     finally:
         server.shutdown();server.server_close()
 

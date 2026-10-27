@@ -17,7 +17,7 @@ try:
     with sync_playwright() as p:
         executable = os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium') if os.path.isfile(os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium')) else None
         browser = p.chromium.launch(headless=True, executable_path=executable,args=['--no-sandbox'])
-        page=browser.new_page(viewport={'width':390,'height':844},accept_downloads=True)
+        page=browser.new_page(viewport={'width':390,'height':844},accept_downloads=True,locale='fr-FR')
         page.set_default_timeout(16000)
         errors=[]
         page.on('pageerror',lambda error: errors.append(str(error)))
@@ -89,8 +89,44 @@ try:
         page.wait_for_function("() => (document.querySelectorAll('#items .item').length === 2)")
         assert page.evaluate('document.documentElement.scrollWidth <= window.innerWidth+2')
         assert not errors,errors
+        page.context.set_offline(False)
+
+        # --- Langues : détection du navigateur, 7 langues complètes, arabe de droite à gauche (pas d'argent : menu langue seul).
+        ip=browser.new_page(viewport={'width':390,'height':844},locale='it-IT',accept_downloads=True)
+        ip.on('pageerror',lambda error: errors.append(str(error)))
+        ip.goto(f'http://127.0.0.1:{server.server_port}/',wait_until='domcontentloaded')
+        assert ip.locator('h1').inner_text().startswith("L'ora giusta."), ip.locator('h1').inner_text()  # navigateur italien
+        assert ip.locator('#louvre-currency').count()==0  # appli sans argent
+        ip.locator('[name=meeting]').fill('Kickoff');ip.locator('[name=participant]').fill('Paris');ip.locator('[name=zone]').select_option('Europe/Paris');ip.locator('[name=utc]').fill('2026-11-10T14:00')
+        ip.locator('#save-button').click()
+        ip.wait_for_function("() => (document.querySelectorAll('#comparison .attendee').length === 1)")
+        ip.locator('[name=participant]').fill('Tokyo')  # saisie en cours : conservée au changement de langue
+        titles={'fr':'La bonne heure.','en':'The right time.','es':'La hora adecuada.','ar':'الساعة المناسبة.','pt':'A hora certa.','de':'Die richtige Uhrzeit.','it':"L'ora giusta."}
+        for lang in ['fr','en','es','ar','pt','de','it']:
+            ip.locator('#louvre-lang').select_option(lang)
+            assert ip.evaluate('() => document.documentElement.dir')==('rtl' if lang=='ar' else 'ltr')
+            wide = ip.evaluate('''() => document.documentElement.scrollWidth <= innerWidth + 2 ? [] :
+              [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 2)
+                .slice(0, 5).map((e) => `${e.tagName}.${e.className} « ${(e.textContent || '').trim().slice(0, 40)} »`)''')
+            assert not wide, f'débordement en {lang} : {wide}'
+            assert ip.locator('h1').inner_text().startswith(titles[lang]), (lang, ip.locator('h1').inner_text())
+            assert ip.locator('[name=participant]').input_value()=='Tokyo'
+            assert '15:00' in ip.locator('#comparison').inner_text()
+        missing=ip.evaluate('() => LouvreI18n.missing()')
+        assert missing==[],missing
+        ip.locator('#louvre-lang').select_option('en')
+        assert 'Within nominal hours' in ip.locator('#comparison').inner_text()
+        assert ip.locator('#save-button').inner_text()=='Save'
+        assert '60 min' in ip.locator('#duration').inner_text()
+        ip.locator('#louvre-lang').select_option('de')
+        with ip.expect_download() as d: ip.locator('#ics-export').click()
+        assert 'DESCRIPTION:Geplant mit WorldMeet' in pathlib.Path(d.value.path()).read_text(encoding='utf-8')
+        ip.locator('[name=meeting]').fill('Kickoff');ip.locator('[name=participant]').fill('Paris');ip.locator('[name=zone]').select_option('Europe/Paris');ip.locator('[name=utc]').fill('2026-11-10T14:00')
+        ip.locator('#save-button').click()
+        assert ip.locator('#status').inner_text().startswith('Diese Person ist bereits'), ip.locator('#status').inner_text()  # erreur traduite
+        assert not errors,errors
         browser.close()
-        print('BROWSER PASS: UTC preview, 2-zone comparison, duplicate prevention, duration, ICS, JSON export/import, search/edit/delete, PWA offline, mobile 390px')
+        print('BROWSER PASS: UTC preview, 2-zone comparison, duplicate prevention, duration, ICS, JSON export/import, search/edit/delete, PWA offline, mobile 390px, 7 languages, RTL')
 finally:
     server.shutdown()
     server.server_close()

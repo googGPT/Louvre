@@ -43,7 +43,9 @@ Pour rendre une appli multilingue :
 3. Lancer `python scripts/sync_shared.py`, qui copie le mécanisme dans l'appli pour le mode hors ligne.
 4. `node scripts/check_messages.cjs <slug>` vérifie que les 7 langues ont toutes les clés, les mêmes paramètres et les mêmes pluriels.
 
-Applis déjà multilingues : accueil, PriceLens, StudyRecall et BillCalendar.
+Toutes les applis et la page d'accueil sont multilingues. Les valeurs déjà enregistrées en français (catégories, statuts) restent telles quelles dans les sauvegardes et sont traduites à l'affichage. InvoiceCanvas applique les règles françaises et reste en euros.
+
+Pour travailler sur une seule appli, `apply_csp.py`, `build_sw.py` et `sync_shared.py` acceptent `--only <slug>`.
 
 ### Automatisation
 

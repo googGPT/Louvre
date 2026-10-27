@@ -36,7 +36,7 @@ def main():
         with sync_playwright() as p:
             browser = p.chromium.launch(executable_path=chrome,headless=True,args=['--no-sandbox'])
             with tempfile.TemporaryDirectory() as temp:
-                page = browser.new_page(viewport={'width':1360,'height':850},accept_downloads=True)
+                page = browser.new_page(viewport={'width':1360,'height':850},accept_downloads=True,locale='fr-FR')
                 errors=[]
                 page.on('pageerror',lambda e:errors.append(str(e)))
                 page.goto(address)
@@ -102,15 +102,65 @@ def main():
                 assert page.locator('#total-count').inner_text()=='1'
                 page.context.set_offline(False)
                 assert not errors,errors
-                mobile=browser.new_page(viewport={'width':390,'height':844})
+                mobile=browser.new_page(viewport={'width':390,'height':844},locale='fr-FR')
                 mobile_errors=[]
                 mobile.on('pageerror',lambda e:mobile_errors.append(str(e)))
                 mobile.goto(address)
                 mobile.locator('#empty-state:not([hidden])').wait_for()
                 assert mobile.evaluate('document.documentElement.scrollWidth')<=390
                 assert not mobile_errors,mobile_errors
-                print('BROWSER PASS: photo, restore, upcoming deadlines, ICS, monthly stats, PWA offline reload; mobile 390px')
                 page.close();mobile.close()
+
+                # --- Langues : détection du navigateur, 7 langues complètes, arabe de droite à gauche, devise au choix.
+                intl=browser.new_context(viewport={'width':390,'height':844},locale='es-MX',accept_downloads=True)
+                ip=intl.new_page()
+                intl_errors=[]
+                ip.on('pageerror',lambda e:intl_errors.append(str(e)))
+                ip.on('dialog',lambda d:d.accept())
+                ip.goto(address)
+                ip.locator('#empty-state:not([hidden])').wait_for()
+                assert ip.locator('h1').inner_text().startswith('Tus compras.'), ip.locator('h1').inner_text()  # navigateur espagnol -> espagnol
+                assert ip.evaluate('() => LouvreI18n.currency')=='MXN'  # Mexique -> peso proposé
+                ip.click('#add-top')
+                assert ip.locator('#cur-symbol').inner_text()=='MXN', ip.locator('#cur-symbol').inner_text()
+                ip.locator('#save-purchase').click()
+                assert 'Indica un precio positivo' in ip.locator('#form-error').inner_text()  # erreur traduite
+                ip.locator('input[name="item"]').fill('Auriculares')
+                ip.locator('input[name="merchant"]').fill('Tienda')
+                ip.locator('input[name="amount"]').fill('89.90')
+                ip.locator('select[name="category"]').select_option('Électronique')  # valeur stockée inchangée
+                ip.locator('input[name="returnBy"]').fill((day + datetime.timedelta(days=5)).isoformat())
+                ip.click('#save-purchase')
+                ip.locator('.purchase-card').wait_for()
+                assert 'MXN' in ip.locator('.card-amount').inner_text(), ip.locator('.card-amount').inner_text()
+                assert 'Electrónica' in ip.locator('.card-meta').first.inner_text()
+                ip.locator('#search-input').fill('Auri')  # saisie en cours : conservée au changement de langue
+                expected={'fr':'Vos achats.','en':'Your purchases.','es':'Tus compras.','ar':'مشترياتك.','pt':'As suas compras.','de':'Ihre Einkäufe.','it':'I tuoi acquisti.'}
+                for lang in ['fr','en','es','ar','pt','de','it']:
+                    ip.locator('#louvre-lang').select_option(lang)
+                    assert ip.evaluate('() => document.documentElement.lang')==lang
+                    assert ip.evaluate('() => document.documentElement.dir')==('rtl' if lang=='ar' else 'ltr')
+                    wide = ip.evaluate('''() => document.documentElement.scrollWidth <= innerWidth + 2 ? [] :
+                      [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 2)
+                        .slice(0, 5).map((e) => `${e.tagName}.${e.className} « ${(e.textContent || '').trim().slice(0, 40)} »`)''')
+                    assert not wide, f'débordement en {lang} : {wide}'
+                    assert ip.locator('h1').inner_text().startswith(expected[lang]), (lang, ip.locator('h1').inner_text())
+                    assert ip.locator('.purchase-card').count()==1 and ip.locator('#search-input').input_value()=='Auri'
+                    assert ip.locator('#upcoming-list .deadline-row').count()==1
+                missing=ip.evaluate('() => LouvreI18n.missing()')
+                assert missing==[], missing
+                ip.locator('#louvre-lang').select_option('de')
+                ip.locator('#louvre-currency').select_option('CHF')
+                assert 'CHF' in ip.locator('.card-amount').inner_text()
+                assert 'Elektronik' in ip.locator('.card-meta').first.inner_text()
+                assert 'Rückgabe' in ip.locator('#upcoming-list').inner_text()
+                with ip.expect_download() as cal_event:
+                    ip.click('#export-calendar')
+                ics=pathlib.Path(cal_event.value.path()).read_text(encoding='utf-8')
+                assert 'SUMMARY:Rückgabe: Auriculares' in ics and '-retour-' in ics, ics[:500]
+                assert not intl_errors,intl_errors
+                intl.close()
+                print('BROWSER PASS: photo, restore, upcoming deadlines, ICS, monthly stats, PWA offline reload; mobile 390px; 7 languages, RTL, currency, translated ICS')
             browser.close()
         srv.shutdown()
 

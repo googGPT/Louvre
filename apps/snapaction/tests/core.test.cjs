@@ -31,7 +31,7 @@ test('tâche invalide: champs supplémentaires',()=>assert.equal(core.validTask(
 test('tâche invalide: date non ISO',()=>assert.equal(core.validTask({...make(),dueAt:'tomorrow'}),false));
 test('tâche invalide: image hors MIME autorisé',()=>assert.equal(core.validTask({...make(),image:'data:text/html;base64,PHNjcmlwdD4='}),false));
 test('tâche invalide: priorité inconnue',()=>assert.equal(core.validTask({...make(),priority:'urgent!!'}),false));
-test('tâche invalide: titre vide',()=>assert.throws(()=>make({title:'  '})));
+test('tâche invalide: titre vide (erreur sous forme de clé traduisible)',()=>assert.throws(()=>make({title:'  '}),/^Error: err\.title\|\{"max":180\}$/));
 test('changement de statut non destructif',()=>{
  const t=make();const s=core.changeStatus(t,true,clock('2026-10-26T13:00:00.000Z'));
  assert.equal(s.completedAt,'2026-10-26T13:00:00.000Z');assert.equal(t.completedAt,null);
@@ -72,4 +72,22 @@ test('export calendrier contient titre et date attendue',()=>{
 test('export calendrier ignore tâche terminée',()=>{
  const done=core.changeStatus(make(),true,clock('2026-10-26T13:00:00.000Z'));
  assert.ok(!core.exportIcs([done]).includes('BEGIN:VEVENT'));
+});
+test('dates reconnues dans les 7 langues de l interface',()=>{
+ const tomorrow1430=(txt)=>{const d=new Date(core.parseCommand(txt,now).dueAt);return [d.getDate(),d.getHours(),d.getMinutes()];};
+ for(const txt of ['send the file tomorrow at 14:30','enviar mañana 14:30','enviar amanhã às 14h30','morgen um 14:30 senden','inviare domani alle 14:30','إرسال الملف غدا 14:30'])
+  assert.deepEqual(tomorrow1430(txt),[26,14,30],txt);
+ assert.equal(new Date(core.parseCommand('call tomorrow 2pm',now).dueAt).getHours(),14);
+ assert.equal(new Date(core.parseCommand('morgen 14 Uhr',now).dueAt).getHours(),14);
+ for(const txt of ['in 2 hours','en 2 horas','em 2 horas','in 2 Stunden','tra 2 ore','بعد 2 ساعات'])
+  assert.equal(core.parseCommand(txt,now).dueAt,'2026-10-25T14:00:00.000Z',txt);
+ for(const txt of ['day after tomorrow','pasado mañana','depois de amanhã','übermorgen','dopodomani','بعد غد'])
+  assert.equal(new Date(core.parseCommand(txt,now).dueAt).getDate(),27,txt);
+ for(const txt of ['monday 9:00','lunes 9:00','segunda-feira 9h','Montag 9 Uhr','lunedì 9:00','الاثنين 9:00'])
+  assert.equal(new Date(core.parseCommand(txt,now).dueAt).getDay(),1,txt);
+});
+test('mots proches non confondus avec une date',()=>{
+ assert.equal(core.parseCommand('acheter 1.5 kg de riz',now).dueAt,null);
+ assert.equal(core.parseCommand('Morgenroutine planen',now).dueAt,null); // « morgen » dans un mot plus long
+ assert.equal(core.parseCommand('inviter 5 amis',now).dueAt,null);
 });

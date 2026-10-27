@@ -35,4 +35,5 @@ test('refuse coordonnées impossibles',()=>assert.throws(()=>C.validateState({ve
 test('valide position GPS',()=>assert.ok(C.validateState({version:1,spots:[],parkingSpot:{lat:44.84,lon:-0.58,note:'B2',savedAt:new Date().toISOString()}}).parkingSpot));
 test('génère ICS',()=>assert.match(C.calendarFile({title:'Retour',start:new Date('2026-10-25T12:00Z'),end:new Date('2026-10-25T14:00Z')}),/DTEND:20261025T140000Z/));
 test('escape les séparateurs ICS',()=>assert.match(C.calendarFile({title:'A;B',start:new Date(1000),end:new Date(2000)}),/SUMMARY:A\\;B/));
-test('ICS refuse end avant start',()=>assert.throws(()=>C.calendarFile({title:'Test',start:new Date(2000),end:new Date(1000)})));
+test('ICS refuse end avant start',()=>assert.throws(()=>C.calendarFile({title:'Test',start:new Date(2000),end:new Date(1000)})));test('erreurs sous forme de clés de traduction',()=>{assert.throws(()=>C.eurosToCents('1.009'),/^Error: err\.amountFormat$/);assert.throws(()=>C.validateSpot(spot({capCents:100,entryCents:200})),/^Error: err\.capBelowEntry$/);assert.throws(()=>C.validateState(null),/^Error: err\.backup$/)});
+test('égalité départagée selon la langue',()=>assert.equal(C.compare([spot({id:'a',name:'Zentrum'}),spot({id:'b',name:'Ärztehaus'})],60,0,'de')[0].id,'b'));

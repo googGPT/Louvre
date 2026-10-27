@@ -12,3 +12,5 @@ t('conversion hex 00 ff 1a',()=>a.equal(C.bytesToHex(new Uint8Array([0,255,26]).
 t('rejette objet au lieu ArrayBuffer',async()=>a.rejects(C.digest('abc',crypto.webcrypto.subtle)));
 t('rejette WebCrypto manquante',async()=>a.rejects(C.digest(new ArrayBuffer(0),null)));
 t('rejette empreinte contenant des caractères non-hex',()=>a.throws(()=>C.normalizeHash('z'.repeat(64))));
+
+t('erreurs levées sous forme de clés traduisibles',async()=>{a.throws(()=>C.normalizeHash('abcd'),{message:'err.hashFormat'});a.throws(()=>C.validateFile({name:'big',size:33*1024*1024}),{message:'err.file'});await a.rejects(C.digest(new ArrayBuffer(0),null),{message:'err.crypto'});});

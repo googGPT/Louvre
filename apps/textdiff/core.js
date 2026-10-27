@@ -5,26 +5,28 @@
   const MAX_UNITS = 700;
   const MODES = Object.freeze(['lines', 'words']);
 
-  function fail(message) { throw new Error(message); }
-  function validateSource(value, label) {
-    if (typeof value !== 'string') fail(label + ' : texte invalide');
-    if (value.length > MAX_CHARS) fail(label + ' : limite de 60 000 caractères dépassée');
+  // Les erreurs portent une clé de traduction (et des paramètres JSON après « | ») : l'interface les traduit.
+  function fail(key, params) { throw new Error(params ? key + '|' + JSON.stringify(params) : key); }
+  // Un second argument (ancien libellé) est accepté et ignoré : le message ne dépend pas de la langue.
+  function validateSource(value) {
+    if (typeof value !== 'string') fail('err.text');
+    if (value.length > MAX_CHARS) fail('err.tooLong', { max: MAX_CHARS });
     return value;
   }
   function validateOptions(options) {
     if (!options || typeof options !== 'object' || Array.isArray(options) ||
         !MODES.includes(options.mode) ||
         typeof options.ignoreCase !== 'boolean' ||
-        typeof options.ignoreWhitespace !== 'boolean') fail('Options de comparaison invalides');
+        typeof options.ignoreWhitespace !== 'boolean') fail('err.options');
     return { mode: options.mode, ignoreCase: options.ignoreCase, ignoreWhitespace: options.ignoreWhitespace };
   }
   function canonicalNewlines(value) { return value.replace(/\r\n?|\u2028|\u2029/g, '\n'); }
   function tokenize(text, mode) {
-    if (!MODES.includes(mode)) fail('Mode invalide');
+    if (!MODES.includes(mode)) fail('err.mode');
     const input = canonicalNewlines(validateSource(text, 'Source'));
     if (input === '') return [];
     const units = mode === 'lines' ? input.split('\n') : (input.match(/\s+|[^\s]+/gu) || []);
-    if (units.length > MAX_UNITS) fail('Trop de ' + (mode === 'lines' ? 'lignes' : 'unités texte/espaces') + ' (700 maximum par texte). Sélectionnez un extrait plus court.');
+    if (units.length > MAX_UNITS) fail(mode === 'lines' ? 'err.tooManyLines' : 'err.tooManyWords', { max: MAX_UNITS });
     return units;
   }
   function comparator(token, opts) {
@@ -76,17 +78,15 @@
         similarity: total ? Math.round((20000 * unchanged / total)) / 100 : 100 }
     };
   }
-  function buildReport(result) {
+  // text : en-tête traduit fourni par l'interface, { title, mode(mode), counts(counts), prefixes }.
+  // Les lignes du rapport (préfixes - + ~ et textes entre guillemets) ne dépendent pas de la langue.
+  function buildReport(result, text) {
     if (!result || !Array.isArray(result.ops) || !result.counts || !result.options ||
-        !MODES.includes(result.options.mode)) fail('Résultat invalide');
-    const mode = result.options.mode === 'lines' ? 'lignes' : 'mots/espaces';
-    const h = ['TextDiff — rapport de comparaison', 'Mode : ' + mode,
-      'Identiques : ' + result.counts.unchanged +
-        ' | Ajouts : ' + result.counts.added + ' | Suppressions : ' + result.counts.removed +
-        ' | Blocs de changement : ' + result.counts.changeBlocks,
-      'Préfixes : espace = identique ; - = suppression ; + = ajout ; ~ = différence ignorée par les options', '---'];
+        !MODES.includes(result.options.mode)) fail('err.result');
+    if (!text || typeof text.mode !== 'function' || typeof text.counts !== 'function') fail('err.result');
+    const h = [String(text.title), text.mode(result.options.mode), text.counts(result.counts), String(text.prefixes), '---'];
     for (const op of result.ops) {
-      if (!op || !['equal','delete','insert'].includes(op.kind) || typeof op.text !== 'string') fail('Opération invalide');
+      if (!op || !['equal','delete','insert'].includes(op.kind) || typeof op.text !== 'string') fail('err.result');
       const prefix = op.kind === 'insert' ? '+' : op.kind === 'delete' ? '-' : ' ';
       // JSON quoting guarantees that embedded newlines cannot impersonate report prefixes.
       if (op.kind === 'equal' && op.newText !== op.text)

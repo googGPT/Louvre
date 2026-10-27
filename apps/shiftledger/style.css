@@ -18,3 +18,7 @@
 .subheading{font-size:17px;margin:25px 0 12px;color:#57406c}
 button:disabled,input:disabled{cursor:not-allowed;opacity:.55}
 @media(max-width:570px){.banner h1{font-size:31px}.bigtime output{font-size:32px}.keynumber output{font-size:33px}.splitstats{grid-template-columns:1fr 1fr}.entry aside{width:100%;justify-content:space-between}.filters label{flex-basis:100%}}
+
+/* Langues : menus langue et devise dans l'en-tête. */
+.header-end{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+header{gap:10px;flex-wrap:wrap}
