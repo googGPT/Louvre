@@ -75,11 +75,11 @@ def main():
 
             # Invalid import does not destroy saved records.
             page.locator('#import-file').set_input_files({'name':'bad.json','mimeType':'application/json','buffer':b'not JSON'})
-            expect(page.locator('#live-announcement')).to_contain_text('Impossible de lire')
+            expect(page.locator('.toast')).to_contain_text('Impossible de lire')
             assert 'Courses' in page.locator('#expense-list').inner_text()
             # Valid saved JSON is accepted after explicit confirmation.
             page.locator('#import-file').set_input_files({'name':'good.json','mimeType':'application/json','buffer':backup})
-            expect(page.locator('#live-announcement')).to_contain_text('Sauvegarde restaurée')
+            expect(page.locator('.toast')).to_contain_text('Sauvegarde restaurée')
             assert 'Courses' in page.locator('#expense-list').inner_text()
             persisted=page.evaluate("JSON.parse(localStorage.getItem('moneyuntil:v1'))")
             assert len(persisted['expenses'])==1 and len(persisted['bills'])==1
