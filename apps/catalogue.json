@@ -231,6 +231,20 @@
       "domain": "Maison",
       "description": "Dessine un plan 2D de pièce et bloque les chevauchements de meubles.",
       "family": "Maison et quotidien"
+    },
+    {
+      "slug": "loansim",
+      "name": "LoanSim",
+      "domain": "Finance",
+      "description": "Simule l'amortissement d'un prêt et l'effet d'un remboursement anticipé.",
+      "family": "Argent et achats"
+    },
+    {
+      "slug": "fileintegrity",
+      "name": "FileIntegrity",
+      "domain": "Sécurité",
+      "description": "Calcule une empreinte SHA-256 locale pour vérifier qu'un fichier n'a pas été modifié.",
+      "family": "Outils numériques"
     }
   ]
 }
