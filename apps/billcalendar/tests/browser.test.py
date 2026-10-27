@@ -118,7 +118,10 @@ def main():
             for lang in ['fr', 'en', 'es', 'ar', 'pt', 'de', 'it']:
                 ip.locator('#louvre-lang').select_option(lang)
                 assert ip.evaluate('() => document.documentElement.dir') == ('rtl' if lang == 'ar' else 'ltr')
-                assert ip.evaluate('() => document.documentElement.scrollWidth <= innerWidth + 2'), f'débordement en {lang}'
+                wide = ip.evaluate('''() => document.documentElement.scrollWidth <= innerWidth + 2 ? [] :
+                  [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 2)
+                    .slice(0, 5).map((e) => `${e.tagName}.${e.className} « ${(e.textContent || '').trim().slice(0, 40)} »`)''')
+                assert not wide, f'débordement en {lang} : {wide}'
                 expect(ip.locator('#cal .dow')).to_have_count(7)
             assert ip.evaluate('() => LouvreI18n.missing()') == [], ip.evaluate('() => LouvreI18n.missing()')
             ip.locator('#louvre-lang').select_option('en')

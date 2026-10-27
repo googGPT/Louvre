@@ -49,7 +49,10 @@ textarea{min-height:76px;resize:vertical}
 .list li{border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
 .list .txt{min-width:0}.list .txt b{display:block;overflow-wrap:anywhere}.list .txt span{display:block;font-size:13px;color:var(--muted);overflow-wrap:anywhere}
 .list .txt span.tag{font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:999px;display:inline-block;margin-top:4px}
-.list .acts{display:flex;gap:6px}.list .acts button{min-height:36px;padding:6px 10px;font-size:13px}
+.list .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+@media (max-width:520px){.list li{grid-template-columns:minmax(0,1fr)}.list .acts{justify-content:flex-start}}
+.cal-head h2{min-width:0;overflow-wrap:anywhere}
+.list .acts button{min-height:36px;padding:6px 10px;font-size:13px}
 footer{color:var(--muted);font-size:13px;padding:24px 0 40px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 /* BillCalendar : calendrier mensuel et listes */
