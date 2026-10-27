@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GiftNest — Idées de cadeaux et budgets</title>
+<meta name="description" content="GiftNest : notez vos idées de cadeaux par personne et par occasion, suivez budgets et achats, sans oublier un anniversaire. Gratuit, sans compte.">
+<meta name="theme-color" content="#a61e4d">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/giftnest/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>GiftNest</strong><small>Idées de cadeaux et budgets</small></div></div>
+  <span class="badge">Local · sans compte</span>
+</header>
+<section class="hero">
+  <h1>Le bon cadeau, au bon moment, dans le budget.</h1>
+  <p>Notez une idée dès qu'elle vous vient, rattachez-la à une personne et à une occasion, puis suivez-la : idée, acheté, offert. GiftNest garde l'œil sur les budgets et le compte à rebours des anniversaires.</p>
+</section>
+<p id="warning" class="warning" hidden>Les données enregistrées sur cet appareil sont illisibles. Rien ne sera écrasé : exportez la copie brute, puis restaurez une sauvegarde valide.</p>
+
+<div class="kpis four">
+  <div class="kpi"><span>Dépensé</span><strong id="k-spent">0 €</strong></div>
+  <div class="kpi"><span>Prévu (idées)</span><strong id="k-planned">0 €</strong></div>
+  <div class="kpi"><span>À emballer</span><strong id="k-wrap">0</strong></div>
+  <div class="kpi"><span>Offerts</span><strong id="k-given">0</strong></div>
+</div>
+
+<section class="panel" aria-labelledby="h-occ">
+  <h2 id="h-occ">Prochaines occasions</h2>
+  <div class="occ" id="occasions"></div>
+  <details style="margin-top:12px">
+    <summary style="cursor:pointer;font-weight:650">Ajouter une occasion</summary>
+    <form id="occ-form" novalidate style="margin-top:10px">
+      <div class="two-col">
+        <label class="field">Occasion<input name="name" maxlength="60" placeholder="ex. Anniversaire de Léa" required></label>
+        <label class="field">Date<input name="date" type="date" required></label>
+        <label class="field inline-check full"><input name="yearly" type="checkbox" checked> Revient chaque année</label>
+      </div>
+      <button class="btn primary" id="add-occ" type="submit">Ajouter l'occasion</button>
+      <p class="status" id="occ-status" role="status"></p>
+    </form>
+  </details>
+</section>
+
+<div class="grid" style="margin-top:16px">
+  <section class="panel" aria-labelledby="h-gifts">
+    <h2 id="h-gifts">Cadeaux</h2>
+    <form id="gift-form" novalidate>
+      <div class="two-col">
+        <label class="field full">Idée de cadeau<input name="title" maxlength="100" placeholder="ex. Livre de recettes" required></label>
+        <label class="field">Pour<select name="person"></select></label>
+        <label class="field">Occasion<select name="occasion"></select></label>
+        <label class="field">Prix (€, facultatif)<input name="price" inputmode="decimal" placeholder="25"></label>
+        <label class="field">Statut<select name="status"><option>idée</option><option>acheté</option><option>offert</option></select></label>
+      </div>
+      <div class="row"><button class="btn primary" id="add-gift" type="submit">Ajouter le cadeau</button><button class="btn" id="sample" type="button">Exemples</button></div>
+      <p class="status" id="gift-status" role="status"></p>
+    </form>
+    <div class="row" style="margin:14px 0 10px">
+      <label class="visually-hidden" for="filter">Filtrer par personne</label>
+      <select id="filter" style="width:auto"></select>
+    </div>
+    <ul class="list" id="gifts"></ul>
+  </section>
+
+  <section class="panel" aria-labelledby="h-people">
+    <h2 id="h-people">Personnes et budgets</h2>
+    <ul class="list" id="people"></ul>
+    <form id="person-form" novalidate style="margin-top:12px">
+      <div class="two-col">
+        <label class="field">Nom<input name="name" maxlength="60" placeholder="ex. Léa" required></label>
+        <label class="field">Budget (€, facultatif)<input name="budget" inputmode="decimal" placeholder="50"></label>
+      </div>
+      <button class="btn primary" id="add-person" type="submit">Ajouter la personne</button>
+      <p class="status" id="person-status" role="status"></p>
+    </form>
+    <h2 style="margin-top:20px">Sauvegarde</h2>
+    <div class="row">
+      <button class="btn" id="export" type="button">Exporter (JSON)</button>
+      <label class="btn" for="import" style="display:inline-flex;align-items:center">Restaurer…</label>
+      <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+      <button class="btn" id="export-raw" type="button" hidden>Copie brute</button>
+    </div>
+    <p class="status" id="backup-status" role="status"></p>
+  </section>
+</div>
+<footer>Discret : vos idées restent sur cet appareil, invisibles pour les autres. Pensez à exporter une sauvegarde.</footer>
+</div>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>
