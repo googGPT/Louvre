@@ -117,10 +117,16 @@ def render(app):
     )
 
 
+def only():
+    """Slugs passés après --only (ex. --only fuelmath parkwise) ; vide = toutes les applis."""
+    return set(sys.argv[sys.argv.index("--only") + 1:]) if "--only" in sys.argv else set()
+
+
 def main():
     check = "--check" in sys.argv
     stale = []
-    for app in sorted(p for p in APPS.iterdir() if (p / "index.html").is_file() and (p / "sw.js").is_file()):
+    keep = only()  # --only : ne touche pas aux autres applis
+    for app in sorted(p for p in APPS.iterdir() if (p / "index.html").is_file() and (p / "sw.js").is_file() and (not keep or p.name in keep)):
         content = render(app)
         target = app / "sw.js"
         if target.read_text(encoding="utf-8") != content:
