@@ -1,4 +1,5 @@
 """ColorContrast v2: tests WCAG réels, palettes transactionnelles et PWA."""
+import os
 from http.server import ThreadingHTTPServer,SimpleHTTPRequestHandler
 from pathlib import Path
 from playwright.sync_api import sync_playwright, expect
@@ -12,7 +13,7 @@ server=ThreadingHTTPServer(('127.0.0.1',0),functools.partial(Handler,directory=s
 threading.Thread(target=server.serve_forever,daemon=True).start()
 try:
     with sync_playwright() as p:
-        browser=p.chromium.launch(headless=True,executable_path='/usr/bin/chromium',args=['--no-sandbox'])
+        browser=p.chromium.launch(headless=True,executable_path=os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium'),args=['--no-sandbox'])
         context=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True)
         page=context.new_page()
         errors=[]

@@ -14,7 +14,7 @@ server=ThreadingHTTPServer(('127.0.0.1',0),Handler)
 threading.Thread(target=server.serve_forever,daemon=True).start()
 try:
     with sync_playwright() as p:
-        exe=next((n for n in ['/usr/bin/chromium','/usr/bin/google-chrome'] if os.path.isfile(n)),None)
+        exe=next((n for n in [os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium'),'/usr/bin/google-chrome'] if os.path.isfile(n)),None)
         kwargs={'headless':True,'args':['--no-sandbox']}
         if exe:kwargs['executable_path']=exe
         browser=p.chromium.launch(**kwargs)

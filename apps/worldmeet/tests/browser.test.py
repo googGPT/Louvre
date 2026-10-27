@@ -15,7 +15,7 @@ server = ThreadingHTTPServer(('127.0.0.1',0), Quiet)
 threading.Thread(target=server.serve_forever, daemon=True).start()
 try:
     with sync_playwright() as p:
-        executable = '/usr/bin/chromium' if os.path.isfile('/usr/bin/chromium') else None
+        executable = os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium') if os.path.isfile(os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium')) else None
         browser = p.chromium.launch(headless=True, executable_path=executable,args=['--no-sandbox'])
         page=browser.new_page(viewport={'width':390,'height':844},accept_downloads=True)
         page.set_default_timeout(16000)

@@ -9,7 +9,7 @@ class H(SimpleHTTPRequestHandler):
 server=ThreadingHTTPServer(('127.0.0.1',0),H);port=server.server_port;threading.Thread(target=server.serve_forever,daemon=True).start()
 try:
  with sync_playwright() as p:
-  exe='/usr/bin/chromium' if os.path.exists('/usr/bin/chromium') else '/usr/bin/google-chrome' if os.path.exists('/usr/bin/google-chrome') else None
+  exe=os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium') if os.path.exists(os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium')) else '/usr/bin/google-chrome' if os.path.exists('/usr/bin/google-chrome') else None
   browser=p.chromium.launch(executable_path=exe,headless=True,args=['--no-sandbox'])
   page=browser.new_page(viewport={'width':390,'height':844},accept_downloads=True)
   errors=[];page.on('pageerror',lambda e:errors.append(str(e)))

@@ -1,4 +1,5 @@
 """HomePulse Chromium smoke test; no paid service. Run from anywhere."""
+import os
 import http.server, functools, threading, socket, pathlib, json, base64, struct, zlib, time
 from playwright.sync_api import sync_playwright
 BASE=pathlib.Path(__file__).resolve().parents[1]
@@ -17,7 +18,7 @@ def run():
     url=f'http://127.0.0.1:{server.server_port}/'
     try:
         with sync_playwright() as p:
-            browser=p.chromium.launch(headless=True,executable_path='/usr/bin/chromium',args=['--no-sandbox'])
+            browser=p.chromium.launch(headless=True,executable_path=os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium'),args=['--no-sandbox'])
             ctx=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True)
             ctx.set_default_timeout(12000)
             page=ctx.new_page()

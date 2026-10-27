@@ -1,4 +1,5 @@
 """End-to-end smoke for ParkWise: Chrome, persistence, export/restore, GPS, PWA offline."""
+import os
 import http.server, functools, threading, pathlib, json
 from playwright.sync_api import sync_playwright
 BASE=pathlib.Path(__file__).resolve().parents[1]
@@ -11,7 +12,7 @@ def run():
     url=f'http://127.0.0.1:{server.server_port}/'
     try:
         with sync_playwright() as p:
-            browser=p.chromium.launch(headless=True,executable_path='/usr/bin/chromium',args=['--no-sandbox'])
+            browser=p.chromium.launch(headless=True,executable_path=os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium'),args=['--no-sandbox'])
             ctx=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True,geolocation={'latitude':44.839,'longitude':-0.579},permissions=['geolocation'])
             ctx.set_default_timeout(12000)
             page=ctx.new_page();errors=[]

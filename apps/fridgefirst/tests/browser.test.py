@@ -1,4 +1,5 @@
 """End-to-end Chrome: isolated local HTTP server, no internet/API needed."""
+import os
 import http.server
 import json
 import pathlib
@@ -36,7 +37,7 @@ def run():
     thread.start()
     base = f'http://127.0.0.1:{srv.server_port}/'
     with sync_playwright() as pw:
-        browser = pw.chromium.launch(headless=True, executable_path='/usr/bin/chromium', args=['--no-sandbox','--disable-dev-shm-usage'])
+        browser = pw.chromium.launch(headless=True, executable_path=os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium'), args=['--no-sandbox','--disable-dev-shm-usage'])
         context = browser.new_context(viewport={'width':390,'height':844}, locale='fr-FR', timezone_id='Europe/Paris', accept_downloads=True)
         page = context.new_page()
         errors=[]

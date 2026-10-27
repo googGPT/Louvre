@@ -1,4 +1,5 @@
 """FindMyStuff real Chromium end-to-end test; no external network or paid service."""
+import os
 import json
 import pathlib
 import shutil
@@ -35,7 +36,7 @@ def run():
         address=f'http://127.0.0.1:{server.server_address[1]}/'
         with tempfile.TemporaryDirectory() as tmp, sync_playwright() as pw:
             launcher = pw.chromium
-            exe = shutil.which('chromium') or shutil.which('chromium-browser')
+            exe = os.environ.get('LOUVRE_CHROMIUM') or shutil.which('chromium') or shutil.which('chromium-browser')
             args={'headless': True}
             if exe:args['executable_path']=exe
             browser=launcher.launch(**args)

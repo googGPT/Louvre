@@ -1,4 +1,5 @@
 """GradePilot v2 : tests Chromium des prévisions, transactions et protection des données."""
+import os
 import functools
 import http.server
 import json
@@ -21,7 +22,7 @@ def run():
     server=start_server()
     try:
         with sync_playwright() as p:
-            browser=p.chromium.launch(headless=True,executable_path='/usr/bin/chromium',args=['--no-sandbox'])
+            browser=p.chromium.launch(headless=True,executable_path=os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium'),args=['--no-sandbox'])
             context=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True)
             page=context.new_page()
             errors=[]

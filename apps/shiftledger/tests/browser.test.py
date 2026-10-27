@@ -1,4 +1,5 @@
 """ShiftLedger v2 — tests navigateur pour durées, heures supplémentaires et stockage."""
+import os
 import functools, http.server, threading, pathlib, json
 from playwright.sync_api import sync_playwright
 BASE=pathlib.Path(__file__).resolve().parents[1]
@@ -11,7 +12,7 @@ def run():
  threading.Thread(target=server.serve_forever,daemon=True).start()
  try:
   with sync_playwright() as p:
-   browser=p.chromium.launch(headless=True,executable_path='/usr/bin/chromium',args=['--no-sandbox'])
+   browser=p.chromium.launch(headless=True,executable_path=os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium'),args=['--no-sandbox'])
    context=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True)
    page=context.new_page();errors=[]
    page.on('pageerror',lambda e:errors.append(str(e)))
