@@ -109,3 +109,6 @@ test('le calcul ne modifie aucune fiche source',()=>{
  L.compute([base],today);L.filterRecords([base],{today});
  assert.equal(JSON.stringify(base),b);
 });
+test('erreurs levées sous forme de clés de traduction',()=>{assert.throws(()=>L.normalizeRecord(mk({goal:' '})),/^Error: err\.goal\|\{"max":160\}$/);assert.throws(()=>L.normalizeRecord(mk({priority:'urgente'})),/^Error: err\.priority$/)});
+test('CSV : en-têtes et valeurs traduits fournis par l’interface, valeurs stockées inchangées',()=>{const csv=L.toCSV([base],{header:['Goal','Milestone','Deadline','Done','Priority'],value:(k,v)=>({non:'no',oui:'yes',haute:'high',normale:'normal',basse:'low'})[v]});assert.ok(csv.startsWith('\uFEFF"Goal";"Milestone"'));assert.ok(csv.includes('"'+({haute:'high',normale:'normal',basse:'low'})[base.priority]+'"'))});
+test('recherche sur un texte traduit fourni par l’interface',()=>{assert.equal(L.filterRecords([base],{query:'zzz-traduit',today,describe:()=>'zzz-traduit'}).length,1)});

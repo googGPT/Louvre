@@ -2,8 +2,8 @@
 // Généré par scripts/build_sw.py : ne pas modifier à la main (relancer le script).
 // Le nom du cache contient une empreinte du contenu : toute modification de l'appli
 // produit un nouveau nom, donc une mise à jour automatique chez les visiteurs.
-const CACHE = "louvre-worldmeet-1965415fd5a4";
-const ASSETS = ["./", "./app.js", "./core.js", "./icon.svg", "./index.htm", "./index.html", "./manifest.webmanifest", "./style.css"];
+const CACHE = "louvre-worldmeet-93dc9090768c";
+const ASSETS = ["./", "./app.js", "./core.js", "./icon.svg", "./index.htm", "./index.html", "./louvre-i18n.css", "./louvre-i18n.js", "./manifest.webmanifest", "./messages.js", "./style.css"];
 const OLD_PREFIXES = ["louvre-worldmeet-"];
 
 self.addEventListener('install', (event) => {

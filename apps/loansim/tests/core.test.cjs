@@ -17,3 +17,6 @@ t('échéancier CSV contient en-tête et 12 mois',()=>a.equal(C.csv(C.schedule(v
 t('sans supplément économies zéro',()=>a.equal(C.compare(v).interestSaved,0));
 t('versement anticipé ne dépasse pas dette résiduelle',()=>a.ok(C.schedule({...v,extra:10000}).rows[0].payment<=120000));
 t('échéance finale ajuste les centimes et solde nul à taux élevé',()=>a.equal(C.schedule({...v,principal:280000,apr:7.35,months:360}).rows.at(-1).balance,0));
+
+t('erreurs levées sous forme de clés traduisibles',()=>{a.throws(()=>C.validate({...v,principal:-1}),{message:'err.number|{"field":"principal"}'});a.throws(()=>C.validate({...v,months:4.5}),{message:'err.monthsInt'});a.throws(()=>C.validate({...v,secret:1}),{message:'err.params'});});
+t('CSV : en-tête traduit fourni par l’interface',()=>a.ok(C.csv(C.schedule(v),'Month,Payment USD,Interest USD,Principal USD,Balance USD').startsWith('Month,Payment USD')));

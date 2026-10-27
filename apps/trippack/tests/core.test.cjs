@@ -12,4 +12,6 @@ test('calcul stable et source intacte',()=>{const before=JSON.stringify(base),a=
 test('dates réelles et changement d’heure',()=>{assert.equal(L.diffDays('2026-03-30','2026-03-29'),1);assert.equal(L.addDays('2026-03-28',2),'2026-03-30')});
 test('entrée non fiable ne peut générer HTML dans les vues',()=>{assert.equal(typeof L.normalizeRecord(mk({[L.SPEC.fields.find(f=>f.type==='text')?.key || 'id']:'<script>alert(1)</script>'})).id,'string')});
 
-test('résultat métier concret',()=>{const m=L.compute([base],today);assert.equal(m.kpis[0][1],'0 %');assert.equal(m.kpis[2][1],'1')});
+test('résultat métier concret',()=>{const m=L.compute([base],today);assert.deepEqual(m.kpis[0],['kpi.ready',0,'percent']);assert.deepEqual(m.kpis[2],['kpi.missing',1,'count'])});
+test('progression pondérée : essentiel x3, utile x2, facultatif x1',()=>{const m=L.compute([mk({id:'a0001',packed:'oui'}),mk({id:'a0002',importance:'facultatif'})],today);assert.equal(m.kpis[0][1],75);assert.deepEqual(m.rows,[{item:'Exemple',quantity:2,bag:'Exemple'}])});
+test('erreurs sous forme de clés traduisibles',()=>{assert.throws(()=>L.normalizeRecord(mk({quantity:-1})),/^Error: err\.number\|\{"field":"quantity"\}$/);assert.throws(()=>L.normalizeRecord(mk({packed:'peut-être'})),/^Error: err\.choice\|\{"field":"packed"\}$/)});

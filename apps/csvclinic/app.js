@@ -1,42 +1,49 @@
-/* CSVClinic v2 — explicit lifecycle: edits invalidate processed CSV immediately. */
+/* CSVClinic v2 — explicit lifecycle: edits invalidate processed CSV immediately. Texts via LouvreI18n (messages.js);
+   the parsing and the exported CSV never depend on the interface language. */
 (()=>{'use strict';
 const C=window.CSVCore,by=id=>document.getElementById(id);
-let result=null,revision=0,importing=false;
-function message(value,error=false){
+const L=window.LouvreI18n.init(window.LouvreMessages),t=L.t; // langue et traductions
+let result=null,revision=0,importing=false,lastMessage=null;
+// Le dernier message est gardé sous forme de clé (paramètres calculés par une fonction) : il est retraduit si la langue change.
+function message(key,params,error=false){
+ lastMessage=[key,params,error];
  const e=by('feedback');e.className=error?'feedback error':'feedback success';
- e.textContent=value;
+ e.textContent=t(key,typeof params==='function'?params():params);
 }
 function blank(){
  result=null;by('download').disabled=true;
  for(const id of ['before','after','removed'])by(id).textContent='—';
- by('cols').textContent='En attente d’analyse';
+ by('cols').textContent=t('res.waiting');
  const table=by('preview-table');table.tHead.replaceChildren();table.tBodies[0].replaceChildren();
  const tr=document.createElement('tr'),td=document.createElement('td');
- td.textContent='Lancez l’analyse pour afficher un aperçu fiable.';tr.append(td);table.tBodies[0].append(tr);
+ td.textContent=t('res.empty');tr.append(td);table.tBodies[0].append(tr);
  by('output-info').textContent='';
 }
 function invalidate(){
  revision++;blank();
- if(!importing)message('Source ou réglages modifiés : relancez l’analyse pour télécharger le fichier à jour.');
+ if(!importing)message('msg.changed');
 }
+function delimiterName(d){return d==='\t'?t('delim.tabShort'):d;}
 function draw(res){
- by('before').textContent=String(res.before);
- by('after').textContent=String(res.after);
- by('removed').textContent=String(res.removed);
- by('cols').textContent=res.rows[0].length+' colonne(s) · séparateur '+(res.delimiter==='\t'?'TAB':res.delimiter);
+ by('before').textContent=L.number(res.before);
+ by('after').textContent=L.number(res.after);
+ by('removed').textContent=L.number(res.removed);
+ by('cols').textContent=t('res.cols',{n:res.rows[0].length,delimiter:delimiterName(res.delimiter)});
  const table=by('preview-table'),thead=table.tHead,tbody=table.tBodies[0];
  thead.replaceChildren();tbody.replaceChildren();
  const head=document.createElement('tr');
- for(const h of res.rows[0]){const th=document.createElement('th');th.textContent=h;head.append(th);}
+ for(const h of res.rows[0]){const th=document.createElement('th');th.textContent=h;th.dir='auto';head.append(th);}
  thead.append(head);
  for(const row of res.rows.slice(1,51)){
   const tr=document.createElement('tr');
-  for(const value of row){const td=document.createElement('td');td.textContent=value;tr.append(td);}
+  for(const value of row){const td=document.createElement('td');td.textContent=value;td.dir='auto';tr.append(td);}
   tbody.append(tr);
  }
- const note=res.after>50?'Aperçu limité aux 50 premières lignes. ':'';
- by('output-info').textContent=note+(res.blankKeys?'Attention : '+res.blankKeys+' identifiant(s) vides conservés, non dédupliqués. ':'')+
-  'Évitez la suppression par première colonne lorsque cet identifiant n’est pas unique.';
+ const parts=[];
+ if(res.after>50)parts.push(t('info.limited'));
+ if(res.blankKeys)parts.push(t('info.blankKeys',{n:res.blankKeys}));
+ parts.push(t('info.firstColumn'));
+ by('output-info').textContent=parts.join(' ');
  by('download').disabled=false;
 }
 by('source').addEventListener('input',()=>{importing=false;by('run').disabled=false;invalidate();});
@@ -45,14 +52,14 @@ by('source-file').addEventListener('change',async e=>{
  const file=e.target.files[0];e.target.value='';if(!file)return;
  const token=++revision;importing=true;by('run').disabled=true;blank();
  try{
-  if(file.size>C.MAX_SOURCE_BYTES)throw Error('Fichier trop volumineux (1 Mo maximum)');
+  if(file.size>C.MAX_SOURCE_BYTES)throw Error('err.fileBig');
   const data=await file.text();
   if(token!==revision)return; // Another selection or user edit superseded this read.
-  if(C.utf8Size(data)>C.MAX_SOURCE_BYTES)throw Error('Fichier décodé trop volumineux');
+  if(C.utf8Size(data)>C.MAX_SOURCE_BYTES)throw Error('err.decodedBig');
   by('source').value=data;
-  message('Fichier chargé localement : lancez l’analyse.');
+  message('msg.loaded');
  }catch(error){
-  if(token===revision)message('Import refusé : '+error.message,true);
+  if(token===revision)message('msg.importRefused',()=>({msg:L.error(error)}),true);
  }finally{if(token===revision){importing=false;by('run').disabled=false;}}
 });
 by('run').addEventListener('click',()=>{
@@ -64,18 +71,23 @@ by('run').addEventListener('click',()=>{
   // Verify the full export up front, including size and quoting.
   C.stringify(result.rows,result.delimiter);
   draw(result);
-  message('Analyse terminée : '+result.before+' lignes, '+result.removed+' doublon(s) supprimé(s).');
- }catch(e){blank();message('Analyse refusée : '+e.message,true);}
+  const done=result;message('msg.done',()=>({rows:t('msg.rows',{n:done.before}),dups:t('msg.dups',{n:done.removed})}));
+ }catch(e){blank();message('msg.refused',()=>({msg:L.error(e)}),true);}
 });
 by('download').addEventListener('click',()=>{
  if(!result)return;
  try{
   const csv=C.stringify(result.rows,result.delimiter),blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
   const url=URL.createObjectURL(blob),a=document.createElement('a');
-  a.download='csvclinic-nettoye.csv';a.href=url;document.body.append(a);a.click();a.remove();
+  a.download='csvclinic-clean.csv';a.href=url;document.body.append(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),5000);
-  message('Export créé. Les cellules présentant un risque de formule reçoivent une apostrophe de protection.');
- }catch(e){message('Téléchargement refusé : '+e.message,true);}
+  message('msg.exported');
+ }catch(e){message('msg.downloadRefused',()=>({msg:L.error(e)}),true);}
+});
+// Nouvelle langue : textes réaffichés ; source, réglages et résultat déjà calculé conservés.
+L.onChange(()=>{
+ if(result)draw(result);else blank();
+ if(lastMessage)message(...lastMessage);
 });
 blank();
 if('serviceWorker'in navigator&&location.protocol.startsWith('http'))

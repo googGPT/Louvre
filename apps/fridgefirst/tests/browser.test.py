@@ -136,7 +136,55 @@ def run():
             context.set_offline(False)
             assert not errors, f'Unexpected JS page errors: {errors}'
             assert page.locator('body').evaluate('(node)=>node.scrollWidth <= innerWidth+2')
-            print('BROWSER PASS: stock, urgency, recipes, shopping, edit, consume, discard, export/import, offline PWA, mobile 390px')
+
+            # --- Langues : détection du navigateur, 7 langues complètes, arabe de droite à gauche, sans débordement.
+            intl = browser.new_context(viewport={'width':390,'height':844}, locale='es-MX', timezone_id='Europe/Paris')
+            ip = intl.new_page()
+            ip.on('pageerror', lambda error:errors.append(str(error)))
+            ip.goto(base, wait_until='domcontentloaded')
+            assert ip.locator('#view-inventaire h1').inner_text().startswith('Menos desperdicio.')  # navigateur espagnol -> espagnol
+            assert ip.evaluate('() => LouvreI18n.lang') == 'es'
+            soon = ip.evaluate('FridgeCore.addDays(FridgeCore.todayLocal(),1)')
+            for name in ['Tomates', 'Huevos', 'Cebolla']:  # noms espagnols reconnus par les recettes
+                add(ip, name, soon)
+            assert ip.locator('.food-row').count() == 3
+            assert 'verdura' in ip.locator('.food-row', has_text='Cebolla').inner_text()  # catégorie devinée et traduite
+            ip.locator('[data-view="recettes"]').click()
+            assert 'Todo está en stock' in ip.locator('[data-recipe="omelette"]').inner_text()
+            assert 'Tortilla de verduras' in ip.locator('[data-recipe="omelette"] h3').inner_text()
+            ip.locator('[data-view="courses"]').click()
+            ip.locator('#shopping-name').fill('Café')  # saisie en cours : conservée au changement de langue
+            for lang in ['fr', 'en', 'es', 'ar', 'pt', 'de', 'it']:
+                ip.locator('#louvre-lang').select_option(lang)
+                assert ip.evaluate('() => document.documentElement.dir') == ('rtl' if lang == 'ar' else 'ltr')
+                expected = ip.evaluate(f"() => LouvreMessages['{lang}']['shop.title']")
+                assert ip.locator('#view-courses h2 span').first.inner_text() == expected, lang
+                for view in ['courses', 'inventaire', 'recettes', 'bilan']:
+                    ip.locator(f'[data-view="{view}"]').click()
+                    wide = ip.evaluate('''() => document.documentElement.scrollWidth <= innerWidth + 2 ? [] :
+                      [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 2)
+                        .slice(0, 5).map((e) => `${e.tagName}.${e.className} « ${(e.textContent || '').trim().slice(0, 40)} »`)''')
+                    assert not wide, f'débordement en {lang} ({view}) : {wide}'
+                ip.locator('[data-view="courses"]').click()
+                assert ip.locator('#shopping-name').input_value() == 'Café'
+            assert ip.evaluate('() => LouvreI18n.missing()') == [], ip.evaluate('() => LouvreI18n.missing()')
+            ip.locator('#louvre-lang').select_option('en')
+            ip.locator('[data-view="inventaire"]').click()
+            assert ip.locator('#view-inventaire h1').inner_text().startswith('Less waste.')
+            assert 'Tomorrow' in ip.locator('.food-row').first.inner_text()
+            ip.locator('[data-view="recettes"]').click()
+            assert 'Vegetable omelette' in ip.locator('[data-recipe="omelette"] h3').inner_text()
+            ip.locator('[data-recipe="rizpoulet"] [data-recipe-add]').click()  # ingrédients manquants ajoutés en anglais
+            assert ip.locator('#shopping-list', has_text='rice').count() == 1
+            ip.locator('#louvre-lang').select_option('de')
+            ip.reload(wait_until='domcontentloaded')  # choix mémorisé
+            assert ip.locator('#view-inventaire h1').inner_text().startswith('Weniger Verschwendung.')
+            ip.locator('#import-input').set_input_files({'name': 'b.json', 'mimeType': 'application/json', 'buffer': b'{"version":2}'})
+            ip.locator('#toast').wait_for(state='visible')
+            assert ip.locator('#toast').inner_text() == 'Import abgelehnt: Unbekanntes Sicherungsformat.'
+            assert not errors, f'Unexpected JS page errors: {errors}'
+            intl.close()
+            print('BROWSER PASS: stock, urgency, recipes, shopping, edit, consume, discard, export/import, offline PWA, mobile 390px, 7 languages, RTL, multilingual recipe matching')
         finally:
             browser.close()
             srv.shutdown();srv.server_close()

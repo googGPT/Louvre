@@ -70,9 +70,17 @@ def apply(html):
     return html[:match.end()] + sep + tag + html[match.end():]
 
 
+def only():
+    """Slugs passés après --only (ex. --only fuelmath parkwise) ; vide = toutes les applis."""
+    return set(sys.argv[sys.argv.index("--only") + 1:]) if "--only" in sys.argv else set()
+
+
 def pages():
     """Pages d'applis concernées (index.html et sa copie index.htm)."""
+    keep = only()
     for app in sorted((ROOT / "apps").iterdir()):
+        if keep and app.name not in keep:
+            continue  # --only : ne touche pas aux autres applis
         for name in ("index.html", "index.htm"):
             page = app / name
             if page.is_file():

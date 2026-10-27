@@ -1,9 +1,10 @@
-/* ColorContrast v2 — calcul WCAG 2.x sans dépendances ni navigateur. */
+/* ColorContrast v2 — calcul WCAG 2.x sans dépendances ni navigateur.
+   Erreurs levées sous forme de clés traduites par l'interface (messages.js). */
 (function(root){'use strict';
 const MAX=100,MAX_BYTES=300000,THRESHOLDS=Object.freeze({aaNormal:4.5,aaaNormal:7,aaLarge:3,aaaLarge:4.5});
 function normalize(hex){
  if(typeof hex!=='string'||!/^#?(?:[a-f\d]{3}|[a-f\d]{6})$/i.test(hex))
-  throw Error('Couleur HEX invalide');
+  throw Error('err.hex');
  let h=hex.replace('#','').toUpperCase();
  if(h.length===3)h=[...h].map(k=>k+k).join('');
  return '#'+h;
@@ -11,7 +12,7 @@ function normalize(hex){
 function rgb(hex){const h=normalize(hex).slice(1);return [0,2,4].map(i=>parseInt(h.slice(i,i+2),16));}
 function fromRgb(c){
  if(!Array.isArray(c)||c.length!==3||c.some(v=>!Number.isInteger(v)||v<0||v>255))
-  throw Error('Canaux RVB invalides');
+  throw Error('err.rgb');
  return '#'+c.map(v=>v.toString(16).padStart(2,'0')).join('').toUpperCase();
 }
 function luminance(hex){
@@ -31,7 +32,7 @@ function bestOn(bg){
    Ne garantit pas la meilleure couleur perceptuelle parmi toutes les nuances possibles. */
 function suggestForeground(fg,bg,target=4.5){
  const source=rgb(fg),background=normalize(bg);
- if(![3,4.5,7].includes(target))throw Error('Seuil inconnu');
+ if(![3,4.5,7].includes(target))throw Error('err.target');
  const original=fromRgb(source),originalRatio=contrast(original,background);
  if(originalRatio>=target)return {hex:original,ratio:originalRatio,changed:false,target,reachable:true};
  const options=[];
@@ -60,14 +61,14 @@ function suggestForeground(fg,bg,target=4.5){
 function validateBackup(data){
  if(!data||typeof data!=='object'||Array.isArray(data)||data.version!==1||
   !Array.isArray(data.pairs)||data.pairs.length>MAX||
-  Object.keys(data).some(k=>!['version','pairs'].includes(k)))throw Error('Sauvegarde invalide');
+  Object.keys(data).some(k=>!['version','pairs'].includes(k)))throw Error('err.backup');
  const pairs=data.pairs.map(x=>{
   if(!x||typeof x!=='object'||Array.isArray(x)||
-   Object.keys(x).some(k=>!['fg','bg'].includes(k)))throw Error('Palette invalide');
+   Object.keys(x).some(k=>!['fg','bg'].includes(k)))throw Error('err.pair');
   return {fg:normalize(x.fg),bg:normalize(x.bg)};
  });
  const result={version:1,pairs};
- if(JSON.stringify(result).length>MAX_BYTES)throw Error('Sauvegarde trop volumineuse');
+ if(JSON.stringify(result).length>MAX_BYTES)throw Error('err.tooBig');
  return result;
 }
 function summarize(pairs){

@@ -11,7 +11,7 @@ try:
  with sync_playwright() as p:
   exe=os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium') if os.path.exists(os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium')) else '/usr/bin/google-chrome' if os.path.exists('/usr/bin/google-chrome') else None
   browser=p.chromium.launch(executable_path=exe,headless=True,args=['--no-sandbox'])
-  page=browser.new_page(viewport={'width':390,'height':844},accept_downloads=True)
+  page=browser.new_page(viewport={'width':390,'height':844},accept_downloads=True,locale='fr-FR')
   errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
   page.goto(f'http://127.0.0.1:{port}/',wait_until='domcontentloaded')
   page.wait_for_selector('#record-form input')
@@ -37,6 +37,37 @@ try:
   page.wait_for_timeout(1200);page.reload();page.wait_for_timeout(450)
   page.context.set_offline(True);page.reload(wait_until='domcontentloaded');page.wait_for_selector('#record-form input')
   assert page.locator('#items .item').count()==1
+  page.context.set_offline(False)
+  # --- Langues : détection, 7 langues complètes, arabe RTL, valeurs stockées inchangées, saisie conservée.
+  intl=browser.new_context(viewport={'width':390,'height':844},locale='pt-BR')
+  ip=intl.new_page();ip.on('pageerror',lambda e:errors.append(str(e)));ip.on('dialog',lambda x:x.accept())
+  ip.goto(f'http://127.0.0.1:{port}/',wait_until='domcontentloaded');ip.wait_for_selector('#record-form input')
+  assert ip.locator('h2').first.inner_text()=='Nova ficha'
+  assert ip.locator('#louvre-currency').count()==0
+  ip.locator('[name="item"]').fill('Passaporte');ip.locator('[name="bag"]').fill('Mochila');ip.locator('[name="quantity"]').fill('1')
+  ip.locator('[name="importance"]').select_option('essentiel');ip.locator('[name="packed"]').select_option('oui')
+  assert ip.locator('[name="importance"] option:checked').inner_text()=='essencial'
+  ip.locator('#save-button').click();ip.wait_for_function('() => (document.querySelectorAll("#items .item").length===1)')
+  assert 'sim' in ip.locator('#items .item').inner_text()
+  assert ip.evaluate("() => JSON.parse(localStorage.getItem('louvre-factory:trippack:v1')).records[0].packed")=='oui'  # stockage inchangé
+  ip.locator('[name="item"]').fill('Rascunho')
+  heads={'fr':'Tableau de bord','en':'Dashboard','es':'Panel','ar':'لوحة المتابعة','pt':'Painel','de':'Übersicht','it':'Cruscotto'}
+  for lang in ['fr','en','es','ar','pt','de','it']:
+   ip.locator('#louvre-lang').select_option(lang)
+   assert ip.evaluate('() => document.documentElement.dir')==('rtl' if lang=='ar' else 'ltr')
+   wide=ip.evaluate('''() => document.documentElement.scrollWidth <= innerWidth + 2 ? [] :
+     [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 2)
+       .slice(0, 5).map((e) => `${e.tagName}.${e.className} « ${(e.textContent || '').trim().slice(0, 40)} »`)''')
+   assert not wide,f'débordement en {lang} : {wide}'
+   assert ip.locator('h2').nth(1).inner_text()==heads[lang]
+   assert ip.locator('#items .item').count()==1
+   assert ip.locator('[name="item"]').input_value()=='Rascunho'
+  assert ip.evaluate('() => LouvreI18n.missing()')==[],ip.evaluate('() => LouvreI18n.missing()')
+  ip.locator('#louvre-lang').select_option('de')
+  assert 'Vorbereitung' in ip.locator('#summary').inner_text() and '100' in ip.locator('#summary').inner_text()
+  ip.locator('[name="item"]').fill('   ');ip.locator('[name="bag"]').fill('Koffer');ip.locator('[name="quantity"]').fill('1');ip.locator('#save-button').click()
+  assert ip.locator('#status').inner_text()=='Mitzunehmender Gegenstand: Text erforderlich (höchstens 160 Zeichen)',ip.locator('#status').inner_text()
+  assert not errors,errors
   browser.close()
- print('BROWSER PASS: create, reload, search, edit, delete, JSON export/import, offline reload, 390px mobile; app=trippack')
+ print('BROWSER PASS: create, reload, search, edit, delete, JSON export/import, offline reload, 390px mobile, 7 languages, RTL; app=trippack')
 finally:server.shutdown();server.server_close()

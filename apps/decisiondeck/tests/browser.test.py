@@ -17,7 +17,7 @@ def run():
         with sync_playwright() as pw:
             exe=os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium') if os.path.isfile(os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium')) else None
             browser=pw.chromium.launch(headless=True,executable_path=exe,args=['--no-sandbox'])
-            ctx=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True)
+            ctx=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True,locale='fr-FR')
             page=ctx.new_page();errors=[]
             page.on('pageerror',lambda x:errors.append(str(x)))
             page.goto(f'http://127.0.0.1:{server.server_port}/',wait_until='domcontentloaded')
@@ -62,7 +62,41 @@ def run():
             ctx.set_offline(True);page.reload(wait_until='domcontentloaded')
             page.wait_for_function("() => (document.querySelectorAll('#items .item').length>=7)")
             assert not errors,errors
+            ctx.set_offline(False)
+
+            # --- Langues : détection, 7 langues sans débordement, saisie conservée, nombres et erreurs traduits.
+            intl=browser.new_context(viewport={'width':390,'height':844},locale='it-IT')
+            ip=intl.new_page()
+            ip.on('pageerror',lambda x:errors.append(str(x)))
+            ip.goto(f'http://127.0.0.1:{server.server_port}/',wait_until='domcontentloaded')
+            expect(ip.locator('h1')).to_contain_text('Confronta le tue opzioni.')  # navigateur italien -> italien
+            ip.locator('#sample').click()
+            expect(ip.locator('#insights li').first).to_have_text('1. Opzione A: 8,33/10')  # exemple créé en italien
+            ip.locator('[name=option]').fill('Bozza')  # saisie en cours
+            for lang in ['fr','en','es','ar','pt','de','it']:
+                ip.locator('#louvre-lang').select_option(lang)
+                assert ip.evaluate('() => document.documentElement.dir')==('rtl' if lang=='ar' else 'ltr')
+                expected=ip.evaluate(f"() => LouvreMessages['{lang}']['rank.title']")
+                expect(ip.locator('[data-i18n="rank.title"]')).to_have_text(expected)
+                expect(ip.locator('#summary .stat-label').first).to_have_text(ip.evaluate(f"() => LouvreMessages['{lang}']['kpi.options']"))
+                assert ip.locator('[name=option]').input_value()=='Bozza'
+                wide=ip.evaluate('''() => document.documentElement.scrollWidth <= innerWidth + 2 ? [] :
+                  [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 2)
+                    .slice(0, 5).map((e) => `${e.tagName}.${e.className} « ${(e.textContent || '').trim().slice(0, 40)} »`)''')
+                assert not wide,f'débordement en {lang} : {wide}'
+            assert ip.evaluate('() => LouvreI18n.missing()')==[],ip.evaluate('() => LouvreI18n.missing()')
+            ip.locator('#louvre-lang').select_option('en')
+            expect(ip.locator('#insights li').first).to_have_text('1. Opzione A: 8.33/10')
+            expect(ip.locator('#save-button')).to_have_text('Save')
+            ip.locator('#louvre-lang').select_option('de')
+            ip.locator('[name=option]').fill('Opzione A'); ip.locator('[name=criterion]').fill('Costo')
+            expect(ip.locator('#preview')).to_contain_text('gibt es schon')
+            ip.locator('[name=option]').fill('Opzione C'); ip.locator('[name=criterion]').fill('Neu'); ip.locator('[name=weight]').fill('2'); ip.locator('[name=score]').fill('5')
+            ip.locator('#save-button').click()
+            expect(ip.locator('#issues')).to_contain_text('fehlende Kriterien')
+            expect(ip.locator('#status')).to_have_text('Bewertung auf diesem Gerät gespeichert.')
+            assert not errors,errors
             browser.close()
-            print('BROWSER PASS: create, reload, example, inconsistent criteria warning, search, edit, delete, JSON/CSV, restore, offline, 390px')
+            print('BROWSER PASS: create, reload, example, inconsistent criteria warning, search, edit, delete, JSON/CSV, restore, offline, 390px, 7 languages, RTL, translated issues')
     finally:server.shutdown();server.server_close()
 if __name__=='__main__':run()

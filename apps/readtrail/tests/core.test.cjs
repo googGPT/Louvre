@@ -12,4 +12,5 @@ test('calcul stable et source intacte',()=>{const before=JSON.stringify(base),a=
 test('dates réelles et changement d’heure',()=>{assert.equal(L.diffDays('2026-03-30','2026-03-29'),1);assert.equal(L.addDays('2026-03-28',2),'2026-03-30')});
 test('entrée non fiable ne peut générer HTML dans les vues',()=>{assert.equal(typeof L.normalizeRecord(mk({[L.SPEC.fields.find(f=>f.type==='text')?.key || 'id']:'<script>alert(1)</script>'})).id,'string')});
 
-test('résultat métier concret',()=>{const m=L.compute([base],today);assert.equal(m.kpis[1][1],'240');assert.equal(m.kpis[2][1],'25 %')});
+test('résultat métier concret',()=>{const m=L.compute([base],today);assert.equal(m.kpis[1][1],'240');assert.deepEqual(m.kpis[2],['kpi.progress','25','percent']);assert.deepEqual(m.rows,[{title:'Exemple',pct:25}])});
+test('erreurs levées sous forme de clés de traduction',()=>{assert.throws(()=>L.normalizeRecord(mk({read:400})),/^Error: err\.pages$/);assert.throws(()=>L.normalizeRecord(mk({title:' '})),/^Error: err\.title\|\{"max":160\}$/);assert.throws(()=>L.normalizeRecord(mk({status:'lu'})),/^Error: err\.status$/)});

@@ -22,7 +22,7 @@ def run():
     try:
         with sync_playwright() as p:
             browser=p.chromium.launch(headless=True, executable_path=os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium'), args=['--no-sandbox'])
-            context=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True)
+            context=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True,locale='fr-FR')
             page=context.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
             page.goto(f'http://127.0.0.1:{server.server_port}/',wait_until='domcontentloaded')
             assert page.title().startswith('LoanSim')
@@ -38,8 +38,41 @@ def run():
             offline(page,context)
             assert '100,00' in page.locator('#payment').inner_text()
             assert not errors,errors
+
+            # --- Langues : détection, 7 langues, arabe de droite à gauche, devise choisie, saisie conservée.
+            intl=browser.new_context(viewport={'width':390,'height':844},locale='pt-BR',accept_downloads=True)
+            ip=intl.new_page();ip.on('pageerror',lambda e:errors.append(str(e)))
+            ip.goto(f'http://127.0.0.1:{server.server_port}/',wait_until='domcontentloaded')
+            assert ip.evaluate('() => LouvreI18n.lang')=='pt' and ip.evaluate('() => LouvreI18n.currency')=='BRL'
+            ip.locator('#principal').fill('1200');ip.locator('#apr').fill('0');ip.locator('#months').fill('12');ip.locator('#extra').fill('100');ip.locator('#fees').fill('0');ip.locator('#form button[type=submit]').click()
+            assert 'R$' in ip.locator('#payment').inner_text() and '100,00' in ip.locator('#payment').inner_text()
+            assert ip.locator('.cur').first.inner_text()=='R$'
+            assert ip.locator('#saved-months').inner_text()=='6 meses'
+            ip.locator('#apr').fill('2.5')  # saisie en cours, non validée
+            heads={'fr':"Tableau d'amortissement",'en':'Amortisation schedule','es':'Cuadro de amortización','ar':'جدول الاستهلاك','pt':'Plano de amortização','de':'Tilgungsplan','it':'Piano di ammortamento'}
+            for lang in ['fr','en','es','ar','pt','de','it']:
+                ip.locator('#louvre-lang').select_option(lang)
+                assert ip.evaluate('() => document.documentElement.lang')==lang
+                assert ip.evaluate('() => document.documentElement.dir')==('rtl' if lang=='ar' else 'ltr')
+                wide=ip.evaluate('''() => document.documentElement.scrollWidth <= innerWidth + 2 ? [] :
+                  [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 2)
+                    .slice(0, 5).map((e) => `${e.tagName}.${e.className} « ${(e.textContent || '').trim().slice(0, 40)} »`)''')
+                assert not wide,f'débordement en {lang} : {wide}'
+                assert ip.locator('.schedule h2').inner_text()==heads[lang]
+                assert ip.locator('#apr').input_value()=='2.5'
+                assert ip.locator('#schedule tr').count()==6
+                assert ip.evaluate('() => LouvreI18n.missing()')==[],ip.evaluate('() => LouvreI18n.missing()')
+            assert ip.locator('#saved-months').inner_text()=='6 mesi'
+            ip.locator('#louvre-lang').select_option('en')
+            ip.locator('#louvre-currency').select_option('MAD')
+            assert 'MAD' in ip.locator('#payment').inner_text() and ip.locator('#schedule tr').count()==6
+            with ip.expect_download() as d:ip.locator('#csv').click()
+            assert pathlib.Path(d.value.path()).read_text().startswith('Month,Payment MAD')
+            ip.locator('#months').fill('4.5');ip.locator('#months').dispatch_event('change')
+            assert ip.locator('#error').inner_text()=='Term must be a whole number'
+            assert not errors,errors
             browser.close()
-        print('BROWSER PASS LoanSim: comparison, correct amortization, CSV, offline, mobile')
+        print('BROWSER PASS LoanSim: comparison, correct amortization, CSV, offline, mobile, 7 languages, RTL, currency')
     finally: server.shutdown()
 
 if __name__=='__main__':run()

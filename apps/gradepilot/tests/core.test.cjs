@@ -105,3 +105,12 @@ test('CSV protège formules et échappement guillemets',()=>{
 test('CSV protège aussi les signes moins',()=>{
  const text=C.toCSV([grade({label:' -1+1'})]);assert.match(text,/"'-1\+1"/);
 });
+
+test('erreurs du moteur sous forme de clés traduisibles',()=>{
+ assert.throws(()=>C.grade(grade({score:21})),/^Error: err\.number\|\{"field":"score"\}$/);
+ assert.throws(()=>C.requirement([one],12,0),/^Error: err\.number\|\{"field":"nextCoefficient"\}$/);
+ assert.throws(()=>C.validateState({version:2,grades:[]}),/^Error: err\.format$/);
+});
+test('CSV avec en-têtes traduits, échelle sur 20 conservée',()=>{
+ const text=C.toCSV([one],['Assessment','Grade /20','Weight']);assert.ok(text.startsWith('﻿"Assessment";"Grade /20";"Weight"'));
+});

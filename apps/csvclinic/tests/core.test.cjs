@@ -26,25 +26,25 @@ t('supporte fin de ligne CRLF, CR et LF',()=>{
 });
 t('préserve cellules quoted vides en fin de ligne',()=>a.deepEqual(C.parse('A,B\nx,""',',').rows,[['A','B'],['x','']]));
 t('préserve tab et retour de ligne dans les champs cités',()=>a.equal(C.parse('A,B\n"x\t\r\ny",ok',',').rows[1][0],'x\t\r\ny'));
-t('rejette guillemets non échappés au milieu d’un champ',()=>a.throws(()=>C.parse('a,b\nv"u,x',','),/Guillemet non échappé/));
-t('rejette caractère après guillemets',()=>a.throws(()=>C.parse('a,b\n"x"y,z',','),/Caractère après/));
+t('rejette guillemets non échappés au milieu d’un champ',()=>a.throws(()=>C.parse('a,b\nv"u,x',','),/err\.unescapedQuote\|\{"line":2\}/));
+t('rejette caractère après guillemets',()=>a.throws(()=>C.parse('a,b\n"x"y,z',','),/err\.afterQuote/));
 t('accepte espace après guillemets fermants en tolérance',()=>a.equal(C.parse('A,B\n"x"  ,z',',').rows[1][0],'x'));
-t('refuse tabulateur comme séparateur implicite si virgule choisie',()=>a.throws(()=>C.parse('a,b\n1\t2',','),/incohérent/));
-t('aucun résultat CSV pour un seul en-tête',()=>a.throws(()=>C.parse('A,B',','),/Au moins/));
+t('refuse tabulateur comme séparateur implicite si virgule choisie',()=>a.throws(()=>C.parse('a,b\n1\t2',','),/err\.columnsMismatch/));
+t('aucun résultat CSV pour un seul en-tête',()=>a.throws(()=>C.parse('A,B',','),/err\.needData/));
 t('limite d’entrée mesurée en octets et non caractères JS',()=>{
  const data='A\n'+'é'.repeat(530000);a.ok(data.length<C.MAX_SOURCE_BYTES);
- a.throws(()=>C.parse(data,','),/volumineuse/);
+ a.throws(()=>C.parse(data,','),/err\.sourceBig/);
 });
 t('maximum 5 000 lignes de données accepté',()=>{
  const s='A\n'+Array.from({length:5000},()=>('x')).join('\n');a.equal(C.parse(s,',').rows.length,5001);
 });
-t('5 001 lignes de données refusées',()=>a.throws(()=>C.parse('A\n'+'x\n'.repeat(5001),','),/5 000 lignes/));
+t('5 001 lignes de données refusées',()=>a.throws(()=>C.parse('A\n'+'x\n'.repeat(5001),','),/err\.tooManyRows\|\{"max":5000\}/));
 t('40 colonnes acceptées et 41 refusées',()=>{
  const h=Array.from({length:40},(_,i)=>'H'+i).join(','),v=Array(40).fill('x').join(',');
  a.equal(C.parse(h+'\n'+v,',').rows[0].length,40);
- a.throws(()=>C.parse(h+',H40\n'+v+',x',','),/40 colonnes/);
+ a.throws(()=>C.parse(h+',H40\n'+v+',x',','),/err\.tooManyColumns\|\{"max":40\}/);
 });
-t('refuse lignes de longueurs différentes avec numéro de ligne',()=>a.throws(()=>C.parse('A;B\n1;2\n3',';'),/ligne 3/));
+t('refuse lignes de longueurs différentes avec numéro de ligne',()=>a.throws(()=>C.parse('A;B\n1;2\n3',';'),/err\.columnsMismatch\|\{"line":3,"found":1,"expected":2\}/));
 t('rejet de tableaux forgés avec mauvaises cellules ou colonnes',()=>{
  for(const table of [
   {delimiter:',',rows:[['a'],['x',1]]},
@@ -53,8 +53,8 @@ t('rejet de tableaux forgés avec mauvaises cellules ou colonnes',()=>{
   {delimiter:',',rows:[[],[]]}
  ])a.throws(()=>C.normalizeTable(table,{trim:true,dedupe:'none'}));
 });
-t('en-têtes uniquement espaces deviennent invalides après trim',()=>a.throws(()=>C.normalizeTable(C.parse('   ,B\n1,2',','),{trim:true,dedupe:'full'}),/En-tête vide/));
-t('entêtes fusionnés par trim sont refusés',()=>a.throws(()=>C.normalizeTable(C.parse(' A,A \n1,2',','),{trim:true,dedupe:'full'}),/dupliqués/));
+t('en-têtes uniquement espaces deviennent invalides après trim',()=>a.throws(()=>C.normalizeTable(C.parse('   ,B\n1,2',','),{trim:true,dedupe:'full'}),/err\.emptyHeader/));
+t('entêtes fusionnés par trim sont refusés',()=>a.throws(()=>C.normalizeTable(C.parse(' A,A \n1,2',','),{trim:true,dedupe:'full'}),/err\.duplicateHeaders/));
 t('doublons préservent l’ordre original',()=>{
  const r=C.normalizeTable(C.parse('ID,Value\n1,A\n2,B\n1,A\n3,C',','),{trim:true,dedupe:'full'});
  a.deepEqual(r.rows.slice(1),[['1','A'],['2','B'],['3','C']]);

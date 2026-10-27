@@ -2,8 +2,8 @@
 // Généré par scripts/build_sw.py : ne pas modifier à la main (relancer le script).
 // Le nom du cache contient une empreinte du contenu : toute modification de l'appli
 // produit un nouveau nom, donc une mise à jour automatique chez les visiteurs.
-const CACHE = "louvre-keyboardcoach-f0612ea7354b";
-const ASSETS = ["./", "./app.js", "./core.js", "./icon.svg", "./index.htm", "./index.html", "./manifest.webmanifest", "./style.css"];
+const CACHE = "louvre-keyboardcoach-95b5ba0d9aa0";
+const ASSETS = ["./", "./app.js", "./core.js", "./icon.svg", "./index.htm", "./index.html", "./louvre-i18n.css", "./louvre-i18n.js", "./manifest.webmanifest", "./messages.js", "./style.css"];
 const OLD_PREFIXES = ["louvre-keyboardcoach-"];
 
 self.addEventListener('install', (event) => {

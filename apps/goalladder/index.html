@@ -8,44 +8,45 @@
 <link rel="icon" href="./icon.svg" type="image/svg+xml">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
 </head>
 <body>
 <header class="hero">
-  <div class="brand"><span class="brand-icon" aria-hidden="true">▤</span><strong>GoalLadder <span class="tag">v2</span></strong><span class="privacy">100 % local</span></div>
-  <p class="eyebrow">Planification personnelle · sans inscription</p>
-  <h1>Vos ambitions deviennent<br><span>des étapes concrètes.</span></h1>
-  <p class="intro">Fixez un objectif, découpez-le en jalons et suivez votre progression. Vos données restent sur cet appareil, sans service payant.</p>
+  <div class="brand"><span class="brand-icon" aria-hidden="true">▤</span><strong>GoalLadder <span class="tag">v2</span></strong><span class="privacy" data-i18n="privacy">100 % local</span><div data-louvre-locale="lang-only"></div></div>
+  <p class="eyebrow" data-i18n="eyebrow">Planification personnelle · sans inscription</p>
+  <h1><span data-i18n="hero.h1a">Vos ambitions deviennent</span><br><span data-i18n="hero.h1b">des étapes concrètes.</span></h1>
+  <p class="intro" data-i18n="intro">Fixez un objectif, découpez-le en jalons et suivez votre progression. Vos données restent sur cet appareil, sans service payant.</p>
 </header>
 <main>
   <section class="panel editor" aria-labelledby="editor-title">
-    <div class="section-top"><h2 id="editor-title">Créer une étape</h2><span class="hint">Un jalon à la fois</span></div>
+    <div class="section-top"><h2 id="editor-title" data-i18n="editor.title">Créer une étape</h2><span class="hint" data-i18n="editor.hint">Un jalon à la fois</span></div>
     <form id="record-form" autocomplete="off">
       <div id="fields"></div>
-      <div class="actions"><button type="submit" id="save-button">Ajouter cette étape</button><button class="outline" type="button" id="cancel-edit" hidden>Annuler</button></div>
+      <div class="actions"><button type="submit" id="save-button">Ajouter cette étape</button><button class="outline" type="button" id="cancel-edit" hidden data-i18n="btn.cancel">Annuler</button></div>
     </form>
     <p id="status" class="status" role="status" aria-live="polite"></p>
-    <p id="warning" class="warning" hidden>Le stockage est illisible. Téléchargez d'abord la copie brute, puis restaurez un JSON valide. Rien ne sera écrasé automatiquement.</p>
-    <div class="files"><button class="outline small" id="export" type="button">Sauvegarder JSON</button><button class="outline small" id="export-csv" type="button">Exporter CSV</button><label class="upload small">Restaurer JSON<input id="import" type="file" accept=".json,application/json" aria-label="Restaurer une sauvegarde JSON"></label><button class="outline small" id="export-raw" type="button">Copie brute</button></div>
-    <p class="fine">Les fichiers JSON permettent de restaurer les étapes ; le CSV sert à les consulter dans un tableur.</p>
+    <p id="warning" class="warning" hidden data-i18n="warning">Le stockage est illisible. Téléchargez d'abord la copie brute, puis restaurez un JSON valide. Rien ne sera écrasé automatiquement.</p>
+    <div class="files"><button class="outline small" id="export" type="button" data-i18n="btn.export">Sauvegarder JSON</button><button class="outline small" id="export-csv" type="button" data-i18n="btn.csv">Exporter CSV</button><label class="upload small"><span data-i18n="btn.import">Restaurer JSON</span><input id="import" type="file" accept=".json,application/json" data-i18n-attr="aria-label:aria.import" aria-label="Restaurer une sauvegarde JSON"></label><button class="outline small" id="export-raw" type="button" data-i18n="btn.raw">Copie brute</button></div>
+    <p class="fine" data-i18n="files.note">Les fichiers JSON permettent de restaurer les étapes ; le CSV sert à les consulter dans un tableur.</p>
   </section>
   <div class="workspace">
     <section class="panel" aria-labelledby="overview-title">
-      <div class="section-top"><h2 id="overview-title">Vue d'ensemble</h2><span class="hint">Recalcul en direct</span></div>
+      <div class="section-top"><h2 id="overview-title" data-i18n="overview.title">Vue d'ensemble</h2><span class="hint" data-i18n="overview.hint">Recalcul en direct</span></div>
       <div id="summary" class="stats"></div>
-      <h3 class="subheading">Progression par objectif</h3>
+      <h3 class="subheading" data-i18n="overview.progress">Progression par objectif</h3>
       <div id="goal-progress" class="goals"></div>
     </section>
     <section class="panel history" aria-labelledby="history-title">
-      <div class="section-top"><div><h2 id="history-title">Vos étapes</h2><p class="fine">Les tâches en retard sont distinctes des tâches à venir.</p></div><strong class="counter" id="counter">0 / 0 étapes</strong></div>
+      <div class="section-top"><div><h2 id="history-title" data-i18n="history.title">Vos étapes</h2><p class="fine" data-i18n="history.note">Les tâches en retard sont distinctes des tâches à venir.</p></div><strong class="counter" id="counter">0 / 0 étapes</strong></div>
       <div class="toolbar">
-        <label class="tool" for="search"><span>Rechercher</span><input type="search" id="search" placeholder="Objectif, étape, priorité…"></label>
-        <label class="tool" for="filter-status"><span>Statut</span><select id="filter-status"><option value="all">Toutes</option><option value="todo">À faire</option><option value="soon">Sous 7 jours</option><option value="overdue">En retard</option><option value="done">Terminées</option></select></label>
-        <label class="tool" for="sort"><span>Ordre</span><select id="sort"><option value="due">Échéance proche</option><option value="priority">Priorité</option><option value="recent">Ajout récent</option></select></label>
+        <label class="tool" for="search"><span data-i18n="search.label">Rechercher</span><input type="search" id="search" data-i18n-attr="placeholder:search.ph" placeholder="Objectif, étape, priorité…"></label>
+        <label class="tool" for="filter-status"><span data-i18n="filter.label">Statut</span><select id="filter-status"><option value="all" data-i18n="filter.all">Toutes</option><option value="todo" data-i18n="filter.todo">À faire</option><option value="soon" data-i18n="filter.soon">Sous 7 jours</option><option value="overdue" data-i18n="filter.overdue">En retard</option><option value="done" data-i18n="filter.done">Terminées</option></select></label>
+        <label class="tool" for="sort"><span data-i18n="sort.label">Ordre</span><select id="sort"><option value="due" data-i18n="sort.due">Échéance proche</option><option value="priority" data-i18n="sort.priority">Priorité</option><option value="recent" data-i18n="sort.recent">Ajout récent</option></select></label>
       </div>
       <div id="items" class="items"></div>
     </section>
   </div>
 </main>
-<footer>GoalLadder · Sans compte ni API. Jusqu'à 500 étapes dans le navigateur. Exportez régulièrement votre sauvegarde JSON. Le mode hors ligne nécessite une première ouverture réussie. Aucune synchronisation entre appareils.</footer>
-<script src="./core.js"></script><script src="./app.js"></script>
+<footer data-i18n="footer">GoalLadder · Sans compte ni API. Jusqu'à 500 étapes dans le navigateur. Exportez régulièrement votre sauvegarde JSON. Le mode hors ligne nécessite une première ouverture réussie. Aucune synchronisation entre appareils.</footer>
+<script src="./louvre-i18n.js"></script><script src="./messages.js"></script><script src="./core.js"></script><script src="./app.js"></script>
 </body></html>

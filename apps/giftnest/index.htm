@@ -11,38 +11,39 @@
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
 </head>
 <body>
 <div class="wrap">
 <header class="top">
-  <div class="brand"><img src="./icon.svg" alt=""><div><strong>GiftNest</strong><small>Idées de cadeaux et budgets</small></div></div>
-  <span class="badge">Local · sans compte</span>
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>GiftNest</strong><small data-i18n="brand.tagline">Idées de cadeaux et budgets</small></div></div>
+  <div class="row" style="gap:8px"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale></div></div>
 </header>
 <section class="hero">
-  <h1>Le bon cadeau, au bon moment, dans le budget.</h1>
-  <p>Notez une idée dès qu'elle vous vient, rattachez-la à une personne et à une occasion, puis suivez-la : idée, acheté, offert. GiftNest garde l'œil sur les budgets et le compte à rebours des anniversaires.</p>
+  <h1 data-i18n="hero.title">Le bon cadeau, au bon moment, dans le budget.</h1>
+  <p data-i18n="hero.text">Notez une idée dès qu'elle vous vient, rattachez-la à une personne et à une occasion, puis suivez-la : idée, acheté, offert. GiftNest garde l'œil sur les budgets et le compte à rebours des anniversaires.</p>
 </section>
-<p id="warning" class="warning" hidden>Les données enregistrées sur cet appareil sont illisibles. Rien ne sera écrasé : exportez la copie brute, puis restaurez une sauvegarde valide.</p>
+<p id="warning" class="warning" hidden data-i18n="warning">Les données enregistrées sur cet appareil sont illisibles. Rien ne sera écrasé : exportez la copie brute, puis restaurez une sauvegarde valide.</p>
 
 <div class="kpis four">
-  <div class="kpi"><span>Dépensé</span><strong id="k-spent">0 €</strong></div>
-  <div class="kpi"><span>Prévu (idées)</span><strong id="k-planned">0 €</strong></div>
-  <div class="kpi"><span>À emballer</span><strong id="k-wrap">0</strong></div>
-  <div class="kpi"><span>Offerts</span><strong id="k-given">0</strong></div>
+  <div class="kpi"><span data-i18n="kpi.spent">Dépensé</span><strong id="k-spent">0 €</strong></div>
+  <div class="kpi"><span data-i18n="kpi.planned">Prévu (idées)</span><strong id="k-planned">0 €</strong></div>
+  <div class="kpi"><span data-i18n="kpi.wrap">À emballer</span><strong id="k-wrap">0</strong></div>
+  <div class="kpi"><span data-i18n="kpi.given">Offerts</span><strong id="k-given">0</strong></div>
 </div>
 
 <section class="panel" aria-labelledby="h-occ">
-  <h2 id="h-occ">Prochaines occasions</h2>
+  <h2 id="h-occ" data-i18n="occ.title">Prochaines occasions</h2>
   <div class="occ" id="occasions"></div>
   <details style="margin-top:12px">
-    <summary style="cursor:pointer;font-weight:650">Ajouter une occasion</summary>
+    <summary style="cursor:pointer;font-weight:650" data-i18n="occ.add">Ajouter une occasion</summary>
     <form id="occ-form" novalidate style="margin-top:10px">
       <div class="two-col">
-        <label class="field">Occasion<input name="name" maxlength="60" placeholder="ex. Anniversaire de Léa" required></label>
-        <label class="field">Date<input name="date" type="date" required></label>
-        <label class="field inline-check full"><input name="yearly" type="checkbox" checked> Revient chaque année</label>
+        <label class="field"><span data-i18n="f.occasion">Occasion</span><input name="name" maxlength="60" data-i18n-attr="placeholder:f.occasionPh" placeholder="ex. Anniversaire de Léa" required></label>
+        <label class="field"><span data-i18n="f.date">Date</span><input name="date" type="date" required></label>
+        <label class="field inline-check full"><input name="yearly" type="checkbox" checked> <span data-i18n="f.yearly">Revient chaque année</span></label>
       </div>
-      <button class="btn primary" id="add-occ" type="submit">Ajouter l'occasion</button>
+      <button class="btn primary" id="add-occ" type="submit" data-i18n="btn.addOcc">Ajouter l'occasion</button>
       <p class="status" id="occ-status" role="status"></p>
     </form>
   </details>
@@ -50,48 +51,50 @@
 
 <div class="grid" style="margin-top:16px">
   <section class="panel" aria-labelledby="h-gifts">
-    <h2 id="h-gifts">Cadeaux</h2>
+    <h2 id="h-gifts" data-i18n="gifts.title">Cadeaux</h2>
     <form id="gift-form" novalidate>
       <div class="two-col">
-        <label class="field full">Idée de cadeau<input name="title" maxlength="100" placeholder="ex. Livre de recettes" required></label>
-        <label class="field">Pour<select name="person"></select></label>
-        <label class="field">Occasion<select name="occasion"></select></label>
-        <label class="field">Prix (€, facultatif)<input name="price" inputmode="decimal" placeholder="25"></label>
-        <label class="field">Statut<select name="status"><option>idée</option><option>acheté</option><option>offert</option></select></label>
+        <label class="field full"><span data-i18n="f.title">Idée de cadeau</span><input name="title" maxlength="100" data-i18n-attr="placeholder:f.titlePh" placeholder="ex. Livre de recettes" required></label>
+        <label class="field"><span data-i18n="f.person">Pour</span><select name="person"></select></label>
+        <label class="field"><span data-i18n="f.occasion">Occasion</span><select name="occasion"></select></label>
+        <label class="field"><span><span data-i18n="f.price">Prix</span> (<bdi class="cur-symbol">€</bdi>, <span data-i18n="f.optional">facultatif</span>)</span><input name="price" inputmode="decimal" placeholder="25"></label>
+        <label class="field"><span data-i18n="f.status">Statut</span><select name="status"><option value="idée" data-i18n="status.idea">idée</option><option value="acheté" data-i18n="status.bought">acheté</option><option value="offert" data-i18n="status.given">offert</option></select></label>
       </div>
-      <div class="row"><button class="btn primary" id="add-gift" type="submit">Ajouter le cadeau</button><button class="btn" id="sample" type="button">Exemples</button></div>
+      <div class="row"><button class="btn primary" id="add-gift" type="submit" data-i18n="btn.addGift">Ajouter le cadeau</button><button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemples</button></div>
       <p class="status" id="gift-status" role="status"></p>
     </form>
     <div class="row" style="margin:14px 0 10px">
-      <label class="visually-hidden" for="filter">Filtrer par personne</label>
+      <label class="visually-hidden" for="filter" data-i18n="filter.label">Filtrer par personne</label>
       <select id="filter" style="width:auto"></select>
     </div>
     <ul class="list" id="gifts"></ul>
   </section>
 
   <section class="panel" aria-labelledby="h-people">
-    <h2 id="h-people">Personnes et budgets</h2>
+    <h2 id="h-people" data-i18n="people.title">Personnes et budgets</h2>
     <ul class="list" id="people"></ul>
     <form id="person-form" novalidate style="margin-top:12px">
       <div class="two-col">
-        <label class="field">Nom<input name="name" maxlength="60" placeholder="ex. Léa" required></label>
-        <label class="field">Budget (€, facultatif)<input name="budget" inputmode="decimal" placeholder="50"></label>
+        <label class="field"><span data-i18n="f.name">Nom</span><input name="name" maxlength="60" data-i18n-attr="placeholder:f.namePh" placeholder="ex. Léa" required></label>
+        <label class="field"><span><span data-i18n="f.budget">Budget</span> (<bdi class="cur-symbol">€</bdi>, <span data-i18n="f.optional">facultatif</span>)</span><input name="budget" inputmode="decimal" placeholder="50"></label>
       </div>
-      <button class="btn primary" id="add-person" type="submit">Ajouter la personne</button>
+      <button class="btn primary" id="add-person" type="submit" data-i18n="btn.addPerson">Ajouter la personne</button>
       <p class="status" id="person-status" role="status"></p>
     </form>
-    <h2 style="margin-top:20px">Sauvegarde</h2>
+    <h2 style="margin-top:20px" data-i18n="backup.title">Sauvegarde</h2>
     <div class="row">
-      <button class="btn" id="export" type="button">Exporter (JSON)</button>
-      <label class="btn" for="import" style="display:inline-flex;align-items:center">Restaurer…</label>
+      <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+      <label class="btn" for="import" style="display:inline-flex;align-items:center" data-i18n="btn.import">Restaurer…</label>
       <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
-      <button class="btn" id="export-raw" type="button" hidden>Copie brute</button>
+      <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
     </div>
     <p class="status" id="backup-status" role="status"></p>
   </section>
 </div>
-<footer>Discret : vos idées restent sur cet appareil, invisibles pour les autres. Pensez à exporter une sauvegarde.</footer>
+<footer data-i18n="footer">Discret : vos idées restent sur cet appareil, invisibles pour les autres. Pensez à exporter une sauvegarde.</footer>
 </div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
 <script src="./core.js"></script>
 <script src="./app.js"></script>
 </body>

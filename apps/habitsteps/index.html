@@ -11,51 +11,54 @@
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
 </head>
 <body>
 <div class="wrap">
 <header class="top">
-  <div class="brand"><img src="./icon.svg" alt=""><div><strong>HabitSteps</strong><small>Suivi d'habitudes</small></div></div>
-  <span class="badge">Local · sans compte</span>
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>HabitSteps</strong><small data-i18n="brand.tagline">Suivi d'habitudes</small></div></div>
+  <div class="row" style="gap:8px"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
 </header>
 <section class="hero">
-  <h1>Un petit pas chaque jour, une série qui grandit.</h1>
-  <p>Fixez un objectif réaliste — chaque jour, ou quelques fois par semaine — et pointez d'un geste. HabitSteps calcule vos séries, votre meilleure série et votre régularité, sans jamais vous juger : une période pas encore terminée ne casse pas la série.</p>
+  <h1 data-i18n="hero.title">Un petit pas chaque jour, une série qui grandit.</h1>
+  <p data-i18n="hero.text">Fixez un objectif réaliste — chaque jour, ou quelques fois par semaine — et pointez d'un geste. HabitSteps calcule vos séries, votre meilleure série et votre régularité, sans jamais vous juger : une période pas encore terminée ne casse pas la série.</p>
 </section>
-<p id="warning" class="warning" hidden>Les habitudes enregistrées sur cet appareil sont illisibles. Rien ne sera écrasé : exportez la copie brute, puis restaurez une sauvegarde valide.</p>
+<p id="warning" class="warning" hidden data-i18n="warning">Les habitudes enregistrées sur cet appareil sont illisibles. Rien ne sera écrasé : exportez la copie brute, puis restaurez une sauvegarde valide.</p>
 
 <section class="panel" aria-labelledby="h-form">
-  <h2 id="h-form">Nouvelle habitude</h2>
+  <h2 id="h-form" data-i18n="form.title">Nouvelle habitude</h2>
   <form id="habit-form" novalidate>
     <div class="form-inline">
-      <label class="field name">Habitude<input name="name" maxlength="60" placeholder="ex. Marcher 20 minutes" required></label>
-      <label class="field">Objectif<select name="type"><option value="daily">Chaque jour</option><option value="weekly">Par semaine</option></select></label>
-      <label class="field">Fois / semaine<select name="times" disabled><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option><option>7</option></select></label>
-      <button class="btn primary" id="add" type="submit">Ajouter</button>
+      <label class="field name"><span data-i18n="f.name">Habitude</span><input name="name" maxlength="60" placeholder="ex. Marcher 20 minutes" required data-i18n-attr="placeholder:f.namePh"></label>
+      <label class="field"><span data-i18n="f.goal">Objectif</span><select name="type"><option value="daily" data-i18n="goal.daily">Chaque jour</option><option value="weekly" data-i18n="goal.weekly">Par semaine</option></select></label>
+      <label class="field"><span data-i18n="f.times">Fois / semaine</span><select name="times" disabled><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option><option>7</option></select></label>
+      <button class="btn primary" id="add" type="submit" data-i18n="btn.add">Ajouter</button>
     </div>
     <p class="status" id="form-status" role="status"></p>
   </form>
 </section>
 
 <div class="row" style="justify-content:space-between;margin:18px 0 10px">
-  <h2 style="margin:0;font-size:18px">Aujourd'hui <span id="today-label" style="color:var(--muted);font-weight:500"></span></h2>
-  <label class="row" style="font-size:14px;gap:6px"><input type="checkbox" id="show-archived" style="width:auto;min-height:0"> Afficher les archivées</label>
+  <h2 style="margin:0;font-size:18px"><span data-i18n="today">Aujourd'hui</span> <span id="today-label" style="color:var(--muted);font-weight:500"></span></h2>
+  <label class="row" style="font-size:14px;gap:6px"><input type="checkbox" id="show-archived" style="width:auto;min-height:0"> <span data-i18n="showArchived">Afficher les archivées</span></label>
 </div>
 <div class="habits" id="habits"></div>
-<p class="empty" id="empty" hidden>Aucune habitude pour l'instant. Ajoutez-en une, ou <button class="btn" id="sample" type="button">chargez des exemples</button>.</p>
+<p class="empty" id="empty" hidden><span data-i18n="empty.text">Aucune habitude pour l'instant. Ajoutez-en une, ou</span> <button class="btn" id="sample" type="button" data-i18n="empty.sample">chargez des exemples</button></p>
 
 <section class="panel" aria-labelledby="h-backup" style="margin-top:16px">
-  <h2 id="h-backup">Sauvegarde</h2>
+  <h2 id="h-backup" data-i18n="backup.title">Sauvegarde</h2>
   <div class="row">
-    <button class="btn" id="export" type="button">Exporter (JSON)</button>
-    <label class="btn" for="import" style="display:inline-flex;align-items:center">Restaurer…</label>
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <label class="btn" for="import" style="display:inline-flex;align-items:center" data-i18n="btn.import">Restaurer…</label>
     <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
-    <button class="btn" id="export-raw" type="button" hidden>Copie brute</button>
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
   </div>
   <p class="status" id="backup-status" role="status"></p>
 </section>
-<footer>Astuce : touchez une case de la grille pour pointer un jour oublié (jusqu'à 13 mois en arrière). Vos habitudes restent sur cet appareil.</footer>
+<footer data-i18n="footer">Astuce : touchez une case de la grille pour pointer un jour oublié (jusqu'à 13 mois en arrière). Vos habitudes restent sur cet appareil.</footer>
 </div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
 <script src="./core.js"></script>
 <script src="./app.js"></script>
 </body>

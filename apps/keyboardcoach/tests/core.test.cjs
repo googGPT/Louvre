@@ -73,16 +73,16 @@ test('saisir tout le texte termine la séance', () => {
 
 test('refuse une saisie plus longue que le texte et une durée inconnue', () => {
   const s = C.create('fr-calm', 60);
-  assert.throws(() => C.input(s, TEXT + 'x', 0), /trop longue/);
-  assert.throws(() => C.create('fr-calm', 45), /Durée/);
-  assert.throws(() => C.create('inconnu', 60), /inconnu/);
+  assert.throws(() => C.input(s, TEXT + 'x', 0), /err\.input/);
+  assert.throws(() => C.create('fr-calm', 45), /err\.duration/);
+  assert.throws(() => C.create('inconnu', 60), /err\.passage/);
 });
 
 test('un état de séance trafiqué est refusé', () => {
   const s = C.create('fr-calm', 60);
-  assert.throws(() => C.validateSession({ ...s, extra: 1 }), /Session invalide/);
-  assert.throws(() => C.validateSession({ ...s, mode: 'running' }), /Horloge/);
-  assert.throws(() => C.validateSession({ ...s, elapsedMs: 61000 }), /invalide/);
+  assert.throws(() => C.validateSession({ ...s, extra: 1 }), /err\.session$/);
+  assert.throws(() => C.validateSession({ ...s, mode: 'running' }), /err\.sessionClock/);
+  assert.throws(() => C.validateSession({ ...s, elapsedMs: 61000 }), /err\.sessionState/);
 });
 
 test('bilan et historique : cohérence vérifiée, 30 séances au plus', () => {
@@ -94,9 +94,9 @@ test('bilan et historique : cohérence vérifiée, 30 séances au plus', () => {
   for (let i = 0; i < 35; i++) h = C.appendHistory(h, { ...rec, at: rec.at + i });
   assert.equal(h.records.length, 30); // les plus anciennes sont retirées
   assert.equal(h.records[0].at, rec.at + 5);
-  assert.throws(() => C.history({ version: 1, records: [{ ...rec, netWpm: 999 }] }), /incohérent/);
-  assert.throws(() => C.history({ version: 2, records: [] }), /compatible/);
-  assert.throws(() => C.record(C.create('fr-calm', 60), 0, 0), /terminés/);
+  assert.throws(() => C.history({ version: 1, records: [{ ...rec, netWpm: 999 }] }), /err\.incoherent/);
+  assert.throws(() => C.history({ version: 2, records: [] }), /err\.history/);
+  assert.throws(() => C.record(C.create('fr-calm', 60), 0, 0), /err\.notFinished/);
 });
 
 test('export CSV : BOM, en-tête et une ligne par séance', () => {
@@ -108,4 +108,26 @@ test('export CSV : BOM, en-tête et une ligne par séance', () => {
   const lines = out.trim().split('\r\n');
   assert.equal(lines.length, 2);
   assert.match(lines[1], /^2026-01-02T00:00:00\.000Z,en-river,en,facile,30,3\.0,6,6,100\.00,/);
+});
+
+test('textes d’exercice dans les 7 langues : deux par niveau, identifiants uniques', () => {
+  assert.deepEqual([...C.LANGS], ['fr', 'en', 'es', 'ar', 'pt', 'de', 'it']);
+  for (const lang of C.LANGS) for (const level of C.LEVELS) assert.equal(C.PASSAGES.filter((p) => p.lang === lang && p.level === level).length, 2, lang + ' ' + level);
+  assert.equal(new Set(C.PASSAGES.map((p) => p.id)).size, C.PASSAGES.length);
+  for (const p of C.PASSAGES) assert.ok(cps(p.text).length <= 400 && p.text === p.text.trim(), p.id);
+});
+
+test('texte arabe : mesure caractère par caractère, de droite à gauche indifférent', () => {
+  const text = C.passage('ar-garden').text;
+  let s = C.input(C.create('ar-garden', 60), cps(text)[0], 0);
+  s = C.input(s, cps(text).slice(0, 10).join(''), 6000);
+  assert.equal(C.metrics(s, 6000).correct, 10);
+});
+
+test('en-tête CSV traduit fourni par l’interface', () => {
+  let s = C.input(C.create('de-garden', 30), 'I', 0);
+  s = C.finish(s, 2000);
+  const h = C.appendHistory({ version: 1, records: [] }, C.record(s, 2000, 0));
+  assert.ok(C.csv(h, 'A,B,C,D,E,F,G,H,I,J,K').startsWith('\uFEFFA,B,C'));
+  assert.match(C.csv(h).split('\r\n')[1], /,de-garden,de,facile,30,/);
 });

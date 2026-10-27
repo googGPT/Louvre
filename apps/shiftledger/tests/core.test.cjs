@@ -122,3 +122,12 @@ test('calcul ne modifie pas le tableau d’entrée ni ses objets',()=>{
  const before=JSON.stringify(s);C.shift(s);C.compute([s],p);C.overlapWarnings([s]);C.csv([s]);
  a.equal(JSON.stringify(s),before);
 });
+test('erreurs levées sous forme de clés traduisibles',()=>{
+ a.throws(()=>C.shift(mk({start:'09:00',end:'09:00'})),{message:'err.same'});
+ a.throws(()=>C.params({...p,rate:-1}),{message:'err.number|{"field":"rate","min":0,"max":1000}'});
+ a.throws(()=>C.date('2026-02-30'),{message:'err.date'});
+ a.throws(()=>C.backup(data([s,s])),{message:'err.dup'});
+});
+test('CSV : intitulés traduits fournis par l’interface',()=>{
+ a.match(C.csv([s],['Date','Start','End','Break (min)','Net hours','Label']),/"Date";"Start";"End"/);
+});

@@ -7,7 +7,8 @@
   const MAX_HABITS = 50, MAX_NAME = 60, MAX_CHECKS = 3700; // ~10 ans de pointages quotidiens
   const HISTORY_DAYS = 400; // on peut pointer jusqu'à ~13 mois en arrière
 
-  function fail(m) { throw new Error(m); }
+  // Erreurs sous forme de clés traduisibles par l'interface : « err.cle » ou « err.cle|{…} ».
+  function fail(key, params) { throw new Error(params ? `${key}|${JSON.stringify(params)}` : key); }
   const pad = (n) => String(n).padStart(2, '0');
 
   // --- Dates (jours civils, calculs en UTC pour éviter les changements d'heure)
@@ -26,35 +27,34 @@
   // --- Habitudes
   function cleanName(v) {
     const name = typeof v === 'string' ? v.trim() : '';
-    if (!name) fail('Nom de l\'habitude obligatoire');
-    if (name.length > MAX_NAME) fail(`Nom trop long (${MAX_NAME} caractères au plus)`);
+    if (!name) fail('err.nameRequired');
+    if (name.length > MAX_NAME) fail('err.nameLong', { max: MAX_NAME });
     return name;
   }
   function cleanGoal(goal) {
-    if (!goal || typeof goal !== 'object') fail('Objectif invalide');
+    if (!goal || typeof goal !== 'object') fail('err.goal');
     if (goal.type === 'daily') return { type: 'daily' };
     if (goal.type === 'weekly') {
       const times = Number(goal.times);
-      if (!Number.isInteger(times) || times < 1 || times > 7) fail('Objectif hebdomadaire : de 1 à 7 fois');
+      if (!Number.isInteger(times) || times < 1 || times > 7) fail('err.weeklyTimes', { min: 1, max: 7 });
       return { type: 'weekly', times };
     }
-    return fail('Type d\'objectif inconnu');
+    return fail('err.goalType');
   }
   function makeHabit(input, today, id) {
-    if (typeof id !== 'string' || !/^[a-z0-9-]{6,64}$/i.test(id)) fail('Identifiant invalide');
-    if (!isDay(today)) fail('Date du jour invalide');
+    if (typeof id !== 'string' || !/^[a-z0-9-]{6,64}$/i.test(id)) fail('err.id');
+    if (!isDay(today)) fail('err.today');
     return { id, name: cleanName(input.name), goal: cleanGoal(input.goal), created: today, archived: false, checks: [] };
   }
-  function goalLabel(goal) { return goal.type === 'daily' ? 'Chaque jour' : `${goal.times} fois par semaine`; }
 
   // Pointer / dépointer un jour (pas dans le futur, pas plus de ~13 mois en arrière).
   function toggle(habit, day, today) {
-    if (!isDay(day) || !isDay(today)) fail('Date invalide');
-    if (day > today) fail('On ne peut pas pointer un jour futur');
-    if (diffDays(day, today) > HISTORY_DAYS) fail('Date trop ancienne');
+    if (!isDay(day) || !isDay(today)) fail('err.date');
+    if (day > today) fail('err.future');
+    if (diffDays(day, today) > HISTORY_DAYS) fail('err.tooOld');
     const has = habit.checks.includes(day);
     const checks = has ? habit.checks.filter((d) => d !== day) : [...habit.checks, day].sort();
-    if (checks.length > MAX_CHECKS) fail('Trop de pointages');
+    if (checks.length > MAX_CHECKS) fail('err.tooManyChecks');
     // Pointer avant la date de création recule la date de début (rattrapage d'un oubli).
     return { ...habit, checks, created: !has && day < habit.created ? day : habit.created };
   }
@@ -68,7 +68,7 @@
       while (set.has(day)) { current += 1; day = addDays(day, -1); }
       let best = 0, run = 0, prev = null;
       for (const d of habit.checks) { run = prev && diffDays(prev, d) === 1 ? run + 1 : 1; best = Math.max(best, run); prev = d; }
-      return { current, best, unit: 'jour' };
+      return { current, best, unit: 'day' }; // unité : code traduit par l'interface
     }
     // Hebdomadaire : comptage des pointages par semaine.
     const perWeek = new Map();
@@ -79,7 +79,7 @@
     while (ok(w)) { current += 1; w = addDays(w, -7); }
     let best = 0, run = 0, prev = null;
     for (const wk of [...perWeek.keys()].filter(ok).sort()) { run = prev && diffDays(prev, wk) === 7 ? run + 1 : 1; best = Math.max(best, run); prev = wk; }
-    return { current, best, unit: 'semaine' };
+    return { current, best, unit: 'week' };
   }
 
   // Régularité récente : jours réussis sur 30 jours (quotidien) ou semaines réussies sur 8 (hebdo),
@@ -125,27 +125,27 @@
 
   // --- Sauvegarde
   function validateHabit(h) {
-    if (!h || typeof h !== 'object' || Array.isArray(h)) fail('Habitude invalide');
-    if (Object.keys(h).sort().join(',') !== 'archived,checks,created,goal,id,name') fail('Champs d\'habitude inattendus');
-    if (typeof h.id !== 'string' || !/^[a-z0-9-]{6,64}$/i.test(h.id)) fail('Identifiant invalide');
-    if (typeof h.archived !== 'boolean' || !isDay(h.created) || !Array.isArray(h.checks) || h.checks.length > MAX_CHECKS) fail('Habitude invalide');
+    if (!h || typeof h !== 'object' || Array.isArray(h)) fail('err.habit');
+    if (Object.keys(h).sort().join(',') !== 'archived,checks,created,goal,id,name') fail('err.fields');
+    if (typeof h.id !== 'string' || !/^[a-z0-9-]{6,64}$/i.test(h.id)) fail('err.id');
+    if (typeof h.archived !== 'boolean' || !isDay(h.created) || !Array.isArray(h.checks) || h.checks.length > MAX_CHECKS) fail('err.habit');
     const goal = cleanGoal(h.goal);
-    if (Object.keys(h.goal).length !== Object.keys(goal).length) fail('Objectif invalide');
+    if (Object.keys(h.goal).length !== Object.keys(goal).length) fail('err.goal');
     for (let i = 0; i < h.checks.length; i += 1) {
-      if (!isDay(h.checks[i]) || h.checks[i] < h.created || (i && h.checks[i] <= h.checks[i - 1])) fail('Pointages invalides (dates triées, uniques, après la création)');
+      if (!isDay(h.checks[i]) || h.checks[i] < h.created || (i && h.checks[i] <= h.checks[i - 1])) fail('err.checks');
     }
     return { id: h.id, name: cleanName(h.name), goal, created: h.created, archived: h.archived, checks: [...h.checks] };
   }
   function validateBackup(data) {
-    if (!data || typeof data !== 'object' || Array.isArray(data)) fail('Sauvegarde illisible');
-    if (data.app !== 'habitsteps' || data.version !== VERSION || !Array.isArray(data.habits)) fail('Ce fichier n\'est pas une sauvegarde HabitSteps');
-    if (data.habits.length > MAX_HABITS) fail(`Trop d'habitudes (${MAX_HABITS} au plus)`);
+    if (!data || typeof data !== 'object' || Array.isArray(data)) fail('err.backup');
+    if (data.app !== 'habitsteps' || data.version !== VERSION || !Array.isArray(data.habits)) fail('err.notBackup');
+    if (data.habits.length > MAX_HABITS) fail('err.tooMany', { max: MAX_HABITS });
     const habits = data.habits.map(validateHabit);
-    if (new Set(habits.map((h) => h.id)).size !== habits.length) fail('Habitudes en double');
+    if (new Set(habits.map((h) => h.id)).size !== habits.length) fail('err.duplicate');
     return habits;
   }
   function backup(habits) { return JSON.stringify({ app: 'habitsteps', version: VERSION, habits: validateBackup({ app: 'habitsteps', version: VERSION, habits }) }, null, 2); }
 
-  root.HabitCore = Object.freeze({ VERSION, MAX_HABITS, isDay, dayKey, addDays, diffDays, weekStart, makeHabit, goalLabel, toggle, streaks, rate, weekProgress, grid, validateBackup, backup });
+  root.HabitCore = Object.freeze({ VERSION, MAX_HABITS, isDay, dayKey, addDays, diffDays, weekStart, makeHabit, toggle, streaks, rate, weekProgress, grid, validateBackup, backup });
   if (typeof module !== 'undefined' && module.exports) module.exports = root.HabitCore;
 })(typeof window === 'undefined' ? globalThis : window);

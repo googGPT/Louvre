@@ -14,7 +14,7 @@ try:
     with sync_playwright() as p, TemporaryDirectory() as temp:
         exe=os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium') if os.path.exists(os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium')) else '/usr/bin/google-chrome' if os.path.exists('/usr/bin/google-chrome') else None
         browser=p.chromium.launch(executable_path=exe, headless=True, args=['--no-sandbox'])
-        page=browser.new_page(viewport={'width':390,'height':844},accept_downloads=True)
+        page=browser.new_page(viewport={'width':390,'height':844},accept_downloads=True,locale='fr-FR')
         errors=[]
         page.on('pageerror',lambda e:errors.append(str(e)))
         def fill(day,place,start,end,cost):
@@ -97,7 +97,47 @@ try:
         assert page.locator('.item').count()==2
         assert page.locator('body').evaluate('(b)=>b.scrollWidth<=innerWidth+2')
         assert not errors,errors
+        page.context.set_offline(False)
+
+        # --- Langues : détection, 7 langues complètes, arabe RTL, devise choisie, exports traduits.
+        intl=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True,locale='en-US')
+        ip=intl.new_page()
+        ip.on('pageerror',lambda e:errors.append(str(e)))
+        ip.on('dialog',lambda d:d.accept())
+        ip.goto(base,wait_until='domcontentloaded')
+        assert ip.locator('#form-title').inner_text()=='Add a stop'
+        assert ip.evaluate('() => LouvreI18n.currency')=='USD'  # région US -> dollar proposé
+        assert 'Planned cost (US$)' in ip.locator('#fields').inner_text()
+        ip.locator('#sample').click()
+        ip.wait_for_function("() => document.querySelectorAll('.item').length===3")
+        assert '$55.00' in ip.locator('#summary').inner_text(), ip.locator('#summary').inner_text()
+        ip.locator('[name="place"]').fill('Draft kept')  # saisie en cours conservée
+        heads={'fr':'Tableau de bord','en':'Dashboard','es':'Panel','ar':'لوحة المتابعة','pt':'Painel','de':'Übersicht','it':'Cruscotto'}
+        for lang in ['fr','en','es','ar','pt','de','it']:
+            ip.locator('#louvre-lang').select_option(lang)
+            assert ip.evaluate('() => document.documentElement.dir')==('rtl' if lang=='ar' else 'ltr')
+            wide=ip.evaluate('''() => document.documentElement.scrollWidth <= innerWidth + 2 ? [] :
+              [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 2)
+                .slice(0, 5).map((e) => `${e.tagName}.${e.className} « ${(e.textContent || '').trim().slice(0, 40)} »`)''')
+            assert not wide,f'débordement en {lang} : {wide}'
+            assert ip.locator('#dash-title').inner_text()==heads[lang]
+            assert ip.locator('.item').count()==3
+            assert ip.locator('[name="place"]').input_value()=='Draft kept'
+        assert ip.evaluate('() => LouvreI18n.missing()')==[],ip.evaluate('() => LouvreI18n.missing()')
+        ip.locator('#louvre-lang').select_option('de')
+        ip.locator('#louvre-currency').select_option('CHF')
+        assert 'CHF' in ip.locator('#summary').inner_text()
+        assert ip.locator('[name="category"] option').first.inner_text()=='Besichtigung'
+        stored=ip.evaluate("() => JSON.parse(localStorage.getItem('louvre-factory:travelday:v1')).records.map(r=>r.category)")
+        assert set(stored)<={'Repas','Visite'}, stored  # catégories stockées inchangées (français)
+        with ip.expect_download() as dl:ip.locator('#csv').click()
+        csv=Path(dl.value.path()).read_bytes().decode('utf-8-sig')
+        assert '"Datum"' in csv and '"Budget (CHF)"' in csv and '"Essen"' in csv, csv[:200]
+        ip.locator('[name="start"]').fill('10:00'); ip.locator('[name="end"]').fill('10:00'); ip.locator('[name="cost"]').fill('1')
+        ip.locator('#save-button').click()
+        assert ip.locator('#status').inner_text()=='Beginn und Ende gleich: Dauer null oder 24 Std. nicht erlaubt', ip.locator('#status').inner_text()
+        assert not errors,errors
         browser.close()
-    print('BROWSER PASS: nested overlaps, cent-safe budgets, daily filters, edits, CSV/ICS/JSON, legacy restore, invalid import, overnight, mobile 390px, offline PWA')
+    print('BROWSER PASS: nested overlaps, cent-safe budgets, daily filters, edits, CSV/ICS/JSON, legacy restore, invalid import, overnight, mobile 390px, offline PWA, 7 languages, RTL, currency, translated exports')
 finally:
     server.shutdown();server.server_close()

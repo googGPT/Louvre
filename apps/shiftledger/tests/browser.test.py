@@ -13,7 +13,7 @@ def run():
  try:
   with sync_playwright() as p:
    browser=p.chromium.launch(headless=True,executable_path=os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium'),args=['--no-sandbox'])
-   context=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True)
+   context=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True,locale='fr-FR')
    page=context.new_page();errors=[]
    page.on('pageerror',lambda e:errors.append(str(e)))
    page.on('dialog',lambda dialog:dialog.accept())
@@ -126,8 +126,49 @@ def run():
    page.locator('#list .entry').first.wait_for()
    assert page.locator('.entry').count()==4
    assert not errors,errors
+   context.set_offline(False)
+
+   # --- Langues : détection, 7 langues, arabe de droite à gauche, devise choisie, saisie conservée.
+   intl=browser.new_context(viewport={'width':390,'height':844},locale='en-US')
+   ip=intl.new_page()
+   ip.on('pageerror',lambda e:errors.append(str(e)))
+   ip.on('dialog',lambda d:d.accept())
+   ip.goto(f'http://127.0.0.1:{server.server_port}/',wait_until='domcontentloaded')
+   ip.locator('#date').wait_for()
+   assert ip.evaluate('() => LouvreI18n.lang')=='en' and ip.evaluate('() => LouvreI18n.currency')=='USD'
+   assert ip.locator('#add').inner_text()=='Save shift'
+   ip.locator('#date').fill('2026-10-26'); ip.locator('#start').fill('09:00'); ip.locator('#end').fill('19:00')
+   ip.locator('#break').fill('0'); ip.locator('#label').fill('Morning'); ip.locator('#add').click()
+   ip.wait_for_function("() => (document.querySelectorAll('.entry').length===1)")
+   assert '$157.50' in ip.locator('#pay').inner_text()  # en-GB : « US$157.50 »
+   assert '$' in ip.locator('#cur-symbol').inner_text()
+   stored=json.loads(ip.evaluate("localStorage.getItem('louvre-wave2-shiftledger-v1')"))
+   assert stored['version']==1 and stored['params']['rate']==15  # format v1 inchangé
+   ip.locator('#label').fill('Draft label')  # saisie en cours
+   titles={'fr':'Historique des services','en':'Shift history','es':'Historial de turnos','ar':'سجل النوبات','pt':'Histórico de turnos','de':'Schichtverlauf','it':'Storico dei turni'}
+   for lang in ['fr','en','es','ar','pt','de','it']:
+    ip.locator('#louvre-lang').select_option(lang)
+    assert ip.evaluate('() => document.documentElement.lang')==lang
+    assert ip.evaluate('() => document.documentElement.dir')==('rtl' if lang=='ar' else 'ltr')
+    wide=ip.evaluate('''() => document.documentElement.scrollWidth <= innerWidth + 2 ? [] :
+      [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 2)
+        .slice(0, 5).map((e) => `${e.tagName}.${e.className} « ${(e.textContent || '').trim().slice(0, 40)} »`)''')
+    assert not wide,f'débordement en {lang} : {wide}'
+    assert ip.locator('#log-title').inner_text()==titles[lang]
+    assert ip.locator('#label').input_value()=='Draft label'
+    assert ip.locator('.entry').count()==1
+    assert ip.evaluate('() => LouvreI18n.missing()')==[],ip.evaluate('() => LouvreI18n.missing()')
+   assert '157,50' in ip.locator('#pay').inner_text() and 'US' in ip.locator('#pay').inner_text()  # it-IT : « 157,50 USD »
+   ip.locator('#louvre-currency').select_option('GBP')
+   assert '£' in ip.locator('#pay').inner_text() and ip.locator('#cur-symbol').inner_text()=='£'
+   ip.locator('#louvre-lang').select_option('de')
+   assert ip.locator('#hours').inner_text()=='10 Std. 00'
+   ip.locator('#rate').fill('2000'); ip.locator('#rate').dispatch_event('change')
+   assert ip.locator('#message').inner_text()=='Ungültiger Wert: Stundenlohn'
+   assert ip.locator('#rate').input_value()=='15'
+   assert not errors,errors
    browser.close()
-  print('BROWSER PASS ShiftLedger v2: day aggregation, overnight, overlap, edit, search, CSV/JSON, transaction, corrupt recovery, offline, 390px')
+  print('BROWSER PASS ShiftLedger v2: day aggregation, overnight, overlap, edit, search, CSV/JSON, transaction, corrupt recovery, offline, 390px, 7 languages, RTL, currency')
  finally:server.shutdown();server.server_close()
 
 if __name__=='__main__':run()

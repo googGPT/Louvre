@@ -9,65 +9,68 @@
   <title>ImageShrink — Optimisez vos images sans les envoyer</title>
   <link rel="icon" type="image/svg+xml" href="./icon.svg">
   <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./louvre-i18n.css">
   <link rel="manifest" href="./manifest.webmanifest">
 </head>
 <body>
 <header class="site-header">
-  <div class="brand"><span class="brand-icon" aria-hidden="true">IS</span><div><strong>ImageShrink</strong><small>Atelier de compression d’images</small></div></div>
-  <span class="privacy"><span aria-hidden="true">●</span> 100 % dans votre navigateur</span>
+  <div class="brand"><span class="brand-icon" aria-hidden="true">IS</span><div><strong>ImageShrink</strong><small data-i18n="brand.tagline">Atelier de compression d’images</small></div></div>
+  <div class="header-tools"><span class="privacy"><span aria-hidden="true">●</span> <span data-i18n="privacy">100 % dans votre navigateur</span></span><div data-louvre-locale="lang-only"></div></div>
 </header>
 <main>
   <section class="hero">
-    <div class="hero-copy"><p class="eyebrow">APPLICATION 24 · LOUVRE VAGUE 2</p>
-      <h1>Des images plus légères.<br><em>Sans quitter votre appareil.</em></h1>
-      <p>Réduisez les dimensions, choisissez JPG, WebP ou PNG et téléchargez chaque fichier. Aucune image n'est envoyée vers un serveur.</p>
-      <div class="hero-tags"><span>Sans inscription</span><span>Aucune API</span><span>Fonctionne hors ligne*</span></div>
+    <div class="hero-copy"><p class="eyebrow" data-i18n="hero.eyebrow">APPLICATION 24 · LOUVRE VAGUE 2</p>
+      <h1><span data-i18n="hero.a">Des images plus légères.</span><br><em data-i18n="hero.b">Sans quitter votre appareil.</em></h1>
+      <p data-i18n="hero.text">Réduisez les dimensions, choisissez JPG, WebP ou PNG et téléchargez chaque fichier. Aucune image n'est envoyée vers un serveur.</p>
+      <div class="hero-tags"><span data-i18n="tag.noSignup">Sans inscription</span><span data-i18n="tag.noApi">Aucune API</span><span data-i18n="tag.offline">Fonctionne hors ligne*</span></div>
     </div>
-    <div class="hero-visual" aria-hidden="true"><div class="hero-graphic">✳</div><div class="hero-visual-caption">Formats JPG · PNG · WebP</div></div>
+    <div class="hero-visual" aria-hidden="true"><div class="hero-graphic">✳</div><div class="hero-visual-caption" data-i18n="hero.formats">Formats JPG · PNG · WebP</div></div>
   </section>
   <div class="workspace">
     <section class="panel upload-panel" aria-labelledby="upload-title">
-      <div class="section-heading"><span>01</span><div><h2 id="upload-title">Vos images</h2><p>Jusqu’à 10 images ; 20 Mo par fichier et 60 Mo par lot.</p></div></div>
+      <div class="section-heading"><span>01</span><div><h2 id="upload-title" data-i18n="upload.title">Vos images</h2><p data-i18n="upload.limits">Jusqu’à 10 images ; 20 Mo par fichier et 60 Mo par lot.</p></div></div>
       <div id="dropzone" class="dropzone">
         <div class="upload-icon" aria-hidden="true">↑</div>
-        <p><strong>Glissez-déposez vos images ici</strong></p>
-        <p>JPEG, PNG ou WebP — aucun SVG, GIF ou HEIC.</p>
-        <button type="button" id="select-button" class="primary">Choisir des images</button>
-        <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" multiple hidden aria-label="Choisir des images à optimiser">
+        <p><strong data-i18n="drop.title">Glissez-déposez vos images ici</strong></p>
+        <p data-i18n="drop.formats">JPEG, PNG ou WebP — aucun SVG, GIF ou HEIC.</p>
+        <button type="button" id="select-button" class="primary" data-i18n="btn.select">Choisir des images</button>
+        <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" multiple hidden aria-label="Choisir des images à optimiser" data-i18n-attr="aria-label:aria.fileInput">
       </div>
-      <div class="list-head"><h3>Fichiers sélectionnés</h3><span id="file-count">0 image sélectionnée</span></div>
+      <div class="list-head"><h3 data-i18n="files.title">Fichiers sélectionnés</h3><span id="file-count">0 image sélectionnée</span></div>
       <div id="input-list" class="file-list"></div>
     </section>
     <aside class="panel settings-panel" aria-labelledby="settings-title">
-      <div class="section-heading"><span>02</span><div><h2 id="settings-title">Réglages</h2><p>Les proportions sont conservées automatiquement.</p></div></div>
-      <label for="format">Format de sortie</label>
+      <div class="section-heading"><span>02</span><div><h2 id="settings-title" data-i18n="settings.title">Réglages</h2><p data-i18n="settings.help">Les proportions sont conservées automatiquement.</p></div></div>
+      <label for="format" data-i18n="f.format">Format de sortie</label>
       <select id="format">
-        <option value="image/webp" selected>WebP — souvent plus léger</option>
-        <option value="image/jpeg">JPEG — photos et compatibilité</option>
-        <option value="image/png">PNG — sans perte de réencodage</option>
+        <option value="image/webp" selected data-i18n="fmt.webp">WebP — souvent plus léger</option>
+        <option value="image/jpeg" data-i18n="fmt.jpeg">JPEG — photos et compatibilité</option>
+        <option value="image/png" data-i18n="fmt.png">PNG — sans perte de réencodage</option>
       </select>
-      <label for="quality">Qualité d’encodage <span id="quality-output">80 %</span></label>
+      <label for="quality"><b class="plain" data-i18n="f.quality">Qualité d’encodage</b> <span id="quality-output">80 %</span></label>
       <input type="range" id="quality" min="0.3" max="0.95" value="0.8" step="0.05">
-      <small class="explain">Le curseur concerne JPEG et WebP. PNG est encodé sans ce réglage. La taille finale n'est pas garantie.</small>
+      <small class="explain" data-i18n="explain.quality">Le curseur concerne JPEG et WebP. PNG est encodé sans ce réglage. La taille finale n'est pas garantie.</small>
       <div class="dimension-grid">
-        <div><label for="max-width">Largeur max. (px)</label><input id="max-width" type="number" min="64" max="6000" step="1" value="1920"></div>
-        <div><label for="max-height">Hauteur max. (px)</label><input id="max-height" type="number" min="64" max="6000" step="1" value="1920"></div>
+        <div><label for="max-width" data-i18n="f.maxWidth">Largeur max. (px)</label><input id="max-width" type="number" min="64" max="6000" step="1" value="1920"></div>
+        <div><label for="max-height" data-i18n="f.maxHeight">Hauteur max. (px)</label><input id="max-height" type="number" min="64" max="6000" step="1" value="1920"></div>
       </div>
-      <small class="explain">Jamais d'agrandissement. Maximum 40 Mpx à l'entrée et 20 Mpx à la sortie. Les photos avec transparence deviennent blanches sur fond JPEG.</small>
-      <button id="process" type="button" class="primary big" disabled>Optimiser les images</button>
-      <button id="cancel" type="button" class="secondary big" hidden>Annuler le traitement</button>
-      <button id="reset" type="button" class="secondary big">Effacer la sélection</button>
+      <small class="explain" data-i18n="explain.size">Jamais d'agrandissement. Maximum 40 Mpx à l'entrée et 20 Mpx à la sortie. Les photos avec transparence deviennent blanches sur fond JPEG.</small>
+      <button id="process" type="button" class="primary big" disabled data-i18n="btn.process">Optimiser les images</button>
+      <button id="cancel" type="button" class="secondary big" hidden data-i18n="btn.cancel">Annuler le traitement</button>
+      <button id="reset" type="button" class="secondary big" data-i18n="btn.reset">Effacer la sélection</button>
       <p id="progress" role="status" aria-live="polite" class="progress"></p>
       <p id="feedback" role="status" aria-live="polite" class="feedback"></p>
     </aside>
   </div>
   <section class="panel results-panel" aria-labelledby="results-title">
-    <div class="section-heading"><span>03</span><div><h2 id="results-title">Résultats et téléchargements</h2><p id="summary">Les images produites apparaîtront ici, avec leur taille réelle.</p></div></div>
+    <div class="section-heading"><span>03</span><div><h2 id="results-title" data-i18n="results.title">Résultats et téléchargements</h2><p id="summary">Les images produites apparaîtront ici, avec leur taille réelle.</p></div></div>
     <div id="result-list" class="result-list"></div>
-    <p class="footer-note">Si le fichier produit est plus gros que l’original, ImageShrink l’indique clairement : le réencodage et la conversion ne garantissent pas une réduction de taille. Téléchargez chaque résultat individuellement.</p>
+    <p class="footer-note" data-i18n="results.note">Si le fichier produit est plus gros que l’original, ImageShrink l’indique clairement : le réencodage et la conversion ne garantissent pas une réduction de taille. Téléchargez chaque résultat individuellement.</p>
   </section>
 </main>
-<footer>* Le mode hors ligne nécessite une première visite en ligne et un navigateur compatible. Les images sélectionnées et les résultats restent uniquement en mémoire pendant l’utilisation et sont supprimés au rechargement. Les métadonnées ne sont pas préservées lors du réencodage, sans garantie d’effacement de toute information intégrée. Privilégiez la prudence pour des fichiers sensibles.</footer>
+<footer data-i18n="footer">* Le mode hors ligne nécessite une première visite en ligne et un navigateur compatible. Les images sélectionnées et les résultats restent uniquement en mémoire pendant l’utilisation et sont supprimés au rechargement. Les métadonnées ne sont pas préservées lors du réencodage, sans garantie d’effacement de toute information intégrée. Privilégiez la prudence pour des fichiers sensibles.</footer>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
 <script src="./core.js"></script>
 <script src="./app.js"></script>
 </body>

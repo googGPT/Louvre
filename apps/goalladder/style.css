@@ -11,7 +11,7 @@ body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 80% -15%,#3
 .brand{display:flex;align-items:center;gap:12px;font-size:18px}
 .brand-icon{display:grid;place-items:center;width:40px;height:40px;border-radius:13px;background:var(--accent);color:#131c2b;font-size:27px}
 .tag{font-size:12px;color:var(--accent);border:1px solid #755e3c;border-radius:8px;padding:3px 6px;vertical-align:middle}
-.privacy{margin-left:auto;border-radius:100px;background:#23354a;padding:7px 11px;font-size:12px;color:var(--good);font-weight:700}
+.privacy{margin-inline-start:auto;border-radius:100px;background:#23354a;padding:7px 11px;font-size:12px;color:var(--good);font-weight:700}
 .eyebrow{color:var(--accent);font-size:12px;letter-spacing:2px;text-transform:uppercase;font-weight:800;margin-top:30px}
 h1{font-size:clamp(32px,4.5vw,56px);line-height:1.1;letter-spacing:-1.8px;margin:10px 0 16px}
 h1 span{color:var(--accent)}
@@ -73,3 +73,5 @@ footer{padding:0 0 35px;color:var(--muted);font-size:12px;line-height:1.8}
 @media(max-width:800px){main{grid-template-columns:1fr}.hero{padding-top:22px}.panel{padding:18px}}
 @media(max-width:560px){.toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}.toolbar .tool:first-child{grid-column:1 / -1}.item-top{flex-wrap:wrap}.privacy{font-size:11px}.hero{padding-bottom:22px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+/* Menu des langues (Louvre) : couleurs du thème sombre. */
+.brand{flex-wrap:wrap}.brand .louvre-locale select{background:var(--raised);color:var(--ink);border-color:#4b607b}

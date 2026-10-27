@@ -11,7 +11,7 @@ try:
  with sync_playwright() as p:
   exe=os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium') if os.path.exists(os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium')) else '/usr/bin/google-chrome' if os.path.exists('/usr/bin/google-chrome') else None
   browser=p.chromium.launch(executable_path=exe,headless=True,args=['--no-sandbox'])
-  page=browser.new_page(viewport={'width':390,'height':844},accept_downloads=True)
+  page=browser.new_page(viewport={'width':390,'height':844},accept_downloads=True,locale='fr-FR')
   errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
   page.goto(f'http://127.0.0.1:{port}/',wait_until='domcontentloaded')
   page.wait_for_selector('#record-form input')
@@ -69,7 +69,7 @@ try:
   page.reload()
   assert page.locator('#warning').is_visible()
   page.locator('#import').set_input_files({'name':'invalid.json','mimeType':'application/json','buffer':b'not json'})
-  assert 'Import refusé' in page.locator('#status').inner_text()
+  page.locator('#status').filter(has_text='Import refusé').wait_for(timeout=10000)  # la lecture du fichier est asynchrone
   assert page.locator('#warning').is_visible()
   page.locator('#import').set_input_files(backup)
   page.wait_for_function('() => (document.querySelectorAll("#items .item").length===1)')
@@ -79,6 +79,41 @@ try:
   page.wait_for_timeout(1200);page.reload();page.wait_for_timeout(450)
   page.context.set_offline(True);page.reload(wait_until='domcontentloaded');page.wait_for_selector('#record-form input')
   assert page.locator('#items .item').count()==1
+  page.context.set_offline(False)
+  # --- Langues : détection du navigateur, 7 langues complètes, arabe de droite à gauche (pas d'argent : menu langue seul).
+  ip=browser.new_page(viewport={'width':390,'height':844},locale='de-DE',accept_downloads=True)
+  ip.on('pageerror',lambda e:errors.append(str(e)))
+  ip.goto(f'http://127.0.0.1:{port}/',wait_until='domcontentloaded');ip.wait_for_selector('#record-form input')
+  assert ip.locator('h1').inner_text().startswith('Aus Ihren Zielen werden'), ip.locator('h1').inner_text()  # navigateur allemand
+  assert ip.locator('#louvre-currency').count()==0
+  ip.locator('[name="goal"]').fill('Marathon');ip.locator('[name="milestone"]').fill('10 km');ip.locator('[name="priority"]').select_option('haute')
+  ip.locator('#save-button').click();ip.wait_for_function('() => (document.querySelectorAll("#items .item").length===1)')
+  assert 'Priorität: hoch' in ip.locator('#items .item-meta').inner_text()
+  ip.locator('[name="goal"]').fill('Brouillon')  # saisie en cours : conservée au changement de langue
+  titles={'fr':'Vos ambitions','en':'Your ambitions','es':'Tus ambiciones','ar':'طموحاتك','pt':'As suas ambições','de':'Aus Ihren Zielen','it':'Le tue ambizioni'}
+  for lang in ['fr','en','es','ar','pt','de','it']:
+   ip.locator('#louvre-lang').select_option(lang)
+   assert ip.evaluate('() => document.documentElement.dir')==('rtl' if lang=='ar' else 'ltr')
+   wide=ip.evaluate('''() => document.documentElement.scrollWidth <= innerWidth + 2 ? [] :
+     [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 2)
+       .slice(0, 5).map((e) => `${e.tagName}.${e.className} « ${(e.textContent || '').trim().slice(0, 40)} »`)''')
+   assert not wide, f'débordement en {lang} : {wide}'
+   assert ip.locator('h1').inner_text().startswith(titles[lang]),(lang,ip.locator('h1').inner_text())
+   assert ip.locator('[name="goal"]').input_value()=='Brouillon'
+   assert ip.locator('#items .item').count()==1
+  missing=ip.evaluate('() => LouvreI18n.missing()');assert missing==[],missing
+  ip.locator('#louvre-lang').select_option('en')
+  assert ip.locator('#save-button').inner_text()=='Add this milestone'
+  assert ip.locator('[name="priority"] option').first.inner_text()=='high'
+  assert ip.locator('#summary .stat-label').first.inner_text()=='Goals'
+  ip.locator('#search').fill('high');assert ip.locator('#items .item').count()==1  # recherche sur la priorité traduite
+  ip.locator('#search').fill('')
+  with ip.expect_download(timeout=10000) as d3:ip.locator('#export-csv').click()
+  csv3=Path(d3.value.path()).read_text(encoding='utf-8-sig')
+  assert csv3.startswith('"Goal";"Milestone"') and '"high"' in csv3, csv3[:200]
+  stored=ip.evaluate("() => JSON.parse(localStorage.getItem('louvre-factory:goalladder:v1')).records.map(r=>r.priority)")
+  assert stored==['haute'],stored  # valeur enregistrée inchangée
+  assert not errors,errors
   browser.close()
- print('BROWSER PASS: dashboard, deadlines, special goal names, completion, CSV, corrupt JSON recovery, offline, 390px; app=goalladder')
+ print('BROWSER PASS: dashboard, deadlines, special goal names, completion, CSV, corrupt JSON recovery, offline, 390px, 7 languages, RTL; app=goalladder')
 finally:server.shutdown();server.server_close()

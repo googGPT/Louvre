@@ -14,12 +14,20 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent  # racine du dépôt
 FILES = ["louvre-i18n.js", "louvre-i18n.css"]  # fichiers partagés
 
 
+def only():
+    """Slugs passés après --only (ex. --only fuelmath parkwise) ; vide = toutes les applis."""
+    return set(sys.argv[sys.argv.index("--only") + 1:]) if "--only" in sys.argv else set()
+
+
 def main():
     check = "--check" in sys.argv
     stale = []
     targets = [a for a in sorted((ROOT / "apps").iterdir()) if (a / "messages.js").is_file()]  # applis multilingues
     if (ROOT / "assets" / "home-messages.js").is_file():
         targets.append(ROOT / "assets")  # la page d'accueil aussi
+    keep = only()
+    if keep:
+        targets = [a for a in targets if a.name in keep]  # --only : ne touche pas aux autres applis
     for app in targets:
         for name in FILES:
             src, dst = ROOT / "shared" / name, app / name

@@ -2,18 +2,29 @@
 (()=>{'use strict';
 const C=window.ContrastCore,by=id=>document.getElementById(id),KEY='louvre-wave2-colorcontrast-v1';
 const DEFAULT={version:1,pairs:[]};
-let palette=DEFAULT,blocked=false,fg='#0C2430',bg='#F5F4EA';
-function message(text,error=false){const el=by('message');el.textContent=text;el.className=error?'message error':'message success';}
+const L=window.LouvreI18n.init(window.LouvreMessages),t=L.t; // langue et traductions
+let palette=DEFAULT,blocked=false,fg='#0C2430',bg='#F5F4EA',lastMessage=null;
+const ratioText=(r,d=4)=>L.number(r,{minimumFractionDigits:d,maximumFractionDigits:d})+':1'; // affichage seulement
+function errText(e){if(e instanceof SyntaxError)return t('err.json');return L.error(e);}
+// Message d'état : clé + paramètres, retraduit si la langue change ; msgErr = erreur à traduire.
+function message(key,params={},error=false){lastMessage=key?{key,params,error}:null;showMessage();}
+function showMessage(){
+ const el=by('message');if(!lastMessage){el.textContent='';return;}
+ const {key,params,error}=lastMessage,p={...params};
+ if(p.msgErr){p.msg=errText(p.msgErr);delete p.msgErr;}
+ el.textContent=key==='err'?p.msg:t(key,p);el.className=error?'message error':'message success';
+}
+const fail=e=>message('err',{msgErr:e},true);
 function node(tag,cls,content){const e=document.createElement(tag);if(cls)e.className=cls;if(content!==undefined)e.textContent=String(content);return e;}
 function save(next,{restore=false}={}){
- if(blocked&&!restore){message('Stockage illisible : exportez le brut puis restaurez un JSON valide.',true);return false;}
+ if(blocked&&!restore){message('status.blockedSave',{},true);return false;}
  try{
   const clean=C.validateBackup(next);
   localStorage.setItem(KEY,JSON.stringify(clean));
   palette=clean;
   if(restore)blocked=false;
   return true;
- }catch(e){message('Enregistrement impossible : '+e.message+'. Aucune modification mémorisée.',true);return false;}
+ }catch(e){message('status.saveFail',{msgErr:e},true);return false;}
 }
 function download(name,text,type){
  const url=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');
@@ -26,28 +37,25 @@ function show(){
  const sample=by('sample');sample.style.color=fg;sample.style.backgroundColor=bg;
  const analysis=C.wcag(fg,bg);
  // L'étiquette est indicative ; les booléens se calculent sur le ratio non arrondi.
- by('ratio').textContent=analysis.ratio.toFixed(4)+':1';
- by('ratio-exact').textContent='Tests effectués sans arrondir · '+(analysis.aaNormal?'AA texte standard atteint':'AA texte standard non atteint');
+ by('ratio').textContent=ratioText(analysis.ratio);
+ by('ratio-exact').textContent=t('ratio.exact',{status:t(analysis.aaNormal?'ratio.aaOk':'ratio.aaNo')});
  for(const [id,pass] of [['aa-normal',analysis.aaNormal],['aaa-normal',analysis.aaaNormal],['aa-large',analysis.aaLarge],['aaa-large',analysis.aaaLarge]]){
   const el=by(id);el.className='check '+(pass?'ok':'fail');
-  el.querySelector('strong').textContent=pass?'Conforme':'Insuffisant';
+  el.querySelector('strong').textContent=t(pass?'check.pass':'check.fail');
  }
  const best=C.bestOn(bg);
  by('suggested').textContent=best.hex;
- by('suggested-ratio').textContent=best.ratio.toFixed(4)+':1';
+ by('suggested-ratio').textContent=ratioText(best.ratio);
  by('suggested-swatch').style.backgroundColor=bg;
  by('suggested-swatch').style.color=best.hex;
  by('suggested-swatch').textContent='Aa';
  const target=Number(by('target-ratio').value),suggestion=C.suggestForeground(fg,bg,target);
  by('adjusted').textContent=suggestion.hex;
- by('adjusted-ratio').textContent=suggestion.ratio.toFixed(4)+':1';
+ by('adjusted-ratio').textContent=ratioText(suggestion.ratio);
  by('adjusted-swatch').style.backgroundColor=bg;
  by('adjusted-swatch').style.color=suggestion.hex;
  by('adjusted-swatch').textContent='Aa';
- by('adjusted-reason').textContent=!suggestion.reachable?
-  'Seuil inaccessible avec un texte HEX opaque sur ce fond fixe, même en noir ou en blanc. Modifiez aussi le fond.':
-  suggestion.changed?'Ajustement des canaux RVB vers le noir ou le blanc pour atteindre le seuil choisi.':
-  'La couleur actuelle atteint déjà le seuil choisi.';
+ by('adjusted-reason').textContent=t(!suggestion.reachable?'reason.unreachable':suggestion.changed?'reason.changed':'reason.ok');
  by('use-adjusted').disabled=!suggestion.changed||!suggestion.reachable;
  by('css-output').value=C.cssSnippet(fg,bg);
  renderSaved();
@@ -56,23 +64,23 @@ function renderSaved(){
  const list=by('saved-list');list.replaceChildren();
  by('warning').hidden=!blocked;by('save-pair').disabled=blocked;
  const stats=C.summarize(palette.pairs);
- by('saved-count').textContent=stats.total+' / 100 combinaisons';
- by('saved-aa').textContent=stats.aaNormal+' conformes AA standard';
- if(!palette.pairs.length)list.append(node('p','empty','Aucune combinaison enregistrée.'));
+ by('saved-count').textContent=t('saved.count',{n:stats.total,max:L.number(C.MAX)});
+ by('saved-aa').textContent=t('saved.aa',{n:stats.aaNormal});
+ if(!palette.pairs.length)list.append(node('p','empty',t('saved.empty')));
  palette.pairs.forEach((entry,index)=>{
   const row=node('div','saved');
   const swatch=node('span','saved-preview','Aa');
   swatch.style.color=entry.fg;swatch.style.backgroundColor=entry.bg;
-  const apply=node('button','saved-apply',entry.fg+' / '+entry.bg);
-  apply.type='button';apply.addEventListener('click',()=>{fg=entry.fg;bg=entry.bg;show();message('Combinaison appliquée.');});
+  const apply=node('button','saved-apply',entry.fg+' / '+entry.bg);apply.dir='ltr';
+  apply.type='button';apply.addEventListener('click',()=>{fg=entry.fg;bg=entry.bg;show();message('status.applied');});
   const result=C.wcag(entry.fg,entry.bg);
-  const ratio=node('span','saved-ratio',result.ratio.toFixed(2)+':1 · '+(result.aaNormal?'AA ✓':'AA ✕'));
-  const remove=node('button','remove','Supprimer');remove.type='button';remove.disabled=blocked;
-  remove.setAttribute('aria-label','Supprimer la palette '+entry.fg+' sur '+entry.bg);
+  const ratio=node('span','saved-ratio',ratioText(result.ratio,2)+' · '+(result.aaNormal?'AA ✓':'AA ✕'));
+  const remove=node('button','remove',t('btn.delete'));remove.type='button';remove.disabled=blocked;
+  remove.setAttribute('aria-label',t('aria.deletePair',{fg:entry.fg,bg:entry.bg}));
   remove.addEventListener('click',()=>{
-   if(!confirm('Supprimer cette combinaison enregistrée ?'))return;
+   if(!confirm(t('confirm.delete')))return;
    if(save({version:1,pairs:palette.pairs.filter((_,i)=>i!==index)})){
-    renderSaved();message('Combinaison supprimée.');
+    renderSaved();message('status.deleted');
    }
   });
   row.append(swatch,apply,ratio,remove);list.append(row);
@@ -82,8 +90,8 @@ function setColor(kind,value){
  try{
   const hex=C.normalize(value);
   if(kind==='fg')fg=hex;else bg=hex;
-  message('');show();
- }catch(e){message('Couleur invalide : saisissez #RGB ou #RRGGBB.',true);show();}
+  message(null);show();
+ }catch(e){message('err.color',{},true);show();}
 }
 for(const [field,picker,kind] of [
  ['foreground','foreground-picker','fg'],['background','background-picker','bg']]){
@@ -92,53 +100,55 @@ for(const [field,picker,kind] of [
 }
 by('target-ratio').addEventListener('change',show);
 by('swap').addEventListener('click',()=>{[fg,bg]=[bg,fg];show();});
-by('use-suggestion').addEventListener('click',()=>{fg=C.bestOn(bg).hex;show();message('Texte noir ou blanc appliqué.');});
+by('use-suggestion').addEventListener('click',()=>{fg=C.bestOn(bg).hex;show();message('status.bestApplied');});
 by('use-adjusted').addEventListener('click',()=>{
  fg=C.suggestForeground(fg,bg,Number(by('target-ratio').value)).hex;
- show();message('Couleur de texte ajustée au contraste demandé.');
+ show();message('status.adjustedApplied');
 });
 by('save-pair').addEventListener('click',()=>{
- if(blocked){message('Sauvegarde illisible : restauration requise.',true);return;}
- if(palette.pairs.length>=C.MAX){message('Limite de 100 combinaisons atteinte.',true);return;}
+ if(blocked){message('status.blockedPair',{},true);return;}
+ if(palette.pairs.length>=C.MAX){message('status.limit',{max:L.number(C.MAX)},true);return;}
  const pair={fg,bg};
  if(palette.pairs.some(x=>x.fg===pair.fg&&x.bg===pair.bg)){
-  message('Cette combinaison figure déjà dans les favoris.',true);return;
+  message('status.duplicate',{},true);return;
  }
  if(save({version:1,pairs:[...palette.pairs,pair]})){
-  renderSaved();message('Combinaison enregistrée.');
+  renderSaved();message('status.pairSaved');
  }
 });
 by('export').addEventListener('click',()=>{
- if(blocked){message('Stockage illisible : exportez la copie brute plutôt qu’un JSON vide.',true);return;}
- try{download('colorcontrast-palettes.json',JSON.stringify(C.validateBackup(palette),null,2),'application/json');message('Sauvegarde JSON téléchargée.');}
- catch(e){message(e.message,true);}
+ if(blocked){message('status.exportBlocked',{},true);return;}
+ try{download('colorcontrast-palettes.json',JSON.stringify(C.validateBackup(palette),null,2),'application/json');message('status.exported');}
+ catch(e){fail(e);}
 });
 by('export-raw').addEventListener('click',()=>{
- try{download('colorcontrast-stockage-brut.txt',localStorage.getItem(KEY)||'','text/plain');message('Copie brute téléchargée : conservez-la en privé.');}
- catch(e){message('Copie brute indisponible : '+e.message,true);}
+ try{download('colorcontrast-stockage-brut.txt',localStorage.getItem(KEY)||'','text/plain');message('status.raw');}
+ catch(e){message('status.rawFail',{msgErr:e},true);}
 });
 by('import-trigger').addEventListener('click',()=>by('import-file').click());
 by('import-file').addEventListener('change',async(event)=>{
  const file=event.target.files?.[0];event.target.value='';if(!file)return;
  try{
-  if(file.size>C.MAX_BYTES)throw Error('Fichier trop volumineux');
+  if(file.size>C.MAX_BYTES)throw Error('err.fileBig');
   const imported=C.validateBackup(JSON.parse(await file.text()));
-  if(!confirm('Remplacer les '+palette.pairs.length+' combinaisons par '+imported.pairs.length+' combinaisons validées ?'))return;
-  if(save(imported,{restore:true})){show();message('Sauvegarde JSON restaurée.');}
- }catch(e){message('Import rejeté : '+e.message,true);}
+  if(!confirm(t('confirm.import',{a:L.number(palette.pairs.length),b:L.number(imported.pairs.length)})))return;
+  if(save(imported,{restore:true})){show();message('status.restored');}
+ }catch(e){message('status.importRefused',{msgErr:e},true);}
 });
 by('copy-css').addEventListener('click',async()=>{
- try{await navigator.clipboard.writeText(C.cssSnippet(fg,bg));message('Déclarations CSS copiées.');}
- catch(e){message('Copie automatique indisponible : sélectionnez le bloc CSS pour le copier.',true);}
+ try{await navigator.clipboard.writeText(C.cssSnippet(fg,bg));message('status.cssCopied');}
+ catch(e){message('status.cssFail',{},true);}
 });
 window.addEventListener('storage',event=>{
  if(event.key!==KEY)return;
- try{palette=event.newValue?C.validateBackup(JSON.parse(event.newValue)):DEFAULT;blocked=false;show();message('Favoris actualisés depuis un autre onglet.');}
- catch(e){blocked=true;show();message('Nouvelles données invalides depuis un autre onglet : import requis.',true);}
+ try{palette=event.newValue?C.validateBackup(JSON.parse(event.newValue)):DEFAULT;blocked=false;show();message('status.otherTab');}
+ catch(e){blocked=true;show();message('status.otherTabBad',{},true);}
 });
 try{const raw=localStorage.getItem(KEY);if(raw)palette=C.validateBackup(JSON.parse(raw));}
-catch(e){blocked=true;message('Sauvegarde illisible : elle ne sera pas écrasée. Exportez la copie brute.',true);}
+catch(e){blocked=true;message('status.corrupt',{},true);}
 show();
+// Changement de langue : réaffichage complet ; couleurs en cours et favoris intacts.
+L.onChange(()=>{show();showMessage();});
 if('serviceWorker'in navigator&&location.protocol.startsWith('http'))
  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 })();

@@ -113,3 +113,11 @@ test('unités françaises lisibles',()=>{
 test('inputs numériques non finis refusés',()=>{
  a.throws(()=>C.comparison(0,100));a.throws(()=>C.comparison(100,NaN));a.throws(()=>C.displayBytes(Infinity));
 });
+test('tailles découpées pour un affichage localisé',()=>{
+ a.deepEqual(C.byteUnits(500),{value:500,unit:'b',digits:0});a.deepEqual(C.byteUnits(2048),{value:2,unit:'kb',digits:1});a.equal(C.byteUnits(1048576).unit,'mb');
+});
+test('erreurs sous forme de clés traduisibles',()=>{
+ a.throws(()=>C.validFile(file({type:'image/gif'})),/^Error: err\.srcFormat$/);
+ a.throws(()=>C.settings({...opt,quality:2}),/^Error: err\.invalid\|\{"field":"quality"\}$/);
+ a.throws(()=>C.validateBatch([]),/^Error: err\.count\|\{"max":10\}$/);
+});

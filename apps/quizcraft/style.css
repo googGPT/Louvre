@@ -4,13 +4,13 @@ html{scroll-behavior:smooth}
 body{margin:0;background:radial-gradient(ellipse at 80% -12%,#44323f 0%,transparent 44%),var(--bg);color:var(--ink);min-height:100vh}
 .hero,main,footer{width:min(1160px,calc(100% - 32px));margin:auto}
 .hero{padding:32px 0}
-.brand{display:flex;align-items:center;gap:10px;font-size:19px}
+.brand{display:flex;align-items:center;gap:10px;font-size:19px;flex-wrap:wrap}
 .mark{display:grid;place-items:center;background:var(--accent);color:#121b2b;width:42px;height:42px;border-radius:14px;font-size:25px;font-weight:900}
 .tag{font-size:12px;color:var(--accent);border:1px solid #7c5b60;border-radius:8px;padding:3px 7px}
-.privacy{margin-left:auto;border-radius:90px;background:#244437;color:var(--good);font-size:12px;padding:7px 12px}
+.privacy{margin-inline-start:auto;border-radius:90px;background:#244437;color:var(--good);font-size:12px;padding:7px 12px}
 .eyebrow{text-transform:uppercase;letter-spacing:1.7px;color:var(--accent);font-size:12px;font-weight:800;margin:30px 0 8px}
 h1{font-size:clamp(32px,5vw,56px);line-height:1.1;letter-spacing:-1.6px;margin:8px 0 15px}
-h1 span{color:var(--accent)}.lead{max-width:690px;color:var(--muted)}
+h1 span{color:var(--accent)}h1 .h1-plain{color:inherit}.lead{max-width:690px;color:var(--muted)}
 main{display:grid;grid-template-columns:minmax(290px,.8fr) minmax(0,1.2fr);gap:20px;padding-bottom:40px;align-items:start}
 .workspace{display:grid;gap:20px;min-width:0}
 .panel{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:22px;min-width:0;box-shadow:0 10px 30px #040b1750}

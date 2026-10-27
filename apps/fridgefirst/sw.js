@@ -2,8 +2,8 @@
 // Généré par scripts/build_sw.py : ne pas modifier à la main (relancer le script).
 // Le nom du cache contient une empreinte du contenu : toute modification de l'appli
 // produit un nouveau nom, donc une mise à jour automatique chez les visiteurs.
-const CACHE = "louvre-fridgefirst-47b7c0bde1c9";
-const ASSETS = ["./", "./app.js", "./core.js", "./icon.svg", "./index.htm", "./index.html", "./manifest.webmanifest", "./style.css"];
+const CACHE = "louvre-fridgefirst-e0b9f552e25c";
+const ASSETS = ["./", "./app.js", "./core.js", "./icon.svg", "./index.htm", "./index.html", "./louvre-i18n.css", "./louvre-i18n.js", "./manifest.webmanifest", "./messages.js", "./style.css"];
 const OLD_PREFIXES = ["fridgefirst-shell-", "louvre-fridgefirst-"];
 
 self.addEventListener('install', (event) => {

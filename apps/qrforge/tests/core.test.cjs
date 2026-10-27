@@ -68,3 +68,13 @@ test('niveau H non plus petit que L',()=>{
 });
 test('données trop longues en H refusées',()=>a.throws(()=>C.matrix({kind:'text',text:'a'.repeat(1600)},{...cfg,ecc:'H'})));
 test('Canvas absent refusé',()=>a.throws(()=>C.pngCanvas(C.matrix({kind:'text',text:'OK'},cfg),null)));
+test('erreurs sous forme de clés de traduction',()=>{
+ a.throws(()=>payload('wifi',{ssid:'',security:'nopass'}),/^Error: err\.required\.ssid$/);
+ a.throws(()=>C.config({...cfg,dark:'#FFFFFF',light:'#102B43'}),/^Error: err\.contrast$/);
+ a.throws(()=>C.matrix({kind:'text',text:'a'.repeat(1600)},{...cfg,ecc:'H'}),/^Error: err\.tooBig\|\{"ecc":"H"\}$/);
+});
+test('nom accessible du SVG traduit et échappé, dessin identique',()=>{
+ const m=C.matrix({kind:'text',text:'OK'},cfg),fr=C.svg(m,'Code QR'),en=C.svg(m,'QR <code>');
+ a.ok(fr.includes('aria-label="Code QR"'));a.ok(en.includes('aria-label="QR &lt;code&gt;"'));
+ a.equal(fr.replace(/aria-label="[^"]*"/,''),en.replace(/aria-label="[^"]*"/,''));
+});

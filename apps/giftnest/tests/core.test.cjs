@@ -66,12 +66,13 @@ test('suppressions : une personne emporte ses cadeaux, une occasion les détache
 
 test('saisies refusées', () => {
   const data = sample();
-  assert.throws(() => C.makeGift({ title: 'X', price: '1', personId: 'inconnu', occasionId: null, status: 'idée' }, 'gift-0009', data), /pour qui/);
-  assert.throws(() => C.makeGift({ title: 'X', price: '1', personId: 'person-tom', occasionId: 'nope', status: 'idée' }, 'gift-0009', data), /Occasion/);
-  assert.throws(() => C.makeGift({ title: 'X', price: '1', personId: 'person-tom', occasionId: null, status: 'perdu' }, 'gift-0009', data), /Statut/);
-  assert.throws(() => C.makeGift({ title: ' ', price: '1', personId: 'person-tom', occasionId: null, status: 'idée' }, 'gift-0009', data), /obligatoire/);
-  assert.throws(() => C.makePerson({ name: 'X', budget: '12,345' }, 'person-x1'), /Montant/);
-  assert.throws(() => C.makeOccasion({ name: 'X', date: '2026-02-30' }, 'occ-x1'), /Date/);
+  assert.throws(() => C.makeGift({ title: 'X', price: '1', personId: 'inconnu', occasionId: null, status: 'idée' }, 'gift-0009', data), /^Error: err\.person$/);
+  assert.throws(() => C.makeGift({ title: 'X', price: '1', personId: 'person-tom', occasionId: 'nope', status: 'idée' }, 'gift-0009', data), /^Error: err\.occasion$/);
+  assert.throws(() => C.makeGift({ title: 'X', price: '1', personId: 'person-tom', occasionId: null, status: 'perdu' }, 'gift-0009', data), /^Error: err\.status$/);
+  assert.throws(() => C.makeGift({ title: ' ', price: '1', personId: 'person-tom', occasionId: null, status: 'idée' }, 'gift-0009', data), /^Error: err\.titleRequired$/);
+  assert.throws(() => C.makePerson({ name: 'x'.repeat(61) }, 'person-x2'), /^Error: err\.nameLong\|\{"max":60\}$/);
+  assert.throws(() => C.makePerson({ name: 'X', budget: '12,345' }, 'person-x1'), /^Error: err\.amount$/);
+  assert.throws(() => C.makeOccasion({ name: 'X', date: '2026-02-30' }, 'occ-x1'), /^Error: err\.date$/);
   assert.equal(C.parseCents(''), 0);
 });
 
@@ -80,8 +81,8 @@ test('sauvegarde : aller-retour exact, références croisées vérifiées', () =
   const back = C.validateBackup(JSON.parse(C.backup(data)));
   assert.deepEqual(back, data);
   const raw = { app: 'giftnest', version: 1, ...data };
-  assert.throws(() => C.validateBackup({ ...raw, app: 'x' }), /pas une sauvegarde/);
-  assert.throws(() => C.validateBackup({ ...raw, gifts: [{ ...data.gifts[0], personId: 'fantome' }] }), /pour qui/);
-  assert.throws(() => C.validateBackup({ ...raw, people: [{ ...data.people[0], extra: 1 }, data.people[1]] }), /inattendus/);
-  assert.throws(() => C.validateBackup({ ...raw, people: [data.people[0], data.people[0], data.people[1]] }), /double/);
+  assert.throws(() => C.validateBackup({ ...raw, app: 'x' }), /^Error: err\.notBackup$/);
+  assert.throws(() => C.validateBackup({ ...raw, gifts: [{ ...data.gifts[0], personId: 'fantome' }] }), /^Error: err\.person$/);
+  assert.throws(() => C.validateBackup({ ...raw, people: [{ ...data.people[0], extra: 1 }, data.people[1]] }), /^Error: err\.fields$/);
+  assert.throws(() => C.validateBackup({ ...raw, people: [data.people[0], data.people[0], data.people[1]] }), /^Error: err\.duplicate$/);
 });

@@ -15,7 +15,7 @@ try:
     with sync_playwright() as p:
         exe=next((x for x in [os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium'),'/usr/bin/google-chrome'] if os.path.exists(x)),None)
         browser=p.chromium.launch(executable_path=exe,headless=True,args=['--no-sandbox'])
-        context=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True)
+        context=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True,locale='fr-FR')
         page=context.new_page()
         errors=[]
         page.on('pageerror',lambda e:errors.append(str(e)))
@@ -136,8 +136,51 @@ try:
         page.locator('[name="question"]').wait_for()
         assert page.locator('#items .item').count()==2
         assert not errors,errors
+        context.set_offline(False)
+
+        # --- Langues : détection du navigateur, 7 langues, arabe de droite à gauche, saisie et session conservées.
+        intl=browser.new_context(viewport={'width':390,'height':844},locale='es-MX')
+        ip=intl.new_page()
+        ip.on('pageerror',lambda e:errors.append(str(e)))
+        ip.on('dialog',lambda d:d.accept())
+        ip.goto(f'http://127.0.0.1:{server.server_port}/',wait_until='domcontentloaded')
+        expect(ip.locator('#form-title')).to_have_text('Crear una pregunta')  # navegador español -> español
+        assert ip.evaluate('() => LouvreI18n.lang')=='es'
+        assert ip.locator('#louvre-currency').count()==0  # appli sans argent : pas de menu devise
+        expect(ip.locator('[name="difficulty"] option').nth(2)).to_have_text('Difícil')
+        ip.locator('[name="question"]').fill('¿Capital de Japón?'); ip.locator('[name="answer"]').fill('Tokio')
+        ip.locator('[name="category"]').fill('Geografía'); ip.locator('[name="difficulty"]').select_option('difficile')
+        ip.locator('#save-button').click()
+        expect(ip.locator('#status')).to_have_text('Pregunta guardada localmente.')
+        stored=ip.evaluate("JSON.parse(localStorage.getItem('louvre-factory:quizcraft:v1'))")
+        assert stored['records'][0]['difficulty']=='difficile' and stored['records'][0]['mastered']=='non'  # valeurs v1 inchangées
+        ip.locator('#start-quiz').click()
+        expect(ip.locator('#quiz-status')).to_have_text('Pregunta 1 / 1 · 0 correctas')
+        ip.locator('[name="question"]').fill('Brouillon en cours')  # saisie non enregistrée
+        titles={'fr':'Bibliothèque de questions','en':'Question library','es':'Biblioteca de preguntas','ar':'مكتبة الأسئلة','pt':'Biblioteca de perguntas','de':'Fragensammlung','it':'Raccolta di domande'}
+        for lang in ['fr','en','es','ar','pt','de','it']:
+            ip.locator('#louvre-lang').select_option(lang)
+            assert ip.evaluate('() => document.documentElement.lang')==lang
+            assert ip.evaluate('() => document.documentElement.dir')==('rtl' if lang=='ar' else 'ltr')
+            wide=ip.evaluate('''() => document.documentElement.scrollWidth <= innerWidth + 2 ? [] :
+              [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 2)
+                .slice(0, 5).map((e) => `${e.tagName}.${e.className} « ${(e.textContent || '').trim().slice(0, 40)} »`)''')
+            assert not wide,f'débordement en {lang} : {wide}'
+            expect(ip.locator('#library-title')).to_have_text(titles[lang])
+            assert ip.locator('[name="question"]').input_value()=='Brouillon en cours'
+            expect(ip.locator('#quiz-panel')).to_be_visible()
+            assert ip.evaluate('() => LouvreI18n.missing()')==[],ip.evaluate('() => LouvreI18n.missing()')
+        expect(ip.locator('#quiz-status')).to_have_text('Domanda 1 / 1 · 0 corrette')
+        expect(ip.locator('#items .meta')).to_have_text('Difficoltà: Difficile')
+        ip.locator('#louvre-lang').select_option('de')
+        expect(ip.locator('#summary .stat-label').first).to_have_text('Fragen')
+        ip.locator('[name="question"]').fill('   ')
+        ip.locator('[name="answer"]').fill('x'); ip.locator('[name="category"]').fill('y')
+        ip.evaluate("() => document.getElementById('record-form').requestSubmit()")
+        expect(ip.locator('#status')).to_have_text('Frage: Text erforderlich (höchstens 1.200 Zeichen)')
+        assert not errors,errors
         browser.close()
-    print('BROWSER PASS: CRUD, stats, categories, filters, quiz grading, CSV/JSON, corrupt backup, mobile 390px, offline')
+    print('BROWSER PASS: CRUD, stats, categories, filters, quiz grading, CSV/JSON, corrupt backup, mobile 390px, offline, 7 languages, RTL')
 finally:
     server.shutdown()
     server.server_close()

@@ -114,3 +114,9 @@ test('CSS sériel canonique',()=>{
 test('CSS refuse valeur arbitraire potentiellement dangereuse',()=>{
  assert.throws(()=>C.cssSnippet('url(javascript:evil)','#fff'));
 });
+test('erreurs levées sous forme de clés traduisibles',()=>{
+ assert.throws(()=>C.normalize('#12'),{message:'err.hex'});
+ assert.throws(()=>C.fromRgb([1,2]),{message:'err.rgb'});
+ assert.throws(()=>C.suggestForeground('#aaa','#fff',5),{message:'err.target'});
+ assert.throws(()=>C.validateBackup({version:2,pairs:[]}),{message:'err.backup'});
+});

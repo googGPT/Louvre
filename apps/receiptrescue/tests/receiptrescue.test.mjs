@@ -43,10 +43,18 @@ test('catégories : centimes entiers et mois distincts',()=>{
 });
 test('export calendrier ICS correctement échappé et sans dates inventées',()=>{
   const a=record({item:'Téléphone, édition; pro',returnBy:'2026-11-01',warrantyUntil:''});
-  const result=core.calendarIcs([a]);
+  const text={summary:(kind,item)=>`${kind==='return'?'Retour':'Garantie'} : ${item}`,description:m=>`Magasin : ${m}`};
+  const result=core.calendarIcs([a],text);
   assert.equal(result.count,1);
   assert.match(result.content,/DTSTART;VALUE=DATE:20261101/);
   assert.match(result.content,/Téléphone\\, édition\\; pro/);
   assert.ok(result.content.endsWith('END:VCALENDAR\r\n'));
-  assert.equal(core.calendarIcs([record({returnBy:'',warrantyUntil:''})]).count,0);
+  assert.match(result.content,/SUMMARY:Retour : Téléphone/);
+  assert.match(result.content,/UID:sample-1234-retour-20261101@receiptrescue.local/); // identifiant stable, indépendant de la langue
+  assert.equal(core.calendarIcs([record({returnBy:'',warrantyUntil:''})],text).count,0);
+});
+test('échéances : tri alphabétique selon la langue fournie',()=>{
+  const a=record({id:'abcde-2001',item:'Zèbre',returnBy:'2026-10-27',warrantyUntil:''});
+  const b=record({id:'abcde-2002',item:'Ábaco',returnBy:'2026-10-27',warrantyUntil:''});
+  assert.deepEqual(core.upcomingDeadlines([a,b],'2026-10-25',30,'es-ES').map(x=>x.item),['Ábaco','Zèbre']);
 });

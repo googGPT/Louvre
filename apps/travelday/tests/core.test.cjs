@@ -18,7 +18,7 @@ test('durée de 23 h 59 calculée',()=>{assert.equal(L.interval(mk({start:'00:00
 test('frais sont toujours des nombres finis positifs',()=>{for(const cost of [-1,Infinity,NaN,'2',1000001])assert.throws(()=>n(mk({cost})));});
 test('argent : 19,99 et 0,01 centimes exacts',()=>{assert.equal(L.moneyCents(19.99),1999);assert.equal(L.moneyCents(.01),1)});
 test('argent : agrégation par activité, pas arrondi après somme',()=>{const r=[mk({id:'a0001',cost:.105}),mk({id:'a0002',cost:.105})];assert.equal(a(r).totalCents,L.moneyCents(.105)*2)});
-test('budget en centimes sur ancienne fiche',()=>{assert.equal(a([old]).kpis[1][1],L.eur(1500))});
+test('budget en centimes sur ancienne fiche',()=>{assert.deepEqual(a([old]).kpis[1],['kpi.budget',1500,'money'])});
 test('refus des catégories inconnues',()=>assert.throws(()=>n(mk({category:'pirate'}))));
 test('catégorie et notes facultatives historiques',()=>{const o=n(old);assert.equal(o.category,'Activité');assert.equal(o.notes,'')});
 test('validation sauvegarde ancienne v1',()=>{const v=L.validateBackup({app:'travelday',version:1,records:[old]});assert.equal(v.length,1);assert.equal(v[0].category,'Activité')});
@@ -44,7 +44,7 @@ test('marge égale au seuil ne déclenche pas avertissement',()=>{const r=a([old
 test('marge à zéro désactivée',()=>{const r=a([old,mk({id:'trip0002',start:'11:00',end:'12:00'})],'all',0);assert.equal(r.gaps.length,0)});
 test('marge invalide refusée',()=>{assert.throws(()=>a([old],'all',-1));assert.throws(()=>a([old],'all',181))});
 test('synthèse par jour correcte',()=>{const r=a([old,mk({id:'trip0002',cost:8.5,start:'13:00',end:'14:00'})]);assert.equal(r.perDay[old.day].count,2);assert.equal(r.perDay[old.day].costCents,2350)});
-test('durée totale et kpis cohérents',()=>{const r=a([old,mk({id:'trip0002',start:'12:00',end:'13:30'})]);assert.equal(r.totalMinutes,210);assert.equal(r.kpis[3][1],L.minutesLabel(210))});
+test('durée totale et kpis cohérents',()=>{const r=a([old,mk({id:'trip0002',start:'12:00',end:'13:30'})]);assert.equal(r.totalMinutes,210);assert.deepEqual(r.kpis[3],['kpi.duration',210,'minutes'])});
 test('CSV : entêtes et BOM Excel',()=>{const s=L.toCsv([old]);assert.ok(s.startsWith('\uFEFF'));assert.ok(s.includes('Budget (EUR)'));assert.ok(s.includes('15.00'))});
 test('CSV : cellule avec point-virgule et guillemets',()=>{const s=L.toCsv([mk({place:'Un; "café"'})]);assert.ok(s.includes('"Un; ""café"""'))});
 test('CSV : neutralisation de formule',()=>{for(const place of ['=SUM(1,2)','+CMD','-CMD','@HYPERLINK'])assert.ok(L.toCsv([mk({place})]).includes('"\''+place))});
@@ -53,6 +53,11 @@ test('ICS : entrée après minuit',()=>{const s=L.toIcs([mk({start:'23:00',end:'
 test('ICS : sortie texte échappée',()=>{const s=L.toIcs([mk({place:'Repas, café; matin',notes:'Ligne\nDeuxième'})]);assert.ok(s.includes('Repas\\, café\\; matin'));assert.ok(s.includes('Ligne\\nDeuxième'))});
 test('ICS : ne garantit aucun horaire UTC',()=>{const s=L.toIcs([old]);assert.ok(!s.includes('DTSTART:20261110T090000Z'))});
 test('calcul reproductible et absence de mutation',()=>{const list=[old,mk({id:'trip0002',start:'12:00',end:'13:00'})],before=JSON.stringify(list);assert.deepEqual(a(list),a(list));assert.equal(JSON.stringify(list),before)});
-test('compute conserve contrat initial',()=>{const r=L.compute([old],'2026-11-01');assert.equal(r.kpis[0][1],'1');assert.equal(r.kpis[1][1],L.eur(1500));assert.equal(r.kpis[2][1],'0')});
+test('compute conserve contrat initial',()=>{const r=L.compute([old],'2026-11-01');assert.equal(r.kpis[0][1],1);assert.equal(r.kpis[1][1],1500);assert.equal(r.kpis[2][1],0)});
 
-test('pas de fausse transition à l’intérieur d’une activité englobante',()=>{const r=a([mk({id:'long00',start:'08:00',end:'18:00'}),mk({id:'short1',start:'09:00',end:'10:00'}),mk({id:'short2',start:'10:05',end:'11:00'})],'all',15);assert.equal(r.gaps.length,0)});
+test('pas de fausse transition à l’intérieur d’une activité englobante',()=>{const r=a([mk({id:'long00',start:'08:00',end:'18:00'}),mk({id:'short1',start:'09:00',end:'10:00'}),mk({id:'short2',start:'10:05',end:'11:00'})],'all',15);assert.equal(r.gaps.length,0)});test('erreurs sous forme de clés traduisibles',()=>{assert.throws(()=>n(mk({place:' '})),/^Error: err\.place\|\{"max":160\}$/);assert.throws(()=>n(mk({start:'25:00'})),/^Error: err\.time$/)});
+test('CSV et ICS : libellés fournis par l interface, données inchangées',()=>{
+ const s=L.toCsv([mk({category:'Repas',start:'23:00',end:'01:00'})],{cols:['Date','Activity','Start','End','Next day','Duration (min)','Category','Budget (USD)','Notes'],yes:'yes',no:'no',category:c=>({Repas:'Meal'})[c]||c});
+ assert.ok(s.includes('Budget (USD)'));assert.ok(s.includes('"yes"'));assert.ok(s.includes('"Meal"'));assert.ok(s.includes('"15.00"'));
+ assert.ok(L.toIcs([old],(r,c)=>r.place+' '+c).includes('DESCRIPTION:Musée 1500'));
+});

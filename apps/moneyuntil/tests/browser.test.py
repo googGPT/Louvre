@@ -4,6 +4,7 @@ import functools
 import http.server
 import json
 import pathlib
+import re
 import threading
 from playwright.sync_api import sync_playwright, expect
 
@@ -18,7 +19,7 @@ def main():
     try:
         with sync_playwright() as p:
             browser=p.chromium.launch(headless=True,executable_path=os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium'),args=['--no-sandbox'])
-            context=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True)
+            context=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True,locale='fr-FR')
             page=context.new_page()
             errors=[];external=[]
             origin=f'http://127.0.0.1:{server.server_port}/'
@@ -93,8 +94,56 @@ def main():
             assert page.title().startswith('MoneyUntil')
             assert 'Courses' in page.locator('#expense-list').inner_text()
             context.set_offline(False)
+
+            # --- Langues : détection du navigateur, 7 langues, arabe de droite à gauche, devise du budget, saisie conservée.
+            intl=browser.new_context(viewport={'width':390,'height':844},locale='en-US')
+            ip=intl.new_page()
+            ip.on('pageerror',lambda e:errors.append(str(e)))
+            ip.on('dialog',lambda d:d.accept())
+            ip.goto(origin,wait_until='domcontentloaded')
+            expect(ip.locator('#settings-modal')).to_be_visible()
+            expect(ip.locator('#settings-title')).to_have_text('Your financial situation')  # navigateur anglais -> anglais
+            assert ip.evaluate('() => LouvreI18n.lang')=='en'
+            assert ip.locator('#currency').input_value()=='USD'  # région US -> budget proposé en dollars
+            ip.locator('#start-balance').fill('1200.00'); ip.locator('#payday').fill(payday); ip.locator('#reserve').fill('100.00')
+            ip.locator('#settings-form button[type=submit]').click()
+            expect(ip.locator('#settings-modal')).to_be_hidden()
+            expect(ip.locator('#daily-amount')).to_contain_text('$')
+            ip.locator('#add-expense').click()
+            ip.locator('#expense-name').fill('Groceries'); ip.locator('#expense-amount').fill('25.50')
+            ip.locator('#expense-form button[type=submit]').click()
+            expect(ip.locator('#expense-modal')).to_be_hidden()
+            ip.locator('#scenario-amount').fill('30')  # saisie en cours : doit survivre aux changements de langue
+            heads={'fr':'Dernières dépenses','en':'Latest expenses','es':'Últimos gastos','ar':'آخر المصاريف','pt':'Últimas despesas','de':'Letzte Ausgaben','it':'Ultime spese'}
+            for lang in ['fr','en','es','ar','pt','de','it']:
+                ip.locator('#louvre-lang').select_option(lang)
+                assert ip.evaluate('() => document.documentElement.lang')==lang
+                assert ip.evaluate('() => document.documentElement.dir')==('rtl' if lang=='ar' else 'ltr')
+                wide=ip.evaluate('''() => document.documentElement.scrollWidth <= innerWidth + 2 ? [] :
+                  [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 2)
+                    .slice(0, 5).map((e) => `${e.tagName}.${e.className} « ${(e.textContent || '').trim().slice(0, 40)} »`)''')
+                assert not wide,f'débordement en {lang} : {wide}'
+                expect(ip.locator('#expenses-head')).to_have_text(heads[lang])
+                expect(ip.locator('#expense-list')).to_contain_text('Groceries')
+                expect(ip.locator('#daily-amount')).to_have_text(re.compile(r'\$|USD'))  # devise du budget, quelle que soit la langue (« USD » en italien)
+                assert ip.locator('#scenario-amount').input_value()=='30'
+                assert ip.evaluate('() => LouvreI18n.missing()')==[],ip.evaluate('() => LouvreI18n.missing()')
+            expect(ip.locator('#scenario-result')).to_contain_text('USD')
+            expect(ip.locator('#expense-cat option').first).to_have_text('Spesa')
+            assert ip.title().startswith('MoneyUntil — Goditi')
+            # Le choix de langue est mémorisé ; la sauvegarde garde son format (devise enregistrée, catégorie en valeur stable).
+            ip.reload(wait_until='domcontentloaded')
+            expect(ip.locator('#expenses-head')).to_have_text('Ultime spese')
+            saved=ip.evaluate("JSON.parse(localStorage.getItem('moneyuntil:v1'))")
+            assert saved['version']==1 and saved['currency']=='USD' and saved['expenses'][0]['category']=='courses'
+            ip.locator('#louvre-lang').select_option('de')
+            ip.locator('#top-settings').click()
+            ip.locator('#payday').fill('2020-01-01')
+            ip.locator('#settings-form button[type=submit]').click()
+            expect(ip.locator('#settings-error')).to_have_text('Wählen Sie einen künftigen Zahltag.')
+            assert not errors,errors
             browser.close()
-        print('BROWSER PASS MoneyUntil: setup, precise inputs, expense/bill, scenario non-persistence, JSON download/import, mobile 390px, offline reload')
+        print('BROWSER PASS MoneyUntil: setup, precise inputs, expense/bill, scenario non-persistence, JSON download/import, mobile 390px, offline reload, 7 languages, RTL, budget currency')
     finally:
         server.shutdown()
         server.server_close()

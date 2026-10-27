@@ -5,58 +5,58 @@
 <meta name="description" content="QuizCraft : créez vos questions, testez-vous et suivez les notions maîtrisées. Gratuit et hors ligne.">
 <title>QuizCraft — Créer et réviser des mini-quiz</title>
 <link rel="icon" href="./icon.svg" type="image/svg+xml"><link rel="manifest" href="./manifest.webmanifest">
-<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./style.css"><link rel="stylesheet" href="./louvre-i18n.css">
 </head><body>
 <header class="hero">
- <div class="brand"><span class="mark" aria-hidden="true">?</span><strong>QuizCraft <span class="tag">v2</span></strong><span class="privacy">Données locales</span></div>
- <p class="eyebrow">Apprendre · s'évaluer · progresser</p>
- <h1>Des questions utiles.<br><span>De vrais progrès.</span></h1>
- <p class="lead">Créez vos cartes de révision, tirez un quiz au hasard et évaluez vous-même vos réponses. Aucun compte ni service payant.</p>
+ <div class="brand"><span class="mark" aria-hidden="true">?</span><strong>QuizCraft <span class="tag">v2</span></strong><span class="privacy" data-i18n="privacy">Données locales</span><div data-louvre-locale="lang-only"></div></div>
+ <p class="eyebrow" data-i18n="eyebrow">Apprendre · s'évaluer · progresser</p>
+ <h1><span class="h1-plain" data-i18n="hero.title1">Des questions utiles.</span><br><span data-i18n="hero.title2">De vrais progrès.</span></h1>
+ <p class="lead" data-i18n="hero.lead">Créez vos cartes de révision, tirez un quiz au hasard et évaluez vous-même vos réponses. Aucun compte ni service payant.</p>
 </header>
 <main>
  <section class="panel editor" aria-labelledby="form-title">
-  <div class="section-top"><h2 id="form-title">Créer une question</h2><span class="hint">Votre banque personnelle</span></div>
+  <div class="section-top"><h2 id="form-title" data-i18n="form.title">Créer une question</h2><span class="hint" data-i18n="form.hint">Votre banque personnelle</span></div>
   <form id="record-form" autocomplete="off"><div id="fields"></div>
-   <div class="actions"><button type="submit" id="save-button">Ajouter la question</button><button type="button" id="cancel-edit" class="outline" hidden>Annuler</button></div>
+   <div class="actions"><button type="submit" id="save-button">Ajouter la question</button><button type="button" id="cancel-edit" class="outline" hidden data-i18n="btn.cancel">Annuler</button></div>
   </form>
   <p id="status" class="status" role="status" aria-live="polite"></p>
-  <p id="warning" class="warning" hidden>Stockage local illisible : aucune nouvelle écriture autorisée. Conservez la copie brute ou restaurez une sauvegarde JSON valide.</p>
-  <div class="files"><button type="button" id="export" class="outline small">Sauvegarder JSON</button><button type="button" id="export-csv" class="outline small">Exporter CSV</button><label class="upload small">Restaurer JSON<input type="file" id="import" accept=".json,application/json" aria-label="Restaurer une sauvegarde JSON"></label><button type="button" id="export-raw" class="outline small">Copie brute</button></div>
-  <p class="fine">Seul le JSON permet de restaurer vos fiches. Ne partagez pas les exports contenant des réponses confidentielles.</p>
+  <p id="warning" class="warning" hidden data-i18n="warning">Stockage local illisible : aucune nouvelle écriture autorisée. Conservez la copie brute ou restaurez une sauvegarde JSON valide.</p>
+  <div class="files"><button type="button" id="export" class="outline small" data-i18n="btn.exportJson">Sauvegarder JSON</button><button type="button" id="export-csv" class="outline small" data-i18n="btn.exportCsv">Exporter CSV</button><label class="upload small"><span data-i18n="btn.import">Restaurer JSON</span><input type="file" id="import" accept=".json,application/json" data-i18n-attr="aria-label:aria.import" aria-label="Restaurer une sauvegarde JSON"></label><button type="button" id="export-raw" class="outline small" data-i18n="btn.raw">Copie brute</button></div>
+  <p class="fine" data-i18n="files.fine">Seul le JSON permet de restaurer vos fiches. Ne partagez pas les exports contenant des réponses confidentielles.</p>
  </section>
  <div class="workspace">
   <section class="panel" aria-labelledby="dashboard-title">
-   <div class="section-top"><h2 id="dashboard-title">Votre progression</h2><span class="hint">Auto-évaluation</span></div>
+   <div class="section-top"><h2 id="dashboard-title" data-i18n="dash.title">Votre progression</h2><span class="hint" data-i18n="dash.hint">Auto-évaluation</span></div>
    <div id="summary" class="stats"></div>
-   <h3 class="subheading">Par thème</h3><div id="theme-progress" class="themes"></div>
+   <h3 class="subheading" data-i18n="dash.themes">Par thème</h3><div id="theme-progress" class="themes"></div>
   </section>
   <section class="panel" aria-labelledby="practice-title">
-   <div class="section-top"><h2 id="practice-title">Mode entraînement</h2><span class="hint">Réponses masquées</span></div>
-   <p class="muted">Questions mélangées, une à la fois. Après avoir révélé la réponse, indiquez si vous avez répondu correctement.</p>
+   <div class="section-top"><h2 id="practice-title" data-i18n="practice.title">Mode entraînement</h2><span class="hint" data-i18n="practice.hint">Réponses masquées</span></div>
+   <p class="muted" data-i18n="practice.text">Questions mélangées, une à la fois. Après avoir révélé la réponse, indiquez si vous avez répondu correctement.</p>
    <div class="quiz-settings">
-    <label class="tool" for="quiz-count"><span>Questions</span><select id="quiz-count"><option value="5">5 maximum</option><option value="10" selected>10 maximum</option><option value="20">20 maximum</option><option value="50">50 maximum</option></select></label>
-    <label class="tool" for="quiz-category"><span>Thème</span><select id="quiz-category"><option value="all">Tous les thèmes</option></select></label>
-    <label class="tick"><input id="quiz-unmastered" type="checkbox"> Réviser uniquement les questions non maîtrisées</label>
+    <label class="tool" for="quiz-count"><span data-i18n="quiz.count">Questions</span><select id="quiz-count"><option value="5">5</option><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select></label>
+    <label class="tool" for="quiz-category"><span data-i18n="quiz.theme">Thème</span><select id="quiz-category"><option value="all" data-i18n="quiz.allThemes">Tous les thèmes</option></select></label>
+    <label class="tick"><input id="quiz-unmastered" type="checkbox"> <span data-i18n="quiz.unmastered">Réviser uniquement les questions non maîtrisées</span></label>
    </div>
-   <button id="start-quiz" type="button">Démarrer une session</button>
+   <button id="start-quiz" type="button" data-i18n="btn.start">Démarrer une session</button>
    <section id="quiz-panel" class="quiz-panel" aria-labelledby="quiz-status" hidden>
-    <div class="quiz-header"><strong id="quiz-status" role="status" aria-live="polite"></strong><button type="button" id="close-quiz" class="outline small">Quitter</button></div>
+    <div class="quiz-header"><strong id="quiz-status" role="status" aria-live="polite"></strong><button type="button" id="close-quiz" class="outline small" data-i18n="btn.quit">Quitter</button></div>
     <div id="quiz-body"></div>
    </section>
   </section>
   <section class="panel" aria-labelledby="library-title">
-   <div class="section-top"><h2 id="library-title">Bibliothèque de questions</h2><strong class="counter" id="counter">0 / 0 questions</strong></div>
+   <div class="section-top"><h2 id="library-title" data-i18n="lib.title">Bibliothèque de questions</h2><strong class="counter" id="counter"></strong></div>
    <div class="filters">
-    <label class="tool search" for="search"><span>Rechercher</span><input id="search" type="search" placeholder="Question, réponse, thème…"></label>
-    <label class="tool" for="category-filter"><span>Thème</span><select id="category-filter"><option value="all">Tous</option></select></label>
-    <label class="tool" for="mastery-filter"><span>Maîtrise</span><select id="mastery-filter"><option value="all">Toutes</option><option value="non">À revoir</option><option value="oui">Maîtrisées</option></select></label>
-    <label class="tool" for="difficulty-filter"><span>Difficulté</span><select id="difficulty-filter"><option value="all">Toutes</option><option value="facile">Facile</option><option value="moyen">Moyen</option><option value="difficile">Difficile</option></select></label>
-    <label class="tool" for="sort"><span>Tri</span><select id="sort"><option value="recent">Ajout récent</option><option value="difficulty">Plus difficiles</option><option value="category">Par thème</option></select></label>
+    <label class="tool search" for="search"><span data-i18n="f.search">Rechercher</span><input id="search" type="search" data-i18n-attr="placeholder:ph.search" placeholder="Question, réponse, thème…"></label>
+    <label class="tool" for="category-filter"><span data-i18n="f.theme">Thème</span><select id="category-filter"><option value="all" data-i18n="opt.all">Tous</option></select></label>
+    <label class="tool" for="mastery-filter"><span data-i18n="f.mastery">Maîtrise</span><select id="mastery-filter"><option value="all" data-i18n="opt.allF">Toutes</option><option value="non" data-i18n="opt.review">À revoir</option><option value="oui" data-i18n="opt.masteredMany">Maîtrisées</option></select></label>
+    <label class="tool" for="difficulty-filter"><span data-i18n="f.difficulty">Difficulté</span><select id="difficulty-filter"><option value="all" data-i18n="opt.allF">Toutes</option><option value="facile" data-i18n="diff.facile">Facile</option><option value="moyen" data-i18n="diff.moyen">Moyen</option><option value="difficile" data-i18n="diff.difficile">Difficile</option></select></label>
+    <label class="tool" for="sort"><span data-i18n="f.sort">Tri</span><select id="sort"><option value="recent" data-i18n="sort.recent">Ajout récent</option><option value="difficulty" data-i18n="sort.difficulty">Plus difficiles</option><option value="category" data-i18n="sort.category">Par thème</option></select></label>
    </div>
    <div id="items" class="items"></div>
   </section>
  </div>
 </main>
-<footer>QuizCraft · 500 questions maximum, sauvegardées dans ce navigateur. Hors ligne après premier chargement réussi. Le score dépend de votre propre évaluation : aucune correction automatique des réponses libres. Aucune synchronisation entre appareils.</footer>
-<script src="./core.js"></script><script src="./app.js"></script>
+<footer data-i18n="footer">QuizCraft · 500 questions maximum, sauvegardées dans ce navigateur. Hors ligne après premier chargement réussi. Le score dépend de votre propre évaluation : aucune correction automatique des réponses libres. Aucune synchronisation entre appareils.</footer>
+<script src="./louvre-i18n.js"></script><script src="./messages.js"></script><script src="./core.js"></script><script src="./app.js"></script>
 </body></html>

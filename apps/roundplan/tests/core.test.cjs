@@ -33,8 +33,8 @@ test('temps incorrect refusé',()=>assert.throws(()=>L.locatePhase(L.buildTimeli
 test('format secondes sans flottants',()=>{assert.equal(L.formatSeconds(61),'1:01');assert.equal(L.formatSeconds(3601),'1:00:01');assert.equal(L.formatSeconds(4.1),'0:05')});
 test('format négatif interdit',()=>assert.throws(()=>L.formatSeconds(-1)));
 test('limite totale 24 h',()=>{assert.throws(()=>L.buildTimeline([mk({id:'r1',work:3600,rest:1800,rounds:24})]))});
-test('indicateurs v1 compatibles',()=>{const p=L.compute([base],'2026-11-01');assert.equal(p.kpis[0][1],'6 min');assert.equal(p.kpis[1][1],'6');assert.equal(p.kpis[2][1],'1')});
-test('indicateurs complémentaires',()=>{const p=L.compute([base]);assert.equal(p.kpis[3][1],'4:00');assert.equal(p.kpis[4][1],'1:40')});
+test('indicateurs v1 compatibles',()=>{const p=L.compute([base],'2026-11-01');assert.deepEqual(p.kpis[0],['kpi.duration',6,'min']);assert.equal(p.kpis[1][1],6);assert.equal(p.kpis[2][1],1)});
+test('indicateurs complémentaires',()=>{const p=L.compute([base]);assert.equal(L.formatSeconds(p.kpis[3][1]),'4:00');assert.equal(L.formatSeconds(p.kpis[4][1]),'1:40')});
 test('programme déterministe, sans mutation',()=>{const original=JSON.stringify([base,second]);assert.deepEqual(L.compute([base,second]),L.compute([base,second]));assert.equal(JSON.stringify([base,second]),original)});
 test('sauvegarde JSON v1 conservée',()=>{const data=JSON.parse(L.backup([base,second]));assert.equal(data.version,1);assert.equal(data.app,'roundplan');assert.deepEqual(L.validateBackup(data),[base,second]);});
 test('restauration au vieux format sans exportedAt',()=>assert.deepEqual(L.validateBackup({app:'roundplan',version:1,records:[base]}),[base]));
@@ -44,4 +44,10 @@ test('rejet version inconnue',()=>assert.throws(()=>L.validateBackup({app:'round
 test('rejet champ caché de sauvegarde',()=>assert.throws(()=>L.validateBackup({app:'roundplan',version:1,records:[base],secret:'x'})));
 test('rejet nombre maximal de fiches',()=>assert.throws(()=>L.validateBackup({app:'roundplan',version:1,records:Array(501).fill(base)})));
 test('protection saison été/hiver',()=>{assert.equal(L.diffDays('2026-03-30','2026-03-28'),2);assert.equal(L.addDays('2026-10-24',2),'2026-10-26')});
-test('presets conformes et distincts',()=>{assert.equal(L.presets.length,3);for(let i=0;i<3;i++)assert.ok(L.buildTimeline([mk({exercise:L.presets[i].exercise,work:L.presets[i].work,rest:L.presets[i].rest,rounds:L.presets[i].rounds})]).totalSeconds>0)});
+test('presets conformes et distincts',()=>{assert.equal(L.presets.length,3);for(let i=0;i<3;i++)assert.ok(L.buildTimeline([mk({exercise:L.presets[i].key,work:L.presets[i].work,rest:L.presets[i].rest,rounds:L.presets[i].rounds})]).totalSeconds>0)});test('erreurs levées sous forme de clés traduisibles',()=>{
+ assert.throws(()=>L.normalizeRecord(mk({work:0})),{message:'err.int|{"field":"work","low":1,"high":3600}'});
+ assert.throws(()=>L.normalizeRecord(mk({exercise:'a\nb'})),{message:'err.name'});
+ assert.throws(()=>L.validateBackup({app:'other',version:1,records:[]}),{message:'err.backup'});
+ assert.throws(()=>L.formatSeconds(-1),{message:'err.time'});
+});
+test('phases sans libellé figé : seulement leur nature (work/rest)',()=>{const p=L.buildTimeline([base]);assert.deepEqual([...new Set(p.phases.map(x=>x.kind))],['work','rest']);assert.equal(p.phases[0].label,undefined)});
