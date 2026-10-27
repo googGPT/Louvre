@@ -7,6 +7,8 @@
   <meta name="description" content="MoneyUntil : calculez combien vous pouvez dépenser chaque jour jusqu'à votre prochaine paie. Budget, dépenses et factures, sans inscription et avec données conservées sur votre appareil.">
   <meta name="robots" content="index,follow">
   <link rel="canonical" href="https://googgpt.github.io/Louvre/apps/moneyuntil/">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <title>MoneyUntil — Profitez d'aujourd'hui. Gardez l'esprit tranquille.</title>
   <style>
     :root{--ink:#192c35;--ink2:#51616b;--muted:#829099;--paper:#f5f7f5;--white:#fff;--navy:#142630;--lime:#dcf67b;--lime2:#ecfaab;--line:#e6ece9;--error:#b34342;--orange:#a86e19;--radius:20px}
@@ -176,6 +178,8 @@
     byId('import-data').addEventListener('click',()=>byId('import-file').click());byId('import-file').addEventListener('change',async event=>{const file=event.target.files?.[0];event.target.value='';if(!file)return;if(file.size>1_000_000){showToast('Fichier trop volumineux (max. 1 Mo)');return}try{const parsed=JSON.parse(await file.text());if(!validateBackup(parsed)){showToast('Sauvegarde non valide ou incompatible');return}if(!confirm('Remplacer vos données actuelles par cette sauvegarde ?'))return;state=parsed;const stored=persist(true);render();showToast(stored?'Sauvegarde restaurée':'Données chargées, mais stockage inaccessible : exportez une sauvegarde')}catch{showToast('Impossible de lire ce fichier JSON')}});
     render();
     if(!state.configured)settingsOpen();
+    // Mode hors ligne : le service worker garde une copie de l'appli sur l'appareil.
+    if(typeof navigator!=='undefined'&&'serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
   })();
   </script>
 </body>

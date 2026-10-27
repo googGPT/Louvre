@@ -4,7 +4,7 @@ import os
 import pathlib
 import threading
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, expect
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self,*args,**kwargs):super().__init__(*args,directory=str(ROOT),**kwargs)
@@ -37,10 +37,10 @@ def run():
             page.wait_for_function("document.querySelectorAll('#items .item').length>=7")
             assert page.locator('#issues').inner_text().find('critères manquants')!=-1
             page.locator('#search').fill('voiture a')
-            assert page.locator('#items .item').count()==1
+            expect(page.locator('#items .item')).to_have_count(1)  # attend la fin du filtrage
             page.locator('#search').fill('')
             page.locator('#items .item .item-actions button').first.click()
-            assert page.locator('#save-button').inner_text()=='Mettre à jour'
+            expect(page.locator('#save-button')).to_have_text('Mettre à jour')  # attend le passage en mode édition
             page.locator('#cancel-edit').click()
             with page.expect_download() as d:page.locator('#export').click()
             backup=pathlib.Path(d.value.path()).read_text()
@@ -48,10 +48,11 @@ def run():
             with page.expect_download() as d:page.locator('#export-csv').click()
             assert 'Contribution pondérée' in pathlib.Path(d.value.path()).read_text(encoding='utf-8-sig')
             page.locator('#search').fill('voiture a')
+            expect(page.locator('#items .item')).to_have_count(1)  # filtre appliqué avant de supprimer
             page.locator('#items .item .item-actions button').nth(1).click()
             page.wait_for_function("document.querySelectorAll('#items .item').length===0")
             page.locator('#search').fill('')
-            assert page.locator('#items .item').count()>=6
+            page.wait_for_function("document.querySelectorAll('#items .item').length>=6")  # liste complète réaffichée
             page.locator('#import').set_input_files({'name':'backup.json','mimeType':'application/json','buffer':backup.encode('utf-8')})
             page.wait_for_function("document.querySelectorAll('#items .item').length>=7")
             page.locator('#import').set_input_files({'name':'bad.json','mimeType':'application/json','buffer':b'{"app":"wrong","records":[]}'})
