@@ -16,7 +16,9 @@
   const today = () => C.dayKey();
 
   function say(id, text, kind = '') { const n = $(id); n.textContent = text; n.className = 'status' + (kind ? ' ' + kind : ''); }
-  function newId() { return (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 10)); }
+  // Identifiants croissants (horodatage + compteur) : à date égale, les cartes restent dans l'ordre d'ajout.
+  let idSeq = 0;
+  function newId() { return `${Date.now().toString(36)}-${(idSeq++ % 1679616).toString(36).padStart(4, '0')}-${Math.random().toString(36).slice(2, 10).padEnd(8, '0')}`; }
 
   // Enregistre seulement si le stockage est sain ; renvoie vrai en cas de succès.
   function save(next) {
