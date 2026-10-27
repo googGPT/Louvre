@@ -1,0 +1,12 @@
+{
+  "name": "LaundryLoad — charges de lessive compatibles",
+  "short_name": "LaundryLoad",
+  "description": "Regroupe les vêtements à laver en charges compatibles selon la couleur, la température et la capacité de la machine.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#0f7b6c",
+  "background_color": "#f1f7f6",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

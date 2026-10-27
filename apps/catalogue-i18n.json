@@ -44,7 +44,10 @@
       "Travail": "Work",
       "Voyage": "Travel",
       "Éducation": "Education",
-      "Événements": "Events"
+      "Événements": "Events",
+      "Développement": "Development",
+      "Vie quotidienne": "Daily life",
+      "Immobilier": "Real estate"
     },
     "apps": {
       "moneyuntil": "Works out how much you can spend each day until your next payday.",
@@ -106,7 +109,27 @@
       "researchquestionlab": "Structures a research problem, gap, questions and hypotheses with a checklist.",
       "savingsprojection": "Projects savings with regular contributions and hypothetical rates you enter, comparing scenarios.",
       "teachingattendance": "Takes the register per session, works out each student's attendance and flags those below your threshold.",
-      "travelpackingweight": "Weighs luggage item by item, flags excess weight and suggests what to move."
+      "travelpackingweight": "Weighs luggage item by item, flags excess weight and suggests what to move.",
+      "bankfeelens": "Compares the yearly cost of bank offers based on your usage and the fees you enter.",
+      "fxbudget": "Converts travel spending with your own dated rates and shows what is left by category and per day.",
+      "gardenplanner": "Draws the vegetable garden as a grid, schedules sowing and harvests, and flags rotations to rethink.",
+      "jsoninspector": "Validates JSON (error line and column), collapsible tree, JSONPath paths and duplicate keys.",
+      "kanbanpocket": "Kanban boards with WIP limits, labels, due dates, filters and moves by keyboard or touch.",
+      "laundrydecoder": "Explains the care symbols on a clothing label and sums up the instructions.",
+      "laundryload": "Groups the laundry into compatible loads by colour, temperature and machine capacity.",
+      "logiclab": "Truth tables, tautologies, equivalence of two expressions and DNF/CNF normal forms.",
+      "meetingminutes": "Timed agenda, decisions and actions tracked from one meeting to the next, .md minutes and .ics deadlines.",
+      "petcarelog": "Keeps your pets' care log: reminders, appointments, weight curve and spending.",
+      "plantpulse": "Tracks watering, feeding and repotting at the intervals you set, with overdue alerts and a calendar.",
+      "pollbox": "Anonymous voting by passing one device around, results revealed at closing and CSV export.",
+      "pricejournal": "Logs the prices you see by product and shop, tracking how they change and the best price seen.",
+      "prioritymatrix": "Urgency × importance matrix: urgency computed from your threshold, sorted by drag or keyboard.",
+      "rentbuycompare": "Compares the cumulative net cost of renting and buying from your assumptions, with the break-even point.",
+      "repairledger": "Tracks repairs of your belongings, their total cost against the purchase price and warranty ends.",
+      "salaryscenario": "Compares theoretical net pay from a gross salary, bonuses and deduction rates you enter, with no tax tables.",
+      "seatarrange": "Table or row seating plan with constraints, automatic placement, manual adjustment and CSV.",
+      "timelinebuilder": "Timelines drawn to scale: periods, BCE dates, tracks, SVG and CSV export.",
+      "wardrobecapsule": "Counts the possible outfits of a capsule wardrobe, suggests outfits and points out the gaps."
     }
   },
   "es": {
@@ -154,7 +177,10 @@
       "Travail": "Trabajo",
       "Voyage": "Viajes",
       "Éducation": "Educación",
-      "Événements": "Eventos"
+      "Événements": "Eventos",
+      "Développement": "Desarrollo",
+      "Vie quotidienne": "Vida cotidiana",
+      "Immobilier": "Inmobiliario"
     },
     "apps": {
       "moneyuntil": "Calcula cuánto puedes gastar cada día hasta la próxima nómina.",
@@ -216,7 +242,27 @@
       "researchquestionlab": "Estructura el problema, la laguna, las preguntas y las hipótesis de investigación con una lista de control.",
       "savingsprojection": "Proyecta un ahorro con aportaciones periódicas y tipos hipotéticos que introduces, comparando escenarios.",
       "teachingattendance": "Pasa lista por sesión, calcula la asistencia de cada estudiante y señala a quienes bajan del umbral.",
-      "travelpackingweight": "Pesa el equipaje objeto por objeto, señala los excesos y propone qué mover."
+      "travelpackingweight": "Pesa el equipaje objeto por objeto, señala los excesos y propone qué mover.",
+      "bankfeelens": "Compara el coste anual de ofertas bancarias según tu uso y las comisiones que introduces.",
+      "fxbudget": "Convierte los gastos de viaje con tus propios tipos fechados y muestra el saldo por categoría y por día.",
+      "gardenplanner": "Dibuja el huerto en cuadrícula, fecha siembras y cosechas y señala las rotaciones a revisar.",
+      "jsoninspector": "Valida JSON (línea y columna del error), árbol plegable, rutas JSONPath y claves duplicadas.",
+      "kanbanpocket": "Tableros Kanban con límite WIP, etiquetas, plazos, filtros y movimiento con teclado o dedo.",
+      "laundrydecoder": "Explica los símbolos de cuidado de la etiqueta de una prenda y resume las instrucciones.",
+      "laundryload": "Agrupa la ropa sucia en coladas compatibles según el color, la temperatura y la capacidad.",
+      "logiclab": "Tablas de verdad, tautologías, equivalencia de dos expresiones y formas normales FND/FNC.",
+      "meetingminutes": "Orden del día cronometrado, decisiones y tareas seguidas de una reunión a otra, acta .md y plazos .ics.",
+      "petcarelog": "Lleva la cartilla de cuidados de tus mascotas: recordatorios, citas, curva de peso y gastos.",
+      "plantpulse": "Sigue el riego, el abono y el trasplante con tus frecuencias, con retrasos y calendario.",
+      "pollbox": "Votación anónima pasando un solo dispositivo, resultados revelados al cierre y exportación CSV.",
+      "pricejournal": "Anota los precios observados por producto y tienda, sigue su evolución y el mejor precio visto.",
+      "prioritymatrix": "Matriz urgencia × importancia: urgencia calculada según tu umbral, clasificación arrastrando o con teclado.",
+      "rentbuycompare": "Compara el coste neto acumulado de alquilar y comprar según tus hipótesis, con el punto de equilibrio.",
+      "repairledger": "Sigue las reparaciones de tus objetos, su coste acumulado frente al precio de compra y el fin de las garantías.",
+      "salaryscenario": "Compara netos teóricos a partir de un bruto, primas y tipos de retención que introduces, sin baremos.",
+      "seatarrange": "Distribución de mesas o filas con restricciones, colocación automática, ajuste manual y CSV.",
+      "timelinebuilder": "Líneas de tiempo a escala: periodos, fechas antes de Cristo, pistas, exportación SVG y CSV.",
+      "wardrobecapsule": "Cuenta los conjuntos posibles de un armario cápsula, propone conjuntos y señala lo que falta."
     }
   },
   "ar": {
@@ -264,7 +310,10 @@
       "Travail": "العمل",
       "Voyage": "السفر",
       "Éducation": "التعليم",
-      "Événements": "المناسبات"
+      "Événements": "المناسبات",
+      "Développement": "التطوير",
+      "Vie quotidienne": "الحياة اليومية",
+      "Immobilier": "العقار"
     },
     "apps": {
       "moneyuntil": "يحسب المبلغ الذي يمكنك إنفاقه يوميًا حتى موعد الراتب القادم.",
@@ -326,7 +375,27 @@
       "researchquestionlab": "يهيكل مشكلة البحث والفجوة والأسئلة والفرضيات مع قائمة تحقق.",
       "savingsprojection": "يُسقط المدخرات مع دفعات منتظمة ومعدلات افتراضية تُدخلها، مع مقارنة السيناريوهات.",
       "teachingattendance": "يسجّل الحضور في كل حصة، ويحسب مواظبة كل طالب، وينبّه إلى من هم تحت العتبة المختارة.",
-      "travelpackingweight": "يزن الأمتعة غرضًا غرضًا وينبّه إلى الوزن الزائد ويقترح ما يجب نقله."
+      "travelpackingweight": "يزن الأمتعة غرضًا غرضًا وينبّه إلى الوزن الزائد ويقترح ما يجب نقله.",
+      "bankfeelens": "يقارن التكلفة السنوية للعروض المصرفية حسب استخدامك والرسوم التي تُدخلها.",
+      "fxbudget": "يحوّل مصاريف السفر بأسعار صرف مؤرَّخة تُدخلها بنفسك ويبيّن المتبقي حسب الفئة ولكل يوم.",
+      "gardenplanner": "يرسم حديقة الخضار على شكل شبكة، ويؤرّخ البذر والحصاد، وينبّه إلى التناوبات التي تحتاج مراجعة.",
+      "jsoninspector": "يتحقق من JSON (سطر الخطأ وعموده)، مع شجرة قابلة للطي ومسارات JSONPath والمفاتيح المكرّرة.",
+      "kanbanpocket": "لوحات كانبان بحد للعمل الجاري ووسوم ومواعيد ومرشحات ونقل بلوحة المفاتيح أو اللمس.",
+      "laundrydecoder": "يشرح رموز العناية على ملصق الملابس ويلخّص التعليمات.",
+      "laundryload": "يجمع الغسيل في دفعات متوافقة حسب اللون والحرارة وسعة الغسالة.",
+      "logiclab": "جداول الصدق والتحصيلات الحاصلة وتكافؤ تعبيرين والصيغ النظامية الفصلية والوصلية.",
+      "meetingminutes": "جدول أعمال موقّت، وقرارات ومهام تُتابَع من اجتماع إلى آخر، ومحضر ‎.md ومواعيد ‎.ics.",
+      "petcarelog": "يحفظ سجل رعاية حيواناتك: التذكيرات والمواعيد ومنحنى الوزن والمصاريف.",
+      "plantpulse": "يتابع سقي النباتات وتسميدها وتغيير أصصها وفق الفترات التي تحددها، مع التأخيرات والتقويم.",
+      "pollbox": "تصويت سري بتمرير جهاز واحد، مع كشف النتائج عند الإغلاق وتصدير CSV.",
+      "pricejournal": "يسجّل الأسعار الملاحظة حسب المنتج والمتجر، ويتابع تطورها وأفضل سعر لوحظ.",
+      "prioritymatrix": "مصفوفة الاستعجال × الأهمية: استعجال يُحسب وفق الحد الذي تختاره، وتصنيف بالسحب أو بلوحة المفاتيح.",
+      "rentbuycompare": "يقارن صافي التكلفة التراكمية للإيجار والشراء وفق افتراضاتك، مع نقطة التعادل.",
+      "repairledger": "يتابع إصلاحات أغراضك وكلفتها المتراكمة مقارنةً بسعر الشراء ونهاية الضمانات.",
+      "salaryscenario": "يقارن صافي الأجر النظري انطلاقًا من إجمالي ومكافآت ومعدلات اقتطاع تُدخلها، دون أي جدول.",
+      "seatarrange": "مخطط جلوس على طاولات أو صفوف مع قيود وتوزيع تلقائي وتعديل يدوي وتصدير CSV.",
+      "timelinebuilder": "خطوط زمنية بمقياس صحيح: فترات وتواريخ قبل الميلاد ومسارات وتصدير SVG وCSV.",
+      "wardrobecapsule": "يحسب الإطلالات الممكنة في خزانة ملابس أساسية، ويقترح إطلالات، وينبّه إلى النواقص."
     }
   },
   "pt": {
@@ -374,7 +443,10 @@
       "Travail": "Trabalho",
       "Voyage": "Viagens",
       "Éducation": "Educação",
-      "Événements": "Eventos"
+      "Événements": "Eventos",
+      "Développement": "Desenvolvimento",
+      "Vie quotidienne": "Vida quotidiana",
+      "Immobilier": "Imobiliário"
     },
     "apps": {
       "moneyuntil": "Calcula quanto pode gastar por dia até ao próximo salário.",
@@ -436,7 +508,27 @@
       "researchquestionlab": "Estrutura o problema, a lacuna, as questões e as hipóteses de investigação com uma lista de verificação.",
       "savingsprojection": "Projeta uma poupança com entregas regulares e taxas hipotéticas que introduz, comparando cenários.",
       "teachingattendance": "Faz a chamada por aula, calcula a assiduidade de cada estudante e assinala quem fica abaixo do limiar.",
-      "travelpackingweight": "Pesa a bagagem objeto a objeto, assinala os excessos e propõe o que mover."
+      "travelpackingweight": "Pesa a bagagem objeto a objeto, assinala os excessos e propõe o que mover.",
+      "bankfeelens": "Compara o custo anual de ofertas bancárias segundo a sua utilização e as comissões que introduz.",
+      "fxbudget": "Converte as despesas de viagem com as suas próprias taxas datadas e mostra o que resta por categoria e por dia.",
+      "gardenplanner": "Desenha a horta em grelha, data sementeiras e colheitas e assinala as rotações a rever.",
+      "jsoninspector": "Valida JSON (linha e coluna do erro), árvore recolhível, caminhos JSONPath e chaves duplicadas.",
+      "kanbanpocket": "Quadros Kanban com limite WIP, etiquetas, prazos, filtros e movimentação por teclado ou toque.",
+      "laundrydecoder": "Explica os símbolos de cuidados da etiqueta de uma peça e resume as instruções.",
+      "laundryload": "Agrupa a roupa suja em lavagens compatíveis segundo a cor, a temperatura e a capacidade.",
+      "logiclab": "Tabelas de verdade, tautologias, equivalência de duas expressões e formas normais FND/FNC.",
+      "meetingminutes": "Ordem de trabalhos cronometrada, decisões e ações acompanhadas entre reuniões, ata .md e prazos .ics.",
+      "petcarelog": "Mantém a caderneta de cuidados dos animais: lembretes, consultas, curva de peso e despesas.",
+      "plantpulse": "Acompanha a rega, o adubo e o transplante com as suas frequências, com atrasos e calendário.",
+      "pollbox": "Votação anónima passando um único dispositivo, resultados revelados no fecho e exportação CSV.",
+      "pricejournal": "Regista os preços observados por produto e loja, acompanha a sua evolução e o melhor preço visto.",
+      "prioritymatrix": "Matriz urgência × importância: urgência calculada pelo seu limiar, classificação por arrastar ou teclado.",
+      "rentbuycompare": "Compara o custo líquido acumulado de arrendar e comprar segundo as suas hipóteses, com o ponto de equilíbrio.",
+      "repairledger": "Acompanha as reparações dos seus objetos, o custo acumulado face ao preço de compra e o fim das garantias.",
+      "salaryscenario": "Compara líquidos teóricos a partir de um bruto, prémios e taxas de retenção que introduz, sem tabelas.",
+      "seatarrange": "Plano de mesas ou filas com restrições, distribuição automática, ajuste manual e CSV.",
+      "timelinebuilder": "Cronologias à escala: períodos, datas antes de Cristo, faixas, exportação SVG e CSV.",
+      "wardrobecapsule": "Conta os conjuntos possíveis de um guarda-roupa cápsula, propõe conjuntos e assinala o que falta."
     }
   },
   "de": {
@@ -484,7 +576,10 @@
       "Travail": "Arbeit",
       "Voyage": "Reisen",
       "Éducation": "Bildung",
-      "Événements": "Veranstaltungen"
+      "Événements": "Veranstaltungen",
+      "Développement": "Entwicklung",
+      "Vie quotidienne": "Alltag",
+      "Immobilier": "Immobilien"
     },
     "apps": {
       "moneyuntil": "Berechnet, wie viel Sie bis zum nächsten Zahltag pro Tag ausgeben können.",
@@ -546,7 +641,27 @@
       "researchquestionlab": "Strukturiert Forschungsproblem, Lücke, Fragen und Hypothesen mit einer Checkliste.",
       "savingsprojection": "Rechnet Ersparnisse mit regelmäßigen Einzahlungen und selbst gewählten Zinsannahmen hoch und vergleicht Szenarien.",
       "teachingattendance": "Erfasst die Anwesenheit pro Sitzung, berechnet die Quote jeder Person und markiert alle unter der Schwelle.",
-      "travelpackingweight": "Wiegt das Gepäck Stück für Stück, meldet Übergewicht und schlägt vor, was umzupacken ist."
+      "travelpackingweight": "Wiegt das Gepäck Stück für Stück, meldet Übergewicht und schlägt vor, was umzupacken ist.",
+      "bankfeelens": "Vergleicht die Jahreskosten von Bankangeboten nach Ihrer Nutzung und den eingegebenen Gebühren.",
+      "fxbudget": "Rechnet Reiseausgaben mit eigenen, datierten Kursen um und zeigt den Rest pro Kategorie und Tag.",
+      "gardenplanner": "Zeichnet den Gemüsegarten als Raster, plant Aussaat und Ernte und meldet kritische Fruchtfolgen.",
+      "jsoninspector": "Prüft JSON (Zeile und Spalte des Fehlers), aufklappbarer Baum, JSONPath-Pfade und doppelte Schlüssel.",
+      "kanbanpocket": "Kanban-Boards mit WIP-Limit, Labels, Fristen, Filtern und Verschieben per Tastatur oder Finger.",
+      "laundrydecoder": "Erklärt die Pflegesymbole auf einem Kleidungsetikett und fasst die Hinweise zusammen.",
+      "laundryload": "Teilt die Wäsche nach Farbe, Temperatur und Maschinenkapazität in passende Ladungen auf.",
+      "logiclab": "Wahrheitstafeln, Tautologien, Äquivalenz zweier Ausdrücke und Normalformen DNF/KNF.",
+      "meetingminutes": "Tagesordnung mit Zeitplan, Beschlüsse und Aufgaben über Besprechungen hinweg, Protokoll .md und Fristen .ics.",
+      "petcarelog": "Führt das Pflegeheft Ihrer Tiere: Erinnerungen, Termine, Gewichtskurve und Ausgaben.",
+      "plantpulse": "Verfolgt Gießen, Düngen und Umtopfen nach Ihren Abständen, mit Verzug und Kalender.",
+      "pollbox": "Anonyme Abstimmung durch Weiterreichen eines Geräts, Ergebnisse beim Abschluss und CSV-Export.",
+      "pricejournal": "Notiert beobachtete Preise je Produkt und Geschäft und verfolgt ihre Entwicklung und den besten Preis.",
+      "prioritymatrix": "Matrix Dringlichkeit × Wichtigkeit: Dringlichkeit nach Ihrer Schwelle, Einordnen per Ziehen oder Tastatur.",
+      "rentbuycompare": "Vergleicht die kumulierten Nettokosten von Mieten und Kaufen nach Ihren Annahmen, mit Break-even.",
+      "repairledger": "Verfolgt Reparaturen Ihrer Gegenstände, ihre Gesamtkosten im Vergleich zum Kaufpreis und Garantieenden.",
+      "salaryscenario": "Vergleicht theoretische Nettobeträge aus Brutto, Prämien und eingegebenen Abzugssätzen, ohne Tarife.",
+      "seatarrange": "Sitzplan für Tische oder Reihen mit Regeln, automatischer Platzierung, Handanpassung und CSV.",
+      "timelinebuilder": "Maßstabsgetreue Zeitleisten: Zeiträume, Daten vor Christus, Spuren, Export als SVG und CSV.",
+      "wardrobecapsule": "Zählt die möglichen Outfits einer Capsule-Garderobe, schlägt Outfits vor und zeigt Lücken."
     }
   },
   "it": {
@@ -594,7 +709,10 @@
       "Travail": "Lavoro",
       "Voyage": "Viaggi",
       "Éducation": "Istruzione",
-      "Événements": "Eventi"
+      "Événements": "Eventi",
+      "Développement": "Sviluppo",
+      "Vie quotidienne": "Vita quotidiana",
+      "Immobilier": "Immobiliare"
     },
     "apps": {
       "moneyuntil": "Calcola quanto puoi spendere ogni giorno fino al prossimo stipendio.",
@@ -656,7 +774,27 @@
       "researchquestionlab": "Struttura problema, lacuna, domande e ipotesi di ricerca con una checklist.",
       "savingsprojection": "Proietta un risparmio con versamenti regolari e tassi ipotetici inseriti da te, confrontando scenari.",
       "teachingattendance": "Fa l'appello per lezione, calcola la frequenza di ogni studente e segnala chi scende sotto la soglia.",
-      "travelpackingweight": "Pesa i bagagli oggetto per oggetto, segnala le eccedenze e propone cosa spostare."
+      "travelpackingweight": "Pesa i bagagli oggetto per oggetto, segnala le eccedenze e propone cosa spostare.",
+      "bankfeelens": "Confronta il costo annuo di offerte bancarie in base al tuo uso e alle commissioni che inserisci.",
+      "fxbudget": "Converte le spese di viaggio con i tuoi tassi datati e mostra il residuo per categoria e per giorno.",
+      "gardenplanner": "Disegna l’orto a griglia, data semine e raccolti e segnala le rotazioni da rivedere.",
+      "jsoninspector": "Valida JSON (riga e colonna dell'errore), albero comprimibile, percorsi JSONPath e chiavi duplicate.",
+      "kanbanpocket": "Bacheche Kanban con limite WIP, etichette, scadenze, filtri e spostamento da tastiera o con il dito.",
+      "laundrydecoder": "Spiega i simboli di manutenzione sull’etichetta di un capo e riassume le istruzioni.",
+      "laundryload": "Raggruppa il bucato in carichi compatibili per colore, temperatura e capacità della lavatrice.",
+      "logiclab": "Tavole di verità, tautologie, equivalenza di due espressioni e forme normali FND/FNC.",
+      "meetingminutes": "Ordine del giorno a tempo, decisioni e azioni seguite tra una riunione e l'altra, verbale .md e scadenze .ics.",
+      "petcarelog": "Tiene il libretto di cura degli animali: promemoria, appuntamenti, curva del peso e spese.",
+      "plantpulse": "Segue annaffiature, concime e rinvaso con le tue frequenze, con ritardi e calendario.",
+      "pollbox": "Voto anonimo passando un solo dispositivo, risultati rivelati alla chiusura ed esportazione CSV.",
+      "pricejournal": "Annota i prezzi rilevati per prodotto e negozio, seguendone l'andamento e il miglior prezzo osservato.",
+      "prioritymatrix": "Matrice urgenza × importanza: urgenza calcolata sulla tua soglia, classificazione trascinando o da tastiera.",
+      "rentbuycompare": "Confronta il costo netto cumulato di affitto e acquisto secondo le tue ipotesi, con il punto di pareggio.",
+      "repairledger": "Segue le riparazioni dei tuoi oggetti, il costo cumulato rispetto al prezzo d’acquisto e la fine delle garanzie.",
+      "salaryscenario": "Confronta netti teorici a partire da lordo, premi e aliquote di trattenuta inserite, senza tabelle.",
+      "seatarrange": "Disposizione di tavoli o file con vincoli, sistemazione automatica, ritocchi manuali e CSV.",
+      "timelinebuilder": "Linee del tempo in scala: periodi, date avanti Cristo, tracce, esportazione SVG e CSV.",
+      "wardrobecapsule": "Conta gli outfit possibili di un guardaroba capsula, propone outfit e segnala le mancanze."
     }
   }
 }

@@ -1,0 +1,12 @@
+{
+  "name": "RepairLedger — carnet de réparations",
+  "short_name": "RepairLedger",
+  "description": "Suit les réparations d'objets personnels, leur coût cumulé face au prix d'achat et la fin des garanties.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#a35200",
+  "background_color": "#fbf6f1",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

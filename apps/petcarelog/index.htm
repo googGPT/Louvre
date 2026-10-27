@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PetCareLog — Carnet de soins de vos animaux</title>
+<meta name="description" content="PetCareLog : vaccins, vermifuges et toilettage avec vos propres récurrences, rendez-vous, courbe de poids et dépenses par animal. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#a14d16">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/petcarelog/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>PetCareLog</strong><small data-i18n="brand.tagline">Le carnet de soins de vos animaux</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Vaccins, rendez-vous, poids et dépenses au même endroit.</h1>
+  <p data-i18n="hero.text">Notez les soins de chaque animal avec la récurrence que vous a indiquée votre vétérinaire : PetCareLog calcule les prochaines échéances, trace la courbe de poids et additionne les dépenses.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les données enregistrées sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-pets">
+  <div class="row between">
+    <h2 id="h-pets" class="flush" data-i18n="pets.title">Mes animaux</h2>
+    <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+  </div>
+  <div class="tabs" id="pet-tabs" role="group" data-i18n-attr="aria-label:pets.choose"></div>
+  <form id="pet-form" novalidate class="form-grid three">
+    <label class="field"><span data-i18n="f.petName">Nom</span><input name="name" maxlength="40" data-i18n-attr="placeholder:f.petNamePh"></label>
+    <label class="field"><span data-i18n="f.species">Espèce (facultatif)</span><input name="species" maxlength="40" data-i18n-attr="placeholder:f.speciesPh"></label>
+    <label class="field"><span data-i18n="f.birth">Naissance (facultatif)</span><input name="birth" type="date"></label>
+    <div class="row span">
+      <button class="btn primary" id="save-pet" type="submit" data-i18n="btn.addPet">Ajouter l'animal</button>
+      <button class="btn" id="edit-pet" type="button" data-i18n="btn.editPet">Modifier l'animal affiché</button>
+      <button class="btn" id="cancel-pet" type="button" hidden data-i18n="btn.cancel">Annuler</button>
+      <button class="btn" id="delete-pet" type="button" data-i18n="btn.deletePet">Supprimer l'animal affiché</button>
+    </div>
+  </form>
+  <p class="status" id="pet-status" role="status" aria-live="polite"></p>
+</section>
+
+<div id="pet-area">
+<section class="panel" aria-labelledby="h-care">
+  <h2 id="h-care"><span data-i18n="care.title">Soins</span> <span class="who" id="who-care"></span></h2>
+  <ul class="list" id="cares"></ul>
+  <details class="add" id="care-add">
+    <summary data-i18n="care.add">Ajouter un soin récurrent</summary>
+    <form id="care-form" novalidate class="form-grid four">
+      <label class="field"><span data-i18n="f.type">Type</span><select name="type" id="care-type"></select></label>
+      <label class="field"><span data-i18n="f.label">Précision (facultatif)</span><input name="label" maxlength="60" data-i18n-attr="placeholder:f.labelPh"></label>
+      <div class="field every"><span id="lab-every" data-i18n="f.every">Tous les</span>
+        <div class="pair"><input name="every" inputmode="numeric" value="1" aria-labelledby="lab-every"><select name="unit" id="care-unit" aria-labelledby="lab-every"></select></div></div>
+      <label class="field"><span data-i18n="f.last">Dernier soin fait</span><input name="last" type="date"></label>
+      <div class="row span"><button class="btn primary" type="submit" id="save-care" data-i18n="btn.addCare">Ajouter le soin</button></div>
+    </form>
+    <p class="hint" data-i18n="care.hint">Saisissez la récurrence prescrite ou conseillée par votre vétérinaire : PetCareLog ne propose aucun calendrier vaccinal.</p>
+  </details>
+  <p class="status" id="care-status" role="status" aria-live="polite"></p>
+
+  <h3 data-i18n="appt.title">Rendez-vous</h3>
+  <ul class="list" id="appts"></ul>
+  <details class="add" id="appt-add">
+    <summary data-i18n="appt.add">Ajouter un rendez-vous</summary>
+    <form id="appt-form" novalidate class="form-grid four">
+      <label class="field"><span data-i18n="f.apptTitle">Objet</span><input name="title" maxlength="60" data-i18n-attr="placeholder:f.apptTitlePh"></label>
+      <label class="field"><span data-i18n="f.date">Date</span><input name="date" type="date"></label>
+      <label class="field"><span data-i18n="f.time">Heure (facultatif)</span><input name="time" type="time"></label>
+      <label class="field"><span data-i18n="f.place">Lieu (facultatif)</span><input name="place" maxlength="60"></label>
+      <div class="row span"><button class="btn primary" type="submit" data-i18n="btn.addAppt">Ajouter le rendez-vous</button></div>
+    </form>
+  </details>
+  <p class="status" id="appt-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-weight">
+  <h2 id="h-weight"><span data-i18n="weight.title">Poids</span> <span class="who" id="who-weight"></span></h2>
+  <form id="weight-form" novalidate class="form-grid four">
+    <label class="field"><span data-i18n="f.date">Date</span><input name="date" type="date"></label>
+    <div class="field"><span id="lab-weight" data-i18n="f.weight">Poids</span>
+      <div class="pair"><input name="value" inputmode="decimal" aria-labelledby="lab-weight" placeholder="12,4"><select name="unit" aria-labelledby="lab-weight"><option value="kg">kg</option><option value="g">g</option></select></div></div>
+    <div class="row span"><button class="btn primary" type="submit" data-i18n="btn.addWeight">Noter le poids</button></div>
+  </form>
+  <p class="status" id="weight-status" role="status" aria-live="polite"></p>
+  <div class="kpis" id="weight-kpis"></div>
+  <div class="chart" id="chart"></div>
+  <ul class="list compact" id="weights"></ul>
+</section>
+</div>
+
+<section class="panel" aria-labelledby="h-exp">
+  <h2 id="h-exp" data-i18n="exp.title">Dépenses</h2>
+  <form id="exp-form" novalidate class="form-grid five">
+    <label class="field"><span data-i18n="f.pet">Animal</span><select name="pet" id="exp-pet"></select></label>
+    <label class="field"><span data-i18n="f.date">Date</span><input name="date" type="date"></label>
+    <label class="field"><span data-i18n="f.category">Catégorie</span><select name="category" id="exp-cat"></select></label>
+    <label class="field"><span><span data-i18n="f.amount">Montant</span> (<span id="cur-symbol">€</span>)</span><input name="amount" inputmode="decimal" placeholder="24,90"></label>
+    <label class="field"><span data-i18n="f.label">Précision (facultatif)</span><input name="label" maxlength="60"></label>
+    <div class="row span"><button class="btn primary" type="submit" id="add-exp" data-i18n="btn.addExp">Ajouter la dépense</button></div>
+  </form>
+  <p class="status" id="exp-status" role="status" aria-live="polite"></p>
+  <div class="row filters">
+    <label class="field inline"><span data-i18n="exp.year">Année</span><select id="exp-year"></select></label>
+    <label class="field inline"><span data-i18n="exp.filterPet">Animal</span><select id="exp-filter"></select></label>
+  </div>
+  <p class="total" id="exp-total"></p>
+  <div class="split">
+    <div><h3 data-i18n="exp.byCat">Par catégorie</h3><ul class="bars" id="by-cat"></ul></div>
+    <div><h3 data-i18n="exp.byPet">Par animal</h3><ul class="bars" id="by-pet"></ul></div>
+  </div>
+  <h3 data-i18n="exp.list">Détail</h3>
+  <ul class="list compact" id="expenses"></ul>
+</section>
+
+<section class="panel" aria-labelledby="h-export">
+  <h2 id="h-export" data-i18n="export.title">Exports et sauvegarde</h2>
+  <div class="row">
+    <label class="field inline"><span data-i18n="export.horizon">Période de l'agenda</span><select id="horizon"><option value="90" data-i18n="export.d90">90 jours</option><option value="365" data-i18n="export.d365">1 an</option></select></label>
+    <button class="btn" id="export-ics" type="button" data-i18n="btn.ics">Agenda (.ics)</button>
+    <button class="btn" id="export-exp" type="button" data-i18n="btn.csvExp">Dépenses (CSV)</button>
+    <button class="btn" id="export-weights" type="button" data-i18n="btn.csvWeights">Poids (CSV)</button>
+  </div>
+  <p class="status" id="export-status" role="status" aria-live="polite"></p>
+  <div class="row top-gap">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <button class="btn" id="pick-backup" type="button" data-i18n="btn.restore">Restaurer…</button>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden" tabindex="-1" aria-hidden="true">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">PetCareLog ne donne aucun conseil vétérinaire : récurrences, poids et montants sont ceux que vous saisissez. Vos données restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

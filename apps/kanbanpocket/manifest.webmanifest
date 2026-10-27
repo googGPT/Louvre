@@ -1,0 +1,12 @@
+{
+  "name": "KanbanPocket — tableaux Kanban",
+  "short_name": "KanbanPocket",
+  "description": "Tableaux Kanban locaux avec limite WIP, étiquettes, échéances, filtres et export CSV.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#b8400b",
+  "background_color": "#fbf6f2",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

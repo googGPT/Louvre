@@ -1,0 +1,12 @@
+{
+  "name": "RentBuyCompare — louer ou acheter",
+  "short_name": "RentBuy",
+  "description": "Compare les coûts nets cumulés de la location et de l'achat d'un logement à partir de vos hypothèses.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#a8441c",
+  "background_color": "#f8f5f2",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

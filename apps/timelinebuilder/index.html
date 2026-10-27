@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TimelineBuilder — Frises chronologiques</title>
+<meta name="description" content="TimelineBuilder : frises chronologiques à l'échelle, événements datés à l'année, au mois ou au jour, périodes, dates avant notre ère, pistes, export SVG et CSV. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#1971c2">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/timelinebuilder/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>TimelineBuilder</strong><small data-i18n="brand.tagline">Frises chronologiques</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">L'histoire, à la bonne échelle.</h1>
+  <p data-i18n="hero.text">Datez vos événements à l'année, au mois ou au jour, avant ou après notre ère, ajoutez des périodes et rangez-les en pistes : la frise se dessine à l'échelle.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les frises enregistrées sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-timeline">
+  <div class="row between">
+    <h2 id="h-timeline" class="flush" data-i18n="timeline.title">Frise</h2>
+    <div class="row tight">
+      <label class="visually-hidden" for="timeline-select" data-i18n="timeline.select">Frise affichée</label>
+      <select id="timeline-select" class="auto"></select>
+      <button class="btn" id="new-timeline" type="button" data-i18n="btn.new">Nouvelle</button>
+      <button class="btn" id="rename-timeline" type="button" data-i18n="btn.rename">Renommer</button>
+      <button class="btn" id="delete-timeline" type="button" data-i18n="btn.delete">Supprimer</button>
+      <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+    </div>
+  </div>
+  <h3 data-i18n="tracks.title">Pistes</h3>
+  <ul id="tracks" class="tracks"></ul>
+  <button class="btn" id="add-track" type="button" data-i18n="btn.addTrack">Ajouter une piste</button>
+  <p class="status" id="timeline-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-event">
+  <h2 id="h-event" data-i18n="event.title">Nouvel événement</h2>
+  <form id="event-form" novalidate>
+    <div class="form-grid">
+      <label class="field wide-field"><span data-i18n="f.title">Intitulé</span><input id="e-title" maxlength="100" autocomplete="off" data-i18n-attr="placeholder:f.titlePh"></label>
+      <label class="field"><span data-i18n="f.track">Piste</span><select id="e-track"></select></label>
+      <label class="check-field"><input id="e-period" type="checkbox"><span data-i18n="f.period">C'est une période (début et fin)</span></label>
+    </div>
+    <fieldset class="date-set">
+      <legend id="start-legend" data-i18n="f.start">Date</legend>
+      <label class="field"><span data-i18n="f.era">Ère</span><select id="s-era"><option value="ce" data-i18n="era.ceName">de notre ère</option><option value="bce" data-i18n="era.bceName">avant notre ère</option></select></label>
+      <label class="field"><span data-i18n="f.year">Année</span><input id="s-year" inputmode="numeric" maxlength="4" data-i18n-attr="placeholder:f.yearPh"></label>
+      <label class="field"><span data-i18n="f.month">Mois</span><select id="s-month" class="month"></select></label>
+      <label class="field"><span data-i18n="f.day">Jour</span><input id="s-day" inputmode="numeric" maxlength="2" data-i18n-attr="placeholder:f.optional"></label>
+    </fieldset>
+    <fieldset class="date-set" id="end-set" hidden>
+      <legend data-i18n="f.end">Fin</legend>
+      <label class="field"><span data-i18n="f.era">Ère</span><select id="x-era"><option value="ce" data-i18n="era.ceName">de notre ère</option><option value="bce" data-i18n="era.bceName">avant notre ère</option></select></label>
+      <label class="field"><span data-i18n="f.year">Année</span><input id="x-year" inputmode="numeric" maxlength="4" data-i18n-attr="placeholder:f.yearPh"></label>
+      <label class="field"><span data-i18n="f.month">Mois</span><select id="x-month" class="month"></select></label>
+      <label class="field"><span data-i18n="f.day">Jour</span><input id="x-day" inputmode="numeric" maxlength="2" data-i18n-attr="placeholder:f.optional"></label>
+    </fieldset>
+    <label class="field"><span data-i18n="f.note">Note</span><input id="e-note" maxlength="300" autocomplete="off"></label>
+    <div class="row tight">
+      <button class="btn primary" id="save-event" type="submit" data-i18n="btn.addEvent">Ajouter l'événement</button>
+      <button class="btn" id="cancel-edit" type="button" hidden data-i18n="btn.cancel">Annuler</button>
+    </div>
+  </form>
+  <p class="status" id="event-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-chart">
+  <div class="row between">
+    <h2 id="h-chart" class="flush" data-i18n="chart.title">Frise à l'échelle</h2>
+    <div class="row tight">
+      <button class="btn primary" id="export-svg" type="button" data-i18n="btn.svg">Exporter (SVG)</button>
+      <button class="btn" id="export-csv" type="button" data-i18n="btn.csv">Exporter (CSV)</button>
+    </div>
+  </div>
+  <p class="hint" id="chart-info"></p>
+  <div id="chart" class="chart"></div>
+  <p class="status" id="chart-status" role="status" aria-live="polite"></p>
+  <h3 data-i18n="list.title">Événements</h3>
+  <div id="events"></div>
+</section>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <label class="btn file" for="import" data-i18n="btn.import">Restaurer…</label>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">Calendrier grégorien proleptique (aucune conversion julienne). Les dates et intitulés sont ceux que vous saisissez ; vos frises restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RepairLedger — Carnet de réparations</title>
+<meta name="description" content="RepairLedger : notez les réparations de vos objets (date, coût, prestataire, garantie), comparez le coût cumulé au prix d'achat selon votre seuil de remplacement et soyez prévenu avant la fin des garanties. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#a35200">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/repairledger/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>RepairLedger</strong><small data-i18n="brand.tagline">Carnet de réparations</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Réparer encore, ou remplacer ?</h1>
+  <p data-i18n="hero.text">Notez chaque réparation.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les données enregistrées sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-remind">
+  <div class="row between"><h2 id="h-remind" class="flush" data-i18n="remind.title">Rappels</h2><button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button></div>
+  <div class="kpis" id="kpis"></div>
+  <label class="field narrow"><span data-i18n="f.reminderDays">Prévenir avant la fin d'une garantie (jours)</span><input id="reminder-days" inputmode="numeric" autocomplete="off"></label>
+  <ul class="reminders" id="reminders" aria-live="polite"></ul>
+  <p class="status" id="remind-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-objects">
+  <h2 id="h-objects" data-i18n="objects.title">Objets</h2>
+  <form id="object-form" novalidate>
+    <div class="form-grid">
+      <label class="field wide"><span data-i18n="f.objName">Objet</span><input name="name" maxlength="60" autocomplete="off" dir="auto" data-i18n-attr="placeholder:f.objNamePh"></label>
+      <label class="field"><span data-i18n="f.category">Catégorie</span><select name="category"></select></label>
+      <label class="field"><span data-i18n="f.purchaseDate">Date d'achat (facultatif)</span><input name="purchaseDate" type="date"></label>
+      <label class="field"><span><span data-i18n="f.price">Prix d'achat</span> (<span class="cur">€</span>)</span><input name="price" inputmode="decimal" autocomplete="off" placeholder="249.00"></label>
+      <label class="field"><span data-i18n="f.threshold">Seuil de remplacement (% du prix)</span><input name="threshold" inputmode="numeric" autocomplete="off" placeholder="50"></label>
+    </div>
+    <p class="hint" data-i18n="objects.hint">Le seuil est votre règle.</p>
+    <div class="row">
+      <button class="btn primary" id="save-object" type="submit" data-i18n="btn.addObject">Ajouter l'objet</button>
+      <button class="btn" id="cancel-object" type="button" hidden data-i18n="btn.cancel">Annuler</button>
+    </div>
+    <p class="status" id="object-status" role="status" aria-live="polite"></p>
+  </form>
+  <ul class="objects" id="objects"></ul>
+</section>
+
+<section class="panel" aria-labelledby="h-repair">
+  <h2 id="h-repair" data-i18n="repair.title">Réparation</h2>
+  <form id="repair-form" novalidate>
+    <div class="form-grid">
+      <label class="field"><span data-i18n="f.object">Objet réparé</span><select name="objectId"></select></label>
+      <label class="field"><span data-i18n="f.date">Date</span><input name="date" type="date"></label>
+      <label class="field"><span><span data-i18n="f.cost">Coût</span> (<span class="cur">€</span>)</span><input name="cost" inputmode="decimal" autocomplete="off" placeholder="0.00"></label>
+      <label class="field"><span data-i18n="f.provider">Prestataire</span><input name="provider" maxlength="60" autocomplete="off" dir="auto" data-i18n-attr="placeholder:f.providerPh"></label>
+      <label class="field wide"><span data-i18n="f.description">Travaux</span><input name="description" maxlength="160" autocomplete="off" dir="auto" data-i18n-attr="placeholder:f.descriptionPh"></label>
+      <label class="field"><span data-i18n="f.months">Garantie de la réparation (mois)</span><input name="warrantyMonths" inputmode="numeric" autocomplete="off"></label>
+      <label class="field"><span data-i18n="f.warrantyDate">ou date de fin de garantie</span><input name="warrantyDate" type="date"></label>
+    </div>
+    <div class="row">
+      <button class="btn primary" id="save-repair" type="submit" data-i18n="btn.addRepair">Enregistrer la réparation</button>
+      <button class="btn" id="cancel-repair" type="button" hidden data-i18n="btn.cancel">Annuler</button>
+    </div>
+    <p class="status" id="repair-status" role="status" aria-live="polite"></p>
+  </form>
+</section>
+
+<section class="panel" aria-labelledby="h-history">
+  <h2 id="h-history" data-i18n="history.title">Historique</h2>
+  <label class="field narrow"><span data-i18n="f.filter">Objet affiché</span><select id="filter"></select></label>
+  <ul class="repairs" id="repairs"></ul>
+  <p class="status" id="history-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Exports et sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export-csv" type="button" data-i18n="btn.csv">Réparations (CSV)</button>
+    <button class="btn" id="export-ics" type="button" data-i18n="btn.ics">Fins de garantie (.ics)</button>
+  </div>
+  <div class="row top-gap">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <button class="btn" id="pick-backup" type="button" data-i18n="btn.restore">Restaurer…</button>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden" tabindex="-1" aria-hidden="true">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">Vos données restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

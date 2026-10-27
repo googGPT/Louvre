@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PollBox — Vote anonyme sur un appareil</title>
+<meta name="description" content="PollBox : organisez un vote anonyme en faisant passer un seul appareil, choix unique ou multiple, résultats révélés seulement à la clôture, export CSV. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#1864ab">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/pollbox/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>PollBox</strong><small data-i18n="brand.tagline">Vote anonyme sur un appareil</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Un appareil, une urne, des résultats à la fin.</h1>
+  <p data-i18n="hero.text">Préparez la question, ouvrez l'isoloir et faites passer l'appareil : chaque personne vote, l'écran « Au suivant » efface son choix, et personne ne voit les résultats avant la clôture.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les votes enregistrés sur cet appareil sont illisibles.</p>
+
+<section class="panel" id="organizer" aria-labelledby="h-poll">
+  <div class="row between">
+    <h2 id="h-poll" class="flush" data-i18n="poll.title">Scrutin</h2>
+    <div class="row">
+      <label class="visually-hidden" for="poll-select" data-i18n="poll.select">Scrutin affiché</label>
+      <select id="poll-select" class="auto"></select>
+      <button class="btn" id="new-poll" type="button" data-i18n="btn.new">Nouveau</button>
+      <button class="btn" id="dup-poll" type="button" data-i18n="btn.duplicate">Dupliquer</button>
+      <button class="btn" id="delete-poll" type="button" data-i18n="btn.delete">Supprimer</button>
+      <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+    </div>
+  </div>
+  <p class="empty" id="no-poll" hidden data-i18n="poll.none">Aucun scrutin. Créez-en un ou essayez l'exemple.</p>
+
+  <form id="editor" class="top-gap" novalidate hidden>
+    <label class="field"><span data-i18n="f.question">Question</span><input id="f-question" maxlength="200" data-i18n-attr="placeholder:f.questionPh"></label>
+    <label class="field"><span data-i18n="f.options">Options (une par ligne)</span><textarea id="f-options" rows="5" data-i18n-attr="placeholder:f.optionsPh"></textarea></label>
+    <div class="form-grid">
+      <label class="field"><span data-i18n="f.mode">Type de vote</span>
+        <select id="f-mode"><option value="single" data-i18n="mode.single">Choix unique</option><option value="multi" data-i18n="mode.multi">Choix multiple</option></select></label>
+      <label class="field" id="max-choices-field"><span data-i18n="f.maxChoices">Choix au plus</span><input id="f-max-choices" inputmode="numeric" data-i18n-attr="placeholder:f.maxChoicesPh"></label>
+      <label class="field"><span data-i18n="f.maxBallots">Nombre de votants attendu</span><input id="f-max-ballots" inputmode="numeric" data-i18n-attr="placeholder:f.maxBallotsPh"></label>
+      <label class="field"><span data-i18n="f.pin">Code organisateur (4 à 8 chiffres)</span><input id="f-pin" type="password" inputmode="numeric" autocomplete="off" maxlength="8" data-i18n-attr="placeholder:f.pinPh"></label>
+    </div>
+    <label class="check"><input type="checkbox" id="f-blank"> <span data-i18n="f.blank">Autoriser le vote blanc</span></label>
+    <p class="meta-line" id="save-state" aria-live="polite"></p>
+    <div class="row top-gap"><button class="btn primary" id="open-poll" type="submit" data-i18n="btn.open">Ouvrir le vote</button></div>
+    <p class="status" id="edit-status" role="status"></p>
+  </form>
+
+  <div id="summary" class="top-gap" hidden>
+    <p class="row"><span id="state-tag" class="tag"></span> <strong id="sum-question" class="q"></strong></p>
+    <p class="meta-line" id="sum-meta"></p>
+    <p class="kpi-line" id="participation" aria-live="polite"></p>
+    <div class="row top-gap" id="open-actions">
+      <button class="btn primary" id="start-booth" type="button" data-i18n="btn.booth">Ouvrir l'isoloir</button>
+      <button class="btn danger" id="close-poll" type="button" data-i18n="btn.close">Clore et révéler les résultats</button>
+    </div>
+    <p class="hint" id="hidden-note" data-i18n="results.hidden">Les résultats restent cachés jusqu'à la clôture, même pour l'organisateur.</p>
+    <div id="results" hidden>
+      <h3 data-i18n="results.title">Résultats</h3>
+      <p class="verdict" id="winner"></p>
+      <ul id="result-rows" class="bars"></ul>
+      <p class="meta-line" id="results-note"></p>
+      <div class="row top-gap">
+        <button class="btn" id="export-csv" type="button" data-i18n="btn.csv">Exporter (CSV)</button>
+        <button class="btn" id="print" type="button" data-i18n="btn.print">Imprimer</button>
+      </div>
+    </div>
+    <p class="status" id="sum-status" role="status"></p>
+  </div>
+</section>
+
+<section class="panel" aria-labelledby="h-privacy">
+  <h2 id="h-privacy" data-i18n="privacy.title">Anonymat : ce qui est garanti, et ce qui ne l'est pas</h2>
+  <ul class="plain">
+    <li data-i18n="privacy.1">Seuls des totaux sont enregistrés : ni bulletin individuel, ni heure, ni ordre de vote.</li>
+    <li data-i18n="privacy.2">Après chaque vote, l'écran « Au suivant » efface le choix ; aucun résultat n'est affiché avant la clôture.</li>
+    <li data-i18n="privacy.3">Limite : la personne qui tient l'appareil, ou qui regarde l'écran, peut voir un vote.</li>
+    <li data-i18n="privacy.4">Limite : quelqu'un qui consulte le stockage du navigateur juste avant et juste après un vote peut en déduire le choix.</li>
+    <li data-i18n="privacy.5">Limite : rien n'empêche une personne de voter deux fois ; fixez le nombre de votants attendu et surveillez le passage de l'appareil.</li>
+    <li data-i18n="privacy.6">Le code organisateur évite une clôture par mégarde ; ce n'est pas une protection contre une personne déterminée. Pour un vote à enjeu, utilisez un dispositif officiel.</li>
+  </ul>
+</section>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <label class="btn file" for="import" data-i18n="btn.import">Restaurer…</label>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="hint" data-i18n="backup.hint">La sauvegarde contient les totaux en cours : ne l'exportez pas pendant un vote si quelqu'un peut la lire.</p>
+  <p class="status" id="backup-status" role="status"></p>
+</section>
+
+<section id="booth" class="booth" hidden aria-labelledby="booth-q">
+  <div id="booth-vote">
+    <p class="booth-kicker" data-i18n="booth.kicker">Isoloir — votre vote est anonyme</p>
+    <form id="ballot" novalidate>
+      <fieldset>
+        <legend id="booth-q"></legend>
+        <p class="hint" id="booth-hint"></p>
+        <div id="choices" class="choices"></div>
+      </fieldset>
+      <div class="row top-gap">
+        <button class="btn primary big" id="cast" type="submit" data-i18n="btn.cast">Voter</button>
+        <button class="btn big" id="cast-blank" type="button" data-i18n="btn.blank">Voter blanc</button>
+      </div>
+      <p class="status" id="booth-status" role="status"></p>
+    </form>
+  </div>
+  <div id="booth-done" hidden>
+    <p class="done-mark" aria-hidden="true">✓</p>
+    <h2 id="done-title" tabindex="-1" data-i18n="booth.done">Vote enregistré. Merci !</h2>
+    <p data-i18n="booth.pass">Passez l'appareil à la personne suivante. Votre choix n'est plus affiché.</p>
+    <button class="btn primary big" id="next" type="button" data-i18n="btn.next">Au suivant</button>
+  </div>
+  <p class="booth-full" id="booth-full" hidden data-i18n="booth.full">Tous les votants attendus ont voté. Rendez l'appareil à l'organisateur.</p>
+  <div class="row booth-exit"><button class="btn small" id="exit-booth" type="button" data-i18n="btn.exitBooth">Quitter l'isoloir (organisateur)</button></div>
+</section>
+<footer data-i18n="footer">Les votes restent sur cet appareil. PollBox n'envoie rien et ne remplace pas un vote officiel.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

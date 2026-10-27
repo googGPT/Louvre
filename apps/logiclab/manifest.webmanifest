@@ -1,0 +1,12 @@
+{
+  "name": "LogicLab — tables de vérité et formes normales",
+  "short_name": "LogicLab",
+  "description": "Tables de vérité, tautologies, équivalence de deux expressions et formes normales disjonctive et conjonctive.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#b8430b",
+  "background_color": "#fbf6f2",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

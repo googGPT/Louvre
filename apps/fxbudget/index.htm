@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FXBudget — Budget de voyage multidevise</title>
+<meta name="description" content="FXBudget : budget de voyage en plusieurs devises avec vos propres taux de change datés, conversions exactes, reste par catégorie et par jour, export CSV. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#1d5fa8">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/fxbudget/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>FXBudget</strong><small data-i18n="brand.tagline">Le budget de voyage multidevise</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Dépensez en yens, en dollars ou en dirhams, comptez dans votre devise.</h1>
+  <p data-i18n="hero.text">Saisissez vos taux de change avec leur date : FXBudget convertit chaque dépense au centime près dans la devise de référence du voyage et montre ce qui reste, par catégorie et par jour.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les données enregistrées sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-trip">
+  <div class="row between">
+    <h2 id="h-trip" class="flush" data-i18n="trip.title">Voyage</h2>
+    <div class="row tight"><button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button><button class="btn" id="reset" type="button" data-i18n="btn.reset">Nouveau voyage</button></div>
+  </div>
+  <form id="trip-form" novalidate class="top-gap">
+    <div class="form-grid three">
+      <label class="field"><span data-i18n="f.tripName">Nom du voyage</span><input name="name" maxlength="60" data-i18n-attr="placeholder:f.tripNamePh"></label>
+      <label class="field"><span data-i18n="f.ref">Devise de référence</span><select name="ref" id="ref"></select></label>
+      <label class="field"><span><span data-i18n="f.budget">Budget total</span> (<span class="ref-code">EUR</span>)</span><input name="budget" inputmode="decimal" placeholder="2000"></label>
+      <label class="field"><span data-i18n="f.start">Départ</span><input name="start" type="date"></label>
+      <label class="field"><span data-i18n="f.end">Retour</span><input name="end" type="date"></label>
+    </div>
+    <details class="add" id="cat-budgets">
+      <summary data-i18n="f.catBudgets">Budgets par catégorie (facultatif)</summary>
+      <div class="form-grid three" id="cat-inputs"></div>
+    </details>
+    <div class="row top-gap"><button class="btn primary" type="submit" id="save-trip" data-i18n="btn.saveTrip">Enregistrer le voyage</button></div>
+    <p class="status" id="trip-status" role="status" aria-live="polite"></p>
+  </form>
+</section>
+
+<div id="trip-area" hidden>
+<section class="panel" aria-labelledby="h-sum">
+  <h2 id="h-sum" data-i18n="sum.title">Où en est le budget ?</h2>
+  <div class="kpis">
+    <div class="kpi"><span data-i18n="kpi.budget">Budget</span><strong id="k-budget"></strong></div>
+    <div class="kpi"><span data-i18n="kpi.spent">Dépensé</span><strong id="k-spent"></strong></div>
+    <div class="kpi" id="kpi-left"><span data-i18n="kpi.left">Reste</span><strong id="k-left"></strong></div>
+    <div class="kpi"><span data-i18n="kpi.perDay">Reste par jour</span><strong id="k-day"></strong><small id="k-day-note"></small></div>
+  </div>
+  <p class="hint" id="alloc-note" hidden></p>
+  <h3 data-i18n="sum.byCat">Par catégorie</h3>
+  <div class="scroll"><table class="tbl" id="cat-table"></table></div>
+  <h3 data-i18n="sum.byDay">Par jour</h3>
+  <p class="hint" id="day-note"></p>
+  <ul class="days" id="days"></ul>
+  <p class="hint" data-i18n="sum.rounding">Chaque dépense est convertie exactement puis arrondie au centime le plus proche (la moitié vers le haut) ; le reste par jour est arrondi au centime inférieur.</p>
+</section>
+
+<section class="panel" aria-labelledby="h-rates">
+  <h2 id="h-rates" data-i18n="rates.title">Taux de change</h2>
+  <p class="hint" data-i18n="rates.hint">Aucun taux n'est récupéré en ligne : saisissez celui de votre banque ou de votre bureau de change, avec sa date. Une dépense utilise le taux le plus récent daté au plus tard le jour de la dépense.</p>
+  <form id="rate-form" novalidate class="form-grid four">
+    <label class="field"><span data-i18n="f.currency">Devise (code ISO)</span><input name="currency" maxlength="3" autocapitalize="characters" list="iso-list" data-i18n-attr="placeholder:f.currencyPh"></label>
+    <label class="field"><span data-i18n="f.dir">Sens</span><select name="dir" id="rate-dir"></select></label>
+    <label class="field"><span data-i18n="f.rate">Taux</span><input name="value" inputmode="decimal" placeholder="162,35"></label>
+    <label class="field"><span data-i18n="f.rateDate">Date du taux</span><input name="date" type="date"></label>
+    <div class="row span"><button class="btn primary" type="submit" data-i18n="btn.addRate">Ajouter le taux</button></div>
+  </form>
+  <datalist id="iso-list"><option value="USD"></option><option value="EUR"></option><option value="GBP"></option><option value="JPY"></option><option value="CHF"></option><option value="CAD"></option><option value="MAD"></option><option value="TND"></option><option value="DZD"></option><option value="XOF"></option><option value="TRY"></option><option value="THB"></option><option value="MXN"></option><option value="BRL"></option><option value="AED"></option><option value="EGP"></option><option value="CNY"></option><option value="INR"></option><option value="AUD"></option></datalist>
+  <p class="status" id="rate-status" role="status" aria-live="polite"></p>
+  <ul class="list" id="rates"></ul>
+</section>
+
+<section class="panel" aria-labelledby="h-exp">
+  <h2 id="h-exp" data-i18n="exp.title">Dépenses</h2>
+  <form id="exp-form" novalidate class="form-grid five">
+    <label class="field"><span data-i18n="f.date">Date</span><input name="date" type="date"></label>
+    <label class="field"><span data-i18n="f.category">Catégorie</span><select name="category" id="exp-cat"></select></label>
+    <label class="field"><span data-i18n="f.amount">Montant</span><input name="amount" inputmode="decimal" placeholder="1500"></label>
+    <label class="field"><span data-i18n="f.expCurrency">Devise</span><select name="currency" id="exp-cur"></select></label>
+    <label class="field"><span data-i18n="f.label">Libellé (facultatif)</span><input name="label" maxlength="60"></label>
+    <p class="preview span" id="preview" aria-live="polite"></p>
+    <div class="row span"><button class="btn primary" type="submit" id="add-exp" data-i18n="btn.addExp">Ajouter la dépense</button></div>
+  </form>
+  <p class="status" id="exp-status" role="status" aria-live="polite"></p>
+  <ul class="list" id="expenses"></ul>
+</section>
+</div>
+
+<section class="panel" aria-labelledby="h-export">
+  <h2 id="h-export" data-i18n="export.title">Export et sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export-csv" type="button" data-i18n="btn.csv">Dépenses (CSV)</button>
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <button class="btn" id="pick-backup" type="button" data-i18n="btn.restore">Restaurer…</button>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden" tabindex="-1" aria-hidden="true">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">Les taux sont ceux que vous saisissez : FXBudget ne consulte aucun service en ligne. Ce sont des calculs sur vos hypothèses, pas un conseil financier. Vos données restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

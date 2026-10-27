@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JSONInspector — Valider et explorer du JSON</title>
+<meta name="description" content="JSONInspector : validez du JSON avec la ligne et la colonne de l'erreur, explorez l'arbre, copiez le chemin JSONPath, repérez les clés dupliquées. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#5f3dc4">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/jsoninspector/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>JSONInspector</strong><small data-i18n="brand.tagline">Valider et explorer du JSON</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Votre JSON est-il vraiment valide ?</h1>
+  <p data-i18n="hero.text">Collez ou ouvrez un fichier : JSONInspector indique la ligne et la colonne exactes de l'erreur, affiche un arbre repliable, donne le chemin JSONPath de chaque élément et signale les clés dupliquées que JSON.parse masque sans prévenir.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les documents enregistrés sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-doc">
+  <div class="row between">
+    <h2 id="h-doc" class="flush" data-i18n="doc.title">Document</h2>
+    <div class="row">
+      <label class="visually-hidden" for="doc-select" data-i18n="doc.select">Document affiché</label>
+      <select id="doc-select" class="auto"></select>
+      <button class="btn" id="new-doc" type="button" data-i18n="btn.new">Nouveau</button>
+      <button class="btn" id="rename-doc" type="button" data-i18n="btn.rename">Renommer</button>
+      <button class="btn" id="delete-doc" type="button" data-i18n="btn.delete">Supprimer</button>
+      <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+      <label class="btn file" for="open-file" data-i18n="btn.open">Ouvrir un fichier…</label>
+      <input id="open-file" type="file" accept=".json,application/json,text/plain" class="visually-hidden">
+    </div>
+  </div>
+  <label class="visually-hidden" for="editor" data-i18n="doc.editor">Texte JSON</label>
+  <textarea id="editor" class="code top-gap" dir="ltr" spellcheck="false" autocomplete="off" autocapitalize="off" data-i18n-attr="placeholder:doc.placeholder"></textarea>
+  <div id="large" class="large top-gap" hidden>
+    <p><strong id="large-name"></strong> <span id="large-size"></span></p>
+    <p class="hint" data-i18n="large.text">Fichier volumineux : il est analysé en lecture seule et n'est pas enregistré sur l'appareil.</p>
+    <button class="btn small" id="large-close" type="button" data-i18n="btn.close">Fermer le fichier</button>
+  </div>
+  <div class="row top-gap">
+    <button class="btn primary" id="format" type="button" data-i18n="btn.format">Formater</button>
+    <button class="btn" id="minify" type="button" data-i18n="btn.minify">Minifier</button>
+    <label class="inline"><span data-i18n="f.indent">Indentation</span>
+      <select id="indent" class="auto small-select">
+        <option value="2" data-i18n="indent.2">2 espaces</option>
+        <option value="4" data-i18n="indent.4">4 espaces</option>
+        <option value="tab" data-i18n="indent.tab">Tabulation</option>
+      </select>
+    </label>
+    <button class="btn" id="download" type="button" data-i18n="btn.download">Télécharger .json</button>
+  </div>
+  <p class="meta-line" id="save-state" aria-live="polite"></p>
+  <p class="status" id="doc-status" role="status"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-check">
+  <div class="row between"><h2 id="h-check" class="flush" data-i18n="check.title">Validation</h2><span id="busy" class="busy" hidden data-i18n="busy">Analyse en cours…</span></div>
+  <div id="verdict" class="verdict top-gap" role="status" aria-live="polite"></div>
+  <pre id="excerpt" class="excerpt" dir="ltr" hidden></pre>
+</section>
+
+<div class="grid">
+  <section class="panel" aria-labelledby="h-tree">
+    <h2 id="h-tree" data-i18n="tree.title">Arbre</h2>
+    <form id="go-form" class="row" novalidate>
+      <label class="visually-hidden" for="go-path" data-i18n="tree.goLabel">Aller au chemin</label>
+      <input id="go-path" class="grow code" dir="ltr" spellcheck="false" autocomplete="off" placeholder="$.items[0].name">
+      <button class="btn" id="go" type="submit" data-i18n="btn.go">Aller</button>
+    </form>
+    <p class="status" id="go-status" role="status"></p>
+    <div id="tree" class="tree" dir="ltr"></div>
+  </section>
+  <section class="panel" aria-labelledby="h-sel">
+    <h2 id="h-sel" data-i18n="sel.title">Sélection</h2>
+    <p class="hint" id="sel-empty" data-i18n="sel.empty">Choisissez un élément de l'arbre pour voir son chemin et sa valeur.</p>
+    <div id="sel-box" hidden>
+      <label class="field"><span data-i18n="sel.path">Chemin JSONPath</span>
+        <span class="row nowrap"><input id="sel-path" class="grow code" dir="ltr" readonly><button class="btn" id="copy-path" type="button" data-i18n="btn.copy">Copier</button></span>
+      </label>
+      <p class="meta-line" id="sel-info"></p>
+      <p class="warning small" id="sel-masked" hidden data-i18n="sel.masked">Cette valeur est masquée : une clé identique plus loin dans le même objet la remplace pour JSON.parse.</p>
+      <pre id="sel-value" class="excerpt" dir="ltr"></pre>
+      <p class="hint" id="sel-cut" hidden data-i18n="sel.cut">Aperçu tronqué.</p>
+    </div>
+    <p class="status" id="sel-status" role="status"></p>
+  </section>
+</div>
+
+<section class="panel" aria-labelledby="h-stats">
+  <h2 id="h-stats" data-i18n="stats.title">Statistiques</h2>
+  <div id="kpis" class="kpis wide"></div>
+</section>
+
+<section class="panel" aria-labelledby="h-dups">
+  <h2 id="h-dups" data-i18n="dups.title">Clés dupliquées</h2>
+  <p class="hint" data-i18n="dups.hint">JSON.parse garde silencieusement la dernière valeur d'une clé répétée dans un même objet : les valeurs précédentes sont perdues.</p>
+  <ul id="dups" class="list"></ul>
+  <h3 data-i18n="unsafe.title">Nombres imprécis</h3>
+  <p class="hint" data-i18n="unsafe.hint">Entiers au-delà de 2^53, plus de 17 chiffres significatifs ou dépassement : JavaScript les arrondit à la lecture.</p>
+  <ul id="unsafe" class="list"></ul>
+</section>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <label class="btn file" for="import" data-i18n="btn.import">Restaurer…</label>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status"></p>
+</section>
+<footer data-i18n="footer">Tout est analysé dans votre navigateur : aucun fichier n'est envoyé.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>
