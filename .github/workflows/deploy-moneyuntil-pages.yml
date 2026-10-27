@@ -130,6 +130,9 @@ jobs:
             python -m pip install --disable-pip-version-check 'zxing-cpp>=2.2,<4' 'Pillow>=10,<13'
           fi
 
+      - name: Test MoneyUntil budget UI, JSON backups and mobile browser
+        run: python apps/moneyuntil/tests/browser.test.py
+
       - name: Test receipt storage, backup and mobile layout in Chrome
         run: python apps/receiptrescue/tests/browser.test.py
 
