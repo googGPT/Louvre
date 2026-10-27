@@ -273,6 +273,13 @@
       "domain": "Finance",
       "description": "Suit factures et abonnements récurrents : coût mensuel réel, calendrier, export agenda.",
       "family": "Argent et achats"
+    },
+    {
+      "slug": "habitsteps",
+      "name": "HabitSteps",
+      "domain": "Bien-être",
+      "description": "Suit des habitudes quotidiennes ou hebdomadaires : pointage, séries et régularité.",
+      "family": "Maison et quotidien"
     }
   ]
 }
