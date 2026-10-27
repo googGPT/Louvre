@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HabitSteps — Suivi d'habitudes</title>
+<meta name="description" content="HabitSteps : suivez vos habitudes quotidiennes ou hebdomadaires, vos séries et votre régularité. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#2b8a3e">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/habitsteps/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>HabitSteps</strong><small>Suivi d'habitudes</small></div></div>
+  <span class="badge">Local · sans compte</span>
+</header>
+<section class="hero">
+  <h1>Un petit pas chaque jour, une série qui grandit.</h1>
+  <p>Fixez un objectif réaliste — chaque jour, ou quelques fois par semaine — et pointez d'un geste. HabitSteps calcule vos séries, votre meilleure série et votre régularité, sans jamais vous juger : une période pas encore terminée ne casse pas la série.</p>
+</section>
+<p id="warning" class="warning" hidden>Les habitudes enregistrées sur cet appareil sont illisibles. Rien ne sera écrasé : exportez la copie brute, puis restaurez une sauvegarde valide.</p>
+
+<section class="panel" aria-labelledby="h-form">
+  <h2 id="h-form">Nouvelle habitude</h2>
+  <form id="habit-form" novalidate>
+    <div class="form-inline">
+      <label class="field name">Habitude<input name="name" maxlength="60" placeholder="ex. Marcher 20 minutes" required></label>
+      <label class="field">Objectif<select name="type"><option value="daily">Chaque jour</option><option value="weekly">Par semaine</option></select></label>
+      <label class="field">Fois / semaine<select name="times" disabled><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option><option>7</option></select></label>
+      <button class="btn primary" id="add" type="submit">Ajouter</button>
+    </div>
+    <p class="status" id="form-status" role="status"></p>
+  </form>
+</section>
+
+<div class="row" style="justify-content:space-between;margin:18px 0 10px">
+  <h2 style="margin:0;font-size:18px">Aujourd'hui <span id="today-label" style="color:var(--muted);font-weight:500"></span></h2>
+  <label class="row" style="font-size:14px;gap:6px"><input type="checkbox" id="show-archived" style="width:auto;min-height:0"> Afficher les archivées</label>
+</div>
+<div class="habits" id="habits"></div>
+<p class="empty" id="empty" hidden>Aucune habitude pour l'instant. Ajoutez-en une, ou <button class="btn" id="sample" type="button">chargez des exemples</button>.</p>
+
+<section class="panel" aria-labelledby="h-backup" style="margin-top:16px">
+  <h2 id="h-backup">Sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export" type="button">Exporter (JSON)</button>
+    <label class="btn" for="import" style="display:inline-flex;align-items:center">Restaurer…</label>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+    <button class="btn" id="export-raw" type="button" hidden>Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status"></p>
+</section>
+<footer>Astuce : touchez une case de la grille pour pointer un jour oublié (jusqu'à 13 mois en arrière). Vos habitudes restent sur cet appareil.</footer>
+</div>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

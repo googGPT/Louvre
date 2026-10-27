@@ -1,0 +1,12 @@
+{
+  "name": "HabitSteps — suivi d'habitudes",
+  "short_name": "HabitSteps",
+  "description": "Habitudes quotidiennes ou hebdomadaires : pointage, séries et régularité, sans compte ni serveur.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#2b8a3e",
+  "background_color": "#f3f7f8",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
