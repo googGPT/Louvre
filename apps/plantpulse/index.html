@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PlantPulse — Arrosage, engrais et rempotage</title>
+<meta name="description" content="PlantPulse : suivez l'arrosage, l'engrais et le rempotage de vos plantes selon les fréquences que vous fixez, avec retards, historique et export agenda. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#3f7d20">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/plantpulse/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>PlantPulse</strong><small data-i18n="brand.tagline">Le rythme de vos plantes</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Chaque plante à son rythme, rien d'oublié.</h1>
+  <p data-i18n="hero.text">Indiquez tous les combien de jours vous arrosez, nourrissez ou rempotez chaque plante : PlantPulse calcule les prochaines échéances, signale les retards et garde l'historique des soins.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les données enregistrées sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-today">
+  <div class="row between">
+    <h2 id="h-today" class="flush" data-i18n="today.title">Aujourd'hui</h2>
+    <span class="count" id="today-label"></span>
+  </div>
+  <div class="kpis">
+    <div class="kpi late"><span data-i18n="kpi.late">En retard</span><strong id="k-late">0</strong></div>
+    <div class="kpi"><span data-i18n="kpi.today">Aujourd'hui</span><strong id="k-today">0</strong></div>
+    <div class="kpi"><span data-i18n="kpi.week">7 prochains jours</span><strong id="k-week">0</strong></div>
+    <div class="kpi"><span data-i18n="kpi.plants">Plantes</span><strong id="k-plants">0</strong></div>
+  </div>
+  <ul class="list due" id="due"></ul>
+  <div class="row top-gap"><button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button></div>
+  <p class="status" id="due-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-plant">
+  <h2 id="h-plant" data-i18n="plant.title">Mes plantes</h2>
+  <form id="plant-form" novalidate>
+    <div class="form-grid two">
+      <label class="field"><span data-i18n="f.name">Nom de la plante</span><input name="name" maxlength="60" data-i18n-attr="placeholder:f.namePh"></label>
+      <label class="field"><span data-i18n="f.place">Emplacement (facultatif)</span><input name="place" maxlength="40" data-i18n-attr="placeholder:f.placePh"></label>
+    </div>
+    <fieldset class="box">
+      <legend data-i18n="f.tasks">Soins suivis</legend>
+      <p class="hint" data-i18n="f.tasksHint">Fréquence en jours, laissée vide si le soin n'est pas suivi. Le dernier soin connu sert de point de départ (aujourd'hui s'il est vide).</p>
+      <div class="task-grid" id="task-grid">
+        <span class="th" aria-hidden="true"></span><span class="th" data-i18n="f.every">Tous les … jours</span><span class="th" data-i18n="f.since">Dernier soin</span>
+        <span class="tk" id="lab-water" data-i18n="kind.water">Arrosage</span>
+        <input name="every-water" inputmode="numeric" aria-labelledby="lab-water lab-every-water"><input name="since-water" type="date" aria-labelledby="lab-water lab-since-water">
+        <span class="tk" id="lab-feed" data-i18n="kind.feed">Engrais</span>
+        <input name="every-feed" inputmode="numeric" aria-labelledby="lab-feed lab-every-feed"><input name="since-feed" type="date" aria-labelledby="lab-feed lab-since-feed">
+        <span class="tk" id="lab-repot" data-i18n="kind.repot">Rempotage</span>
+        <input name="every-repot" inputmode="numeric" aria-labelledby="lab-repot lab-every-repot"><input name="since-repot" type="date" aria-labelledby="lab-repot lab-since-repot">
+      </div>
+      <span class="visually-hidden" id="lab-every-water" data-i18n="aria.every">fréquence en jours</span><span class="visually-hidden" id="lab-every-feed" data-i18n="aria.every">fréquence en jours</span><span class="visually-hidden" id="lab-every-repot" data-i18n="aria.every">fréquence en jours</span>
+      <span class="visually-hidden" id="lab-since-water" data-i18n="aria.since">dernier soin</span><span class="visually-hidden" id="lab-since-feed" data-i18n="aria.since">dernier soin</span><span class="visually-hidden" id="lab-since-repot" data-i18n="aria.since">dernier soin</span>
+    </fieldset>
+    <fieldset class="box">
+      <legend data-i18n="f.season">Ajustement saisonnier (facultatif)</legend>
+      <label class="check"><input type="checkbox" name="season" id="season-on"><span data-i18n="f.seasonOn">Allonger ou raccourcir l'arrosage et l'engrais certains mois</span></label>
+      <div id="season-box" hidden>
+        <div class="months" id="months" role="group" data-i18n-attr="aria-label:f.months"></div>
+        <label class="field pct"><span data-i18n="f.pct">Coefficient (%)</span><input name="pct" inputmode="numeric" value="150"></label>
+        <p class="hint" data-i18n="f.pctHint">150 % : intervalles 1,5 fois plus longs ; 50 % : deux fois plus courts. Le mois du dernier soin décide. Le rempotage n'est pas concerné.</p>
+      </div>
+    </fieldset>
+    <label class="field"><span data-i18n="f.note">Note (facultatif)</span><textarea name="note" maxlength="300" rows="2"></textarea></label>
+    <div class="row">
+      <button class="btn primary" id="save-plant" type="submit" data-i18n="btn.save">Enregistrer la plante</button>
+      <button class="btn" id="cancel-edit" type="button" hidden data-i18n="btn.cancel">Annuler</button>
+    </div>
+    <p class="status" id="plant-status" role="status" aria-live="polite"></p>
+  </form>
+  <ul class="list plants" id="plants"></ul>
+</section>
+
+<section class="panel" aria-labelledby="h-history">
+  <h2 id="h-history" data-i18n="history.title">Historique des soins</h2>
+  <form id="care-form" novalidate class="form-grid four">
+    <label class="field"><span data-i18n="f.plant">Plante</span><select name="plant"></select></label>
+    <label class="field"><span data-i18n="f.kind">Soin</span><select name="kind"><option value="water" data-i18n="kind.water">Arrosage</option><option value="feed" data-i18n="kind.feed">Engrais</option><option value="repot" data-i18n="kind.repot">Rempotage</option></select></label>
+    <label class="field"><span data-i18n="f.date">Date</span><input name="date" type="date"></label>
+    <label class="field"><span data-i18n="f.careNote">Note</span><input name="note" maxlength="120"></label>
+    <div class="row span"><button class="btn primary" id="add-care" type="submit" data-i18n="btn.addCare">Noter ce soin</button></div>
+  </form>
+  <p class="status" id="care-status" role="status" aria-live="polite"></p>
+  <label class="field filter"><span data-i18n="history.filter">Afficher</span><select id="h-filter"></select></label>
+  <ul class="list history" id="history"></ul>
+</section>
+
+<section class="panel" aria-labelledby="h-export">
+  <h2 id="h-export" data-i18n="export.title">Agenda et sauvegarde</h2>
+  <div class="row">
+    <label class="field inline"><span data-i18n="export.horizon">Période</span><select id="horizon"><option value="30" data-i18n="export.d30">30 jours</option><option value="90" data-i18n="export.d90">90 jours</option><option value="365" data-i18n="export.d365">1 an</option></select></label>
+    <button class="btn" id="export-ics" type="button" data-i18n="btn.ics">Exporter l'agenda (.ics)</button>
+  </div>
+  <p class="status" id="ics-status" role="status" aria-live="polite"></p>
+  <div class="row top-gap">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <button class="btn" id="pick-backup" type="button" data-i18n="btn.restore">Restaurer…</button>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden" tabindex="-1" aria-hidden="true">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">PlantPulse ne contient aucune base botanique : les fréquences et coefficients sont ceux que vous saisissez. Vos données restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

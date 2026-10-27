@@ -1,0 +1,12 @@
+{
+  "name": "SalaryScenario — du brut au net, selon vos taux",
+  "short_name": "SalaryScenario",
+  "description": "Compare des revenus nets théoriques à partir d'un brut, de primes et de taux de retenue saisis. Aucun barème intégré.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#4f7d0b",
+  "background_color": "#f5f8f1",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

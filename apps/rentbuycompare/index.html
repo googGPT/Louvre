@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RentBuyCompare — Louer ou acheter, à hypothèses égales</title>
+<meta name="description" content="RentBuyCompare : comparez les coûts nets cumulés de la location et de l'achat d'un logement à partir de vos propres hypothèses ; point d'équilibre, tableau annuel et graphique. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#a8441c">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/rentbuycompare/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>RentBuyCompare</strong><small data-i18n="brand.tagline">Louer ou acheter, à hypothèses égales</small></div></div>
+  <div class="tools"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale></div></div>
+</header>
+<main>
+<section class="hero">
+  <h1 data-i18n="hero.title">Louer ou acheter : qu'est-ce qui coûte le moins ?</h1>
+  <p data-i18n="hero.text">Saisissez vos hypothèses : RentBuyCompare calcule, année par année, le coût net cumulé de chaque choix.</p>
+</section>
+<p class="hyp" data-i18n="hyp">Ce sont des calculs sur vos hypothèses, pas une prévision ni un conseil financier.</p>
+<p id="warning" class="warning" hidden data-i18n="warning">Les données enregistrées sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-form">
+  <h2 id="h-form" data-i18n="form.title">Vos hypothèses</h2>
+  <form id="form" novalidate>
+    <div class="sets">
+      <fieldset>
+        <legend data-i18n="fs.buy">Achat et prêt</legend>
+        <div class="form-grid">
+          <label class="field"><span><span data-i18n="f.price">Prix du bien</span> (<span class="cur">€</span>)</span><input name="price" inputmode="decimal" autocomplete="off" placeholder="250000"></label>
+          <label class="field"><span><span data-i18n="f.down">Apport</span> (<span class="cur">€</span>)</span><input name="down" inputmode="decimal" autocomplete="off" placeholder="50000"></label>
+          <label class="field"><span><span data-i18n="f.fees">Frais d'achat</span> (<span class="cur">€</span>)</span><input name="fees" inputmode="decimal" autocomplete="off" placeholder="0"></label>
+          <label class="field"><span data-i18n="f.loanRate">Taux du prêt (% par an)</span><input name="loanRate" inputmode="decimal" autocomplete="off" placeholder="0"></label>
+          <label class="field"><span data-i18n="f.loanYears">Durée du prêt (années)</span><input name="loanYears" inputmode="numeric" autocomplete="off" placeholder="20"></label>
+          <label class="field"><span data-i18n="f.appreciation">Revalorisation du bien (% par an)</span><input name="appreciation" inputmode="decimal" autocomplete="off" placeholder="0"></label>
+        </div>
+        <p class="note" data-i18n="note.buy">Les frais d'achat sont payés avec l'apport ; le prêt finance le reste.</p>
+      </fieldset>
+      <fieldset>
+        <legend data-i18n="fs.owner">Coûts du propriétaire</legend>
+        <div class="form-grid">
+          <label class="field"><span><span data-i18n="f.charges">Charges et taxes (par an)</span> (<span class="cur">€</span>)</span><input name="charges" inputmode="decimal" autocomplete="off" placeholder="0"></label>
+          <label class="field"><span><span data-i18n="f.maintenance">Entretien (par an)</span> (<span class="cur">€</span>)</span><input name="maintenance" inputmode="decimal" autocomplete="off" placeholder="0"></label>
+          <label class="field"><span data-i18n="f.costGrowth">Évolution de ces coûts (% par an)</span><input name="costGrowth" inputmode="decimal" autocomplete="off" placeholder="0"></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend data-i18n="fs.rent">Location</legend>
+        <div class="form-grid">
+          <label class="field"><span><span data-i18n="f.rent">Loyer (par mois)</span> (<span class="cur">€</span>)</span><input name="rent" inputmode="decimal" autocomplete="off" placeholder="900"></label>
+          <label class="field"><span data-i18n="f.rentGrowth">Évolution du loyer (% par an)</span><input name="rentGrowth" inputmode="decimal" autocomplete="off" placeholder="0"></label>
+          <label class="field"><span data-i18n="f.invest">Rendement de l'apport placé (% par an)</span><input name="invest" inputmode="decimal" autocomplete="off" placeholder="0"></label>
+          <label class="field"><span data-i18n="f.horizon">Horizon de comparaison (années)</span><input name="horizon" inputmode="numeric" autocomplete="off" placeholder="20"></label>
+        </div>
+        <p class="note" data-i18n="note.rent">Le locataire place l'apport qu'il n'a pas utilisé.</p>
+      </fieldset>
+    </div>
+    <div class="row"><button class="btn primary" type="submit" data-i18n="btn.calc">Calculer</button><button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button></div>
+    <p class="status" id="form-status" role="status" aria-live="polite"></p>
+  </form>
+</section>
+
+<section class="panel" aria-labelledby="h-result">
+  <h2 id="h-result" data-i18n="result.title">Résultat</h2>
+  <div id="result" aria-live="polite"></div>
+  <figure class="chart" id="chart-box" hidden>
+    <div id="chart"></div>
+    <figcaption class="legend" id="legend"></figcaption>
+  </figure>
+  <p class="note" data-i18n="method">Méthode.</p>
+</section>
+
+<section class="panel" aria-labelledby="h-years">
+  <h2 id="h-years" data-i18n="years.title">Tableau annuel</h2>
+  <div id="years"></div>
+</section>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Exports et sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="csv" type="button" data-i18n="btn.csv">Tableau annuel (CSV)</button>
+    <button class="btn" id="svg" type="button" data-i18n="btn.svg">Graphique (SVG)</button>
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <label class="btn"><span data-i18n="btn.import">Restaurer…</span><input id="import" type="file" accept="application/json,.json" class="visually-hidden"></label>
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+</main>
+<footer data-i18n="footer">Les montants et les taux sont ceux que vous saisissez. Vos données restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PriorityMatrix — Urgent ou important ?</title>
+<meta name="description" content="PriorityMatrix : matrice urgence × importance à critères explicites, urgence calculée depuis l'échéance et votre seuil, classement par glisser ou au clavier, listes d'actions et export CSV ou Markdown. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#087f5b">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/prioritymatrix/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>PriorityMatrix</strong><small data-i18n="brand.tagline">Urgent ou important ?</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Ce qui presse n'est pas toujours ce qui compte.</h1>
+  <p data-i18n="hero.text">Rangez vos tâches selon deux critères explicites : l'importance, que vous choisissez, et l'urgence, calculée depuis l'échéance et le seuil que vous fixez.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les matrices enregistrées sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-matrix">
+  <div class="row between">
+    <h2 id="h-matrix" class="flush" data-i18n="matrix.title">Matrice</h2>
+    <div class="row tight">
+      <label class="visually-hidden" for="matrix-select" data-i18n="matrix.select">Matrice affichée</label>
+      <select id="matrix-select" class="auto"></select>
+      <button class="btn" id="new-matrix" type="button" data-i18n="btn.new">Nouvelle</button>
+      <button class="btn" id="rename-matrix" type="button" data-i18n="btn.rename">Renommer</button>
+      <button class="btn" id="delete-matrix" type="button" data-i18n="btn.delete">Supprimer</button>
+      <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+    </div>
+  </div>
+  <div class="rule-row top-gap">
+    <label class="field short"><span data-i18n="f.threshold">Seuil d'urgence (jours)</span><input id="threshold" inputmode="numeric" maxlength="3"></label>
+    <p id="rule" class="rule" aria-live="polite"></p>
+  </div>
+  <div class="kpis">
+    <div class="kpi"><span data-i18n="k.now">À faire maintenant</span><strong id="k-q1">0</strong></div>
+    <div class="kpi"><span data-i18n="k.overdue">En retard</span><strong id="k-overdue">0</strong></div>
+    <div class="kpi"><span data-i18n="k.open">Ouvertes</span><strong id="k-open">0</strong></div>
+    <div class="kpi"><span data-i18n="k.done">Faites</span><strong id="k-done">0</strong></div>
+  </div>
+  <p class="status" id="matrix-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-task">
+  <h2 id="h-task" data-i18n="task.title">Nouvelle tâche</h2>
+  <form id="task-form" class="form-grid" novalidate>
+    <label class="field wide-field"><span data-i18n="f.title">Tâche</span><input id="t-title" maxlength="120" autocomplete="off" data-i18n-attr="placeholder:f.titlePh"></label>
+    <label class="field"><span data-i18n="f.due">Échéance</span><input id="t-due" type="date"></label>
+    <label class="field"><span data-i18n="f.importance">Importance</span><select id="t-imp"><option value="yes" data-i18n="imp.yes">Importante</option><option value="no" data-i18n="imp.no">Pas importante</option></select></label>
+    <label class="field"><span data-i18n="f.urgency">Urgence</span><select id="t-urg"><option value="auto" data-i18n="urg.auto">Selon l'échéance</option><option value="urgent" data-i18n="urg.urgent">Urgente</option><option value="not" data-i18n="urg.not">Pas urgente</option></select></label>
+    <label class="field wide-field"><span data-i18n="f.notes">Notes</span><input id="t-notes" maxlength="500" autocomplete="off"></label>
+    <div class="row tight wide-field">
+      <button class="btn primary" id="save-task" type="submit" data-i18n="btn.addTask">Ajouter la tâche</button>
+      <button class="btn" id="cancel-edit" type="button" hidden data-i18n="btn.cancel">Annuler</button>
+    </div>
+  </form>
+  <p class="status" id="task-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="grid-wrap" aria-labelledby="h-grid">
+  <h2 id="h-grid" data-i18n="grid.title">Matrice urgence × importance</h2>
+  <p class="hint" data-i18n="move.hint">Glissez une tâche vers un autre quadrant (au doigt : par sa poignée ⠿), choisissez son quadrant dans la liste, ou utilisez Maj + flèches sur une tâche sélectionnée.</p>
+  <div class="axis" aria-hidden="true"><span data-i18n="axis.urgent">Urgent</span><span data-i18n="axis.notUrgent">Pas urgent</span></div>
+  <div id="grid" class="matrix"></div>
+  <p class="status" id="move-status" role="status" aria-live="polite"></p>
+  <details class="done-box"><summary id="done-title" data-i18n="done.title">Tâches faites</summary><ul id="done" class="list"></ul></details>
+</section>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Export et sauvegarde</h2>
+  <div class="row">
+    <button class="btn primary" id="export-md" type="button" data-i18n="btn.md">Plan d'action (.md)</button>
+    <button class="btn" id="export-csv" type="button" data-i18n="btn.csv">Exporter (CSV)</button>
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Sauvegarder (JSON)</button>
+    <label class="btn file" for="import" data-i18n="btn.import">Restaurer…</label>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">Le classement applique vos critères ; il ne remplace pas votre jugement. Vos matrices restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

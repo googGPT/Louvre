@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MeetingMinutes — Réunions minutées</title>
+<meta name="description" content="MeetingMinutes : ordre du jour minuté, notes par point, décisions et actions suivies d'une réunion à l'autre, compte rendu Markdown et échéances .ics. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#5f3dc4">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/meetingminutes/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>MeetingMinutes</strong><small data-i18n="brand.tagline">Réunions minutées</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Une réunion tenue, un compte rendu prêt.</h1>
+  <p data-i18n="hero.text">Minutez l'ordre du jour, prenez des notes par point, notez décisions et actions, puis retrouvez les actions encore ouvertes à la réunion suivante.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les réunions enregistrées sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-meeting">
+  <div class="row between">
+    <h2 id="h-meeting" class="flush" data-i18n="meeting.title">Réunion</h2>
+    <div class="row tight">
+      <label class="visually-hidden" for="meeting-select" data-i18n="meeting.select">Réunion affichée</label>
+      <select id="meeting-select" class="auto"></select>
+      <button class="btn" id="new-meeting" type="button" data-i18n="btn.new">Nouvelle</button>
+      <button class="btn" id="next-meeting" type="button" data-i18n="btn.next">Préparer la suivante</button>
+      <button class="btn" id="delete-meeting" type="button" data-i18n="btn.delete">Supprimer</button>
+      <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+    </div>
+  </div>
+  <form id="meeting-form" class="form-grid top-gap" novalidate>
+    <label class="field wide-field"><span data-i18n="f.title">Intitulé</span><input id="m-title" name="title" maxlength="120" autocomplete="off"></label>
+    <label class="field"><span data-i18n="f.date">Date</span><input id="m-date" name="date" type="date"></label>
+    <label class="field"><span data-i18n="f.start">Début</span><input id="m-start" name="start" type="time"></label>
+    <label class="field"><span data-i18n="f.duration">Durée prévue (min)</span><input id="m-duration" name="duration" inputmode="numeric" maxlength="3"></label>
+  </form>
+  <p class="status" id="meeting-status" role="status" aria-live="polite"></p>
+</section>
+
+<div class="grid">
+  <div class="col">
+    <section class="panel" aria-labelledby="h-agenda">
+      <h2 id="h-agenda" data-i18n="agenda.title">Ordre du jour minuté</h2>
+      <div class="kpis">
+        <div class="kpi"><span data-i18n="k.planned">Prévu</span><strong id="k-planned">—</strong></div>
+        <div class="kpi"><span data-i18n="k.spent">Passé</span><strong id="k-spent">—</strong></div>
+        <div class="kpi"><span data-i18n="k.end">Fin projetée</span><strong id="k-end">—</strong></div>
+        <div class="kpi"><span data-i18n="k.margin">Marge</span><strong id="k-margin">—</strong></div>
+      </div>
+      <p id="agenda-alert" class="alert" hidden></p>
+      <form id="item-form" class="add-row" novalidate>
+        <label class="field grow"><span data-i18n="f.item">Point</span><input id="item-title" name="title" maxlength="120" autocomplete="off" data-i18n-attr="placeholder:f.itemPh"></label>
+        <label class="field short"><span data-i18n="f.minutes">Minutes</span><input id="item-minutes" name="minutes" inputmode="numeric" maxlength="3" value="10"></label>
+        <button class="btn primary" id="add-item" type="submit" data-i18n="btn.add">Ajouter</button>
+      </form>
+      <p class="status" id="agenda-status" role="status" aria-live="polite"></p>
+      <ol id="agenda" class="agenda"></ol>
+    </section>
+
+    <section class="panel" aria-labelledby="h-notes">
+      <h2 id="h-notes" data-i18n="notes.title">Notes du point</h2>
+      <p id="notes-for" class="hint"></p>
+      <label class="field"><span data-i18n="f.notes">Notes</span><textarea id="notes" maxlength="5000" rows="5"></textarea></label>
+      <div class="row tight">
+        <label class="field short"><span data-i18n="f.spent">Temps passé (min)</span><input id="spent" inputmode="numeric" maxlength="3"></label>
+        <span id="save-state" class="hint grow" aria-live="polite"></span>
+      </div>
+      <h3 data-i18n="decision.add">Décision</h3>
+      <form id="decision-form" class="add-row" novalidate>
+        <label class="field grow"><span class="visually-hidden" data-i18n="f.decision">Décision prise</span><input id="decision-text" maxlength="300" autocomplete="off" data-i18n-attr="placeholder:f.decisionPh"></label>
+        <button class="btn" type="submit" data-i18n="btn.addDecision">Noter</button>
+      </form>
+      <h3 data-i18n="action.add">Action</h3>
+      <form id="action-form" class="form-grid two" novalidate>
+        <label class="field wide-field"><span data-i18n="f.action">À faire</span><input id="action-text" maxlength="300" autocomplete="off" data-i18n-attr="placeholder:f.actionPh"></label>
+        <label class="field"><span data-i18n="f.owner">Responsable</span><input id="action-owner" maxlength="80" list="owners" autocomplete="off"></label>
+        <label class="field"><span data-i18n="f.due">Échéance</span><input id="action-due" type="date"></label>
+        <div class="field end"><button class="btn" type="submit" data-i18n="btn.addAction">Ajouter l'action</button></div>
+      </form>
+      <datalist id="owners"></datalist>
+      <p class="status" id="notes-status" role="status" aria-live="polite"></p>
+    </section>
+  </div>
+
+  <div class="col">
+    <section class="panel" aria-labelledby="h-people">
+      <h2 id="h-people" data-i18n="people.title">Participants</h2>
+      <form id="person-form" class="add-row" novalidate>
+        <label class="field grow"><span class="visually-hidden" data-i18n="f.person">Nom</span><input id="person-name" maxlength="80" autocomplete="off" data-i18n-attr="placeholder:f.personPh"></label>
+        <button class="btn" type="submit" data-i18n="btn.addPerson">Ajouter</button>
+      </form>
+      <p class="status" id="people-status" role="status" aria-live="polite"></p>
+      <ul id="people" class="list"></ul>
+    </section>
+
+    <section class="panel" aria-labelledby="h-actions">
+      <h2 id="h-actions" data-i18n="actions.title">Décisions et actions</h2>
+      <h3 data-i18n="decisions.list">Décisions</h3>
+      <ul id="decisions" class="list"></ul>
+      <h3 data-i18n="actions.list">Actions de cette réunion</h3>
+      <ul id="actions" class="list"></ul>
+      <h3 data-i18n="pending.title">Suivi des réunions précédentes</h3>
+      <p class="hint" data-i18n="pending.hint">Actions encore ouvertes, décidées lors de réunions antérieures.</p>
+      <ul id="pending" class="list"></ul>
+    </section>
+  </div>
+</div>
+
+<section class="panel" aria-labelledby="h-export">
+  <h2 id="h-export" data-i18n="export.title">Compte rendu</h2>
+  <div class="row">
+    <button class="btn primary" id="export-md" type="button" data-i18n="btn.exportMd">Compte rendu (.md)</button>
+    <button class="btn" id="export-ics" type="button" data-i18n="btn.exportIcs">Échéances (.ics)</button>
+  </div>
+  <p class="status" id="export-status" role="status" aria-live="polite"></p>
+  <details class="preview"><summary data-i18n="export.preview">Aperçu du compte rendu</summary><pre id="md-preview"></pre></details>
+</section>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <label class="btn file" for="import" data-i18n="btn.import">Restaurer…</label>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">Durées, échéances et responsables sont ceux que vous saisissez. Vos réunions restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

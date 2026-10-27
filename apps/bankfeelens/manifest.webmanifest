@@ -1,0 +1,12 @@
+{
+  "name": "BankFeeLens — le vrai coût de vos frais bancaires",
+  "short_name": "BankFeeLens",
+  "description": "Compare le coût annuel d'offres bancaires selon votre usage et les tarifs que vous saisissez.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#1864ab",
+  "background_color": "#f3f6fa",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

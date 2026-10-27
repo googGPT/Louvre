@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GardenPlanner — Plan du potager et calendrier</title>
+<meta name="description" content="GardenPlanner : dessinez vos parcelles en grille, placez vos cultures avec leurs dates de semis, plantation et récolte, suivez le calendrier des tâches et la rotation. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#5c6b12">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/gardenplanner/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>GardenPlanner</strong><small data-i18n="brand.tagline">Le plan de votre potager</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Chaque case du potager a sa culture et son calendrier.</h1>
+  <p data-i18n="hero.text">Dessinez vos parcelles en grille, placez les cultures et indiquez leurs dates ou délais de semis, plantation et récolte : GardenPlanner prépare le calendrier des tâches et signale les rotations à revoir.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les données enregistrées sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-bed">
+  <div class="row between">
+    <h2 id="h-bed" class="flush" data-i18n="bed.title">Parcelles</h2>
+    <div class="year-nav">
+      <button class="btn icon" id="year-prev" type="button" data-i18n-attr="aria-label:year.prev;title:year.prev"><span class="flip" aria-hidden="true">‹</span></button>
+      <span class="year" id="year-label" aria-live="polite"></span>
+      <button class="btn icon" id="year-next" type="button" data-i18n-attr="aria-label:year.next;title:year.next"><span class="flip" aria-hidden="true">›</span></button>
+    </div>
+  </div>
+  <div class="row top-gap">
+    <label class="visually-hidden" for="bed-select" data-i18n="bed.select">Parcelle affichée</label>
+    <select id="bed-select" class="grow"></select>
+    <button class="btn" id="edit-bed" type="button" data-i18n="btn.editBed">Modifier</button>
+    <button class="btn" id="delete-bed" type="button" data-i18n="btn.deleteBed">Supprimer</button>
+    <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+  </div>
+  <details class="add" id="bed-add">
+    <summary id="bed-summary" data-i18n="bed.add">Nouvelle parcelle</summary>
+    <form id="bed-form" novalidate class="form-grid four">
+      <label class="field"><span data-i18n="f.bedName">Nom</span><input name="name" maxlength="40" data-i18n-attr="placeholder:f.bedNamePh"></label>
+      <label class="field"><span data-i18n="f.cols">Colonnes (cases)</span><input name="cols" inputmode="numeric" value="4"></label>
+      <label class="field"><span data-i18n="f.rows">Rangées (cases)</span><input name="rows" inputmode="numeric" value="3"></label>
+      <label class="field"><span data-i18n="f.cell">Côté d'une case (cm)</span><input name="cellCm" inputmode="numeric" value="30"></label>
+      <div class="row span"><button class="btn primary" type="submit" id="save-bed" data-i18n="btn.saveBed">Créer la parcelle</button><button class="btn" type="button" id="cancel-bed" hidden data-i18n="btn.cancel">Annuler</button></div>
+    </form>
+  </details>
+  <p class="status" id="bed-status" role="status" aria-live="polite"></p>
+  <p class="empty" id="no-bed" hidden data-i18n="bed.none">Créez une parcelle ou chargez l'exemple.</p>
+  <div id="bed-view">
+    <p class="meta" id="bed-meta"></p>
+    <div class="grid-scroll"><div class="garden" id="garden" role="group" data-i18n-attr="aria-label:grid.label"></div></div>
+    <p class="hint" data-i18n="grid.hint">Touchez une case pour y placer une culture (colonne et rangée sont reprises dans le formulaire).</p>
+    <h3 data-i18n="crops.title">Cultures de l'année</h3>
+    <ul class="list" id="crops"></ul>
+  </div>
+</section>
+
+<section class="panel" aria-labelledby="h-crop" id="crop-panel">
+  <h2 id="h-crop" data-i18n="crop.title">Placer une culture</h2>
+  <form id="crop-form" novalidate>
+    <div class="form-grid two">
+      <label class="field"><span data-i18n="f.cropName">Culture</span><input name="name" maxlength="40" data-i18n-attr="placeholder:f.cropNamePh"></label>
+      <label class="field"><span data-i18n="f.family">Famille botanique</span><select name="family" id="family"></select></label>
+    </div>
+    <fieldset class="box">
+      <legend data-i18n="f.place">Emplacement sur la parcelle</legend>
+      <div class="form-grid four">
+        <label class="field"><span data-i18n="f.x">Colonne</span><input name="x" inputmode="numeric" value="1"></label>
+        <label class="field"><span data-i18n="f.y">Rangée</span><input name="y" inputmode="numeric" value="1"></label>
+        <label class="field"><span data-i18n="f.w">Largeur (cases)</span><input name="w" inputmode="numeric" value="1"></label>
+        <label class="field"><span data-i18n="f.h">Hauteur (cases)</span><input name="h" inputmode="numeric" value="1"></label>
+      </div>
+    </fieldset>
+    <fieldset class="box">
+      <legend data-i18n="f.dates">Dates</legend>
+      <p class="hint" data-i18n="f.datesHint">Chaque étape se saisit par une date ou par un délai en jours après le semis. GardenPlanner ne propose aucun délai de culture.</p>
+      <div class="steps">
+        <label class="field"><span data-i18n="f.sow">Semis</span><input name="sow" type="date"></label>
+        <div class="field step" data-step="plant"><span id="lab-plant" data-i18n="f.plant">Plantation (repiquage)</span>
+          <div class="pair"><select name="plant-mode" aria-labelledby="lab-plant"><option value="none" data-i18n="mode.none">Aucune (semis en place)</option><option value="date" data-i18n="mode.date">Date</option><option value="days" data-i18n="mode.days">Jours après semis</option></select>
+          <input name="plant-date" type="date" aria-labelledby="lab-plant" hidden><input name="plant-days" inputmode="numeric" aria-labelledby="lab-plant" hidden data-i18n-attr="placeholder:f.daysPh"></div></div>
+        <div class="field step" data-step="harvest"><span id="lab-harvest" data-i18n="f.harvest">Début de récolte</span>
+          <div class="pair"><select name="harvest-mode" aria-labelledby="lab-harvest"><option value="days" data-i18n="mode.days">Jours après semis</option><option value="date" data-i18n="mode.date">Date</option></select>
+          <input name="harvest-date" type="date" aria-labelledby="lab-harvest" hidden><input name="harvest-days" inputmode="numeric" aria-labelledby="lab-harvest" data-i18n-attr="placeholder:f.daysPh"></div></div>
+        <div class="field step" data-step="harvestEnd"><span id="lab-harvestEnd" data-i18n="f.harvestEnd">Fin de récolte (facultatif)</span>
+          <div class="pair"><select name="harvestEnd-mode" aria-labelledby="lab-harvestEnd"><option value="none" data-i18n="mode.noneEnd">Aucune</option><option value="date" data-i18n="mode.date">Date</option><option value="days" data-i18n="mode.days">Jours après semis</option></select>
+          <input name="harvestEnd-date" type="date" aria-labelledby="lab-harvestEnd" hidden><input name="harvestEnd-days" inputmode="numeric" aria-labelledby="lab-harvestEnd" hidden data-i18n-attr="placeholder:f.daysPh"></div></div>
+      </div>
+    </fieldset>
+    <label class="field"><span data-i18n="f.note">Note (facultatif)</span><input name="note" maxlength="200"></label>
+    <div class="row">
+      <button class="btn primary" type="submit" id="save-crop" data-i18n="btn.saveCrop">Placer la culture</button>
+      <button class="btn" type="button" id="cancel-crop" hidden data-i18n="btn.cancel">Annuler</button>
+    </div>
+    <p class="status" id="crop-status" role="status" aria-live="polite"></p>
+  </form>
+</section>
+
+<section class="panel" aria-labelledby="month-label">
+  <div class="month-nav">
+    <button class="btn icon" id="month-prev" type="button" data-i18n-attr="aria-label:month.prev;title:month.prev"><span class="flip" aria-hidden="true">‹</span></button>
+    <h2 id="month-label">Calendrier</h2>
+    <button class="btn icon" id="month-next" type="button" data-i18n-attr="aria-label:month.next;title:month.next"><span class="flip" aria-hidden="true">›</span></button>
+  </div>
+  <ul class="list tasks" id="tasks"></ul>
+  <p class="status" id="task-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-export">
+  <h2 id="h-export" data-i18n="export.title">Agenda et sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export-ics" type="button"></button>
+  </div>
+  <p class="status" id="ics-status" role="status" aria-live="polite"></p>
+  <div class="row top-gap">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <button class="btn" id="pick-backup" type="button" data-i18n="btn.restore">Restaurer…</button>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden" tabindex="-1" aria-hidden="true">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">GardenPlanner ne contient aucune donnée agronomique : dates, délais et familles sont ceux que vous saisissez. Vos données restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

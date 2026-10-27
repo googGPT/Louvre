@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WardrobeCapsule — Garde-robe capsule</title>
+<meta name="description" content="WardrobeCapsule : listez vos vêtements, fixez les règles de votre garde-robe capsule et comptez les tenues possibles, avec des suggestions et les manques signalés. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#9c3d6b">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/wardrobecapsule/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>WardrobeCapsule</strong><small data-i18n="brand.tagline">Garde-robe capsule</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Moins de vêtements, plus de tenues.</h1>
+  <p data-i18n="hero.text">Listez vos pièces.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les vêtements enregistrés sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-result">
+  <div class="row between"><h2 id="h-result" class="flush" data-i18n="result.title">Tenues possibles</h2><button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button></div>
+  <div class="filters">
+    <label class="field"><span data-i18n="f.season">Saison</span><select id="f-season"></select></label>
+    <label class="field"><span data-i18n="f.occasion">Occasion</span><select id="f-occasion"></select></label>
+  </div>
+  <div class="big" id="count" aria-live="polite"></div>
+  <p class="hint" id="count-detail"></p>
+  <h3 data-i18n="day.title">Tenue du jour</h3>
+  <div id="day"></div>
+  <h3 data-i18n="sugg.title">Suggestions</h3>
+  <p class="hint" data-i18n="sugg.hint">Choisies pour utiliser le plus de pièces différentes.</p>
+  <ol class="outfits" id="suggestions"></ol>
+  <div class="row top-gap"><button class="btn" id="export-csv" type="button" data-i18n="btn.csv">Exporter les tenues (CSV)</button></div>
+  <p class="status" id="result-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-gaps">
+  <h2 id="h-gaps" data-i18n="gaps.title">Bilan de la capsule</h2>
+  <div class="scroll"><table class="data" id="targets-table"></table></div>
+  <ul class="issues" id="issues"></ul>
+</section>
+
+<section class="panel" aria-labelledby="h-rules">
+  <h2 id="h-rules" data-i18n="rules.title">Règles de la capsule</h2>
+  <p class="hint" data-i18n="rules.hint">Objectifs par catégorie.</p>
+  <div class="targets" id="targets"></div>
+  <label class="field narrow"><span data-i18n="f.accents">Couleurs non neutres au plus par tenue</span><select id="accents"></select></label>
+  <fieldset class="palette-box">
+    <legend data-i18n="f.palette">Palette de la capsule (aucune case = toutes les couleurs)</legend>
+    <div class="swatches" id="palette"></div>
+  </fieldset>
+  <p class="hint" id="neutrals"></p>
+  <p class="status" id="rules-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-form">
+  <h2 id="h-form" data-i18n="form.title">Pièce</h2>
+  <form id="item-form" novalidate>
+    <div class="form-grid">
+      <label class="field wide"><span data-i18n="f.name">Nom</span><input name="name" maxlength="60" autocomplete="off" dir="auto" data-i18n-attr="placeholder:f.namePh"></label>
+      <label class="field"><span data-i18n="f.category">Catégorie</span><select name="category"></select></label>
+      <label class="field"><span data-i18n="f.color">Couleur</span><select name="color"></select></label>
+    </div>
+    <fieldset class="checks"><legend data-i18n="f.seasons">Saisons</legend><div id="seasons" class="checkrow"></div></fieldset>
+    <fieldset class="checks"><legend data-i18n="f.occasions">Occasions</legend><div id="occasions" class="checkrow"></div></fieldset>
+    <div class="row">
+      <button class="btn primary" id="save" type="submit" data-i18n="btn.add">Ajouter</button>
+      <button class="btn" id="cancel" type="button" hidden data-i18n="btn.cancel">Annuler</button>
+    </div>
+    <p class="status" id="form-status" role="status" aria-live="polite"></p>
+  </form>
+</section>
+
+<section class="panel" aria-labelledby="h-items">
+  <h2 id="h-items" data-i18n="items.title">Ma garde-robe</h2>
+  <div id="items"></div>
+  <p class="status" id="items-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <button class="btn" id="pick-backup" type="button" data-i18n="btn.restore">Restaurer…</button>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden" tabindex="-1" aria-hidden="true">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">Vos vêtements restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

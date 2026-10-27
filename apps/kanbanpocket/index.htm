@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KanbanPocket — Tableaux Kanban</title>
+<meta name="description" content="KanbanPocket : tableaux Kanban locaux, colonnes renommables avec limite WIP, cartes avec étiquettes et échéances, déplacement au clavier, à la souris ou au doigt, filtres et export CSV. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#b8400b">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/kanbanpocket/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>KanbanPocket</strong><small data-i18n="brand.tagline">Le Kanban dans la poche</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Moins de tâches en cours, plus de tâches finies.</h1>
+  <p data-i18n="hero.text">Rangez vos cartes en colonnes, fixez une limite de travail en cours (WIP) et déplacez-les au clavier, à la souris ou au doigt.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les tableaux enregistrés sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-board">
+  <div class="row between">
+    <h2 id="h-board" class="flush" data-i18n="board.title">Tableau</h2>
+    <div class="row tight">
+      <label class="visually-hidden" for="board-select" data-i18n="board.select">Tableau affiché</label>
+      <select id="board-select" class="auto"></select>
+      <button class="btn" id="new-board" type="button" data-i18n="btn.new">Nouveau</button>
+      <button class="btn" id="rename-board" type="button" data-i18n="btn.rename">Renommer</button>
+      <button class="btn" id="delete-board" type="button" data-i18n="btn.delete">Supprimer</button>
+      <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+    </div>
+  </div>
+  <div class="kpis top-gap">
+    <div class="kpi"><span data-i18n="k.total">Cartes</span><strong id="k-total">0</strong></div>
+    <div class="kpi"><span data-i18n="k.done">Terminées</span><strong id="k-done">0</strong></div>
+    <div class="kpi"><span data-i18n="k.overdue">En retard</span><strong id="k-overdue">0</strong></div>
+    <div class="kpi"><span data-i18n="k.overWip">WIP dépassé</span><strong id="k-overwip">0</strong></div>
+  </div>
+  <p class="status" id="board-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-card">
+  <h2 id="h-card" data-i18n="card.title">Nouvelle carte</h2>
+  <form id="card-form" class="form-grid" novalidate>
+    <label class="field wide-field"><span data-i18n="f.title">Titre</span><input id="c-title" maxlength="120" autocomplete="off" data-i18n-attr="placeholder:f.titlePh"></label>
+    <label class="field"><span data-i18n="f.labels">Étiquettes</span><input id="c-labels" maxlength="130" autocomplete="off" data-i18n-attr="placeholder:f.labelsPh"></label>
+    <label class="field"><span data-i18n="f.due">Échéance</span><input id="c-due" type="date"></label>
+    <label class="field"><span data-i18n="f.column">Colonne</span><select id="c-col"></select></label>
+    <label class="field wide-field"><span data-i18n="f.notes">Notes</span><textarea id="c-notes" maxlength="1000" rows="2"></textarea></label>
+    <div class="row tight wide-field">
+      <button class="btn primary" id="save-card" type="submit" data-i18n="btn.addCard">Ajouter la carte</button>
+      <button class="btn" id="cancel-edit" type="button" hidden data-i18n="btn.cancel">Annuler</button>
+    </div>
+  </form>
+  <p class="status" id="card-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-filters">
+  <h2 id="h-filters" data-i18n="filters.title">Filtres</h2>
+  <div class="filters">
+    <label class="field"><span data-i18n="f.search">Rechercher</span><input id="f-text" type="search" autocomplete="off"></label>
+    <label class="field"><span data-i18n="f.label">Étiquette</span><select id="f-label"></select></label>
+    <label class="field"><span data-i18n="f.dueFilter">Échéance</span><select id="f-due">
+      <option value="all" data-i18n="due.all">Toutes</option>
+      <option value="overdue" data-i18n="due.overdue">En retard</option>
+      <option value="week" data-i18n="due.week">Dans les 7 jours</option>
+      <option value="none" data-i18n="due.none">Sans échéance</option>
+    </select></label>
+    <div class="field end"><button class="btn" id="f-reset" type="button" data-i18n="btn.reset">Tout afficher</button></div>
+  </div>
+  <p class="hint" id="filter-info" aria-live="polite"></p>
+</section>
+
+<section class="board-wrap" aria-labelledby="h-columns">
+  <div class="row between">
+    <h2 id="h-columns" class="flush" data-i18n="columns.title">Colonnes</h2>
+    <button class="btn" id="add-column" type="button" data-i18n="btn.addColumn">Ajouter une colonne</button>
+  </div>
+  <p class="hint" data-i18n="move.hint">Glissez une carte par sa poignée, ou utilisez ses boutons. Au clavier : Maj + flèches sur une carte sélectionnée.</p>
+  <div id="board" class="board"></div>
+  <p class="status" id="move-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Export et sauvegarde</h2>
+  <div class="row">
+    <button class="btn primary" id="export-csv" type="button" data-i18n="btn.csv">Exporter (CSV)</button>
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Sauvegarder (JSON)</button>
+    <label class="btn file" for="import" data-i18n="btn.import">Restaurer…</label>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">La dernière colonne compte comme « terminée ». Vos tableaux restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

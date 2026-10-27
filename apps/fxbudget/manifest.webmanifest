@@ -1,0 +1,12 @@
+{
+  "name": "FXBudget — budget de voyage multidevise",
+  "short_name": "FXBudget",
+  "description": "Budget de voyage en plusieurs devises avec vos taux de change datés, conversions exactes, reste par catégorie et par jour.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#1d5fa8",
+  "background_color": "#f2f6fb",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

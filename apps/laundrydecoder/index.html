@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LaundryDecoder — Symboles d'entretien textile</title>
+<meta name="description" content="LaundryDecoder : comprenez les symboles d'entretien d'une étiquette de vêtement (lavage, blanchiment, séchage, repassage, entretien professionnel) et obtenez des consignes résumées. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#3949ab">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/laundrydecoder/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>LaundryDecoder</strong><small data-i18n="brand.tagline">Symboles d'entretien textile</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Que veut dire cette étiquette ?</h1>
+  <p data-i18n="hero.text">Touchez les symboles de l'étiquette.</p>
+</section>
+<p class="note" id="disclaimer" data-i18n="disclaimer">Pictogrammes dessinés pour cette appli.</p>
+<p id="warning" class="warning" hidden data-i18n="warning">Les étiquettes enregistrées sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-compose">
+  <div class="row between"><h2 id="h-compose" class="flush" data-i18n="compose.title">Composer une étiquette</h2><button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button></div>
+  <p class="hint" data-i18n="compose.hint">Sélectionnez chaque symbole présent sur l'étiquette.</p>
+  <div id="palette" class="palette"></div>
+</section>
+
+<section class="panel" aria-labelledby="h-summary">
+  <h2 id="h-summary" data-i18n="sum.title">Consignes résumées</h2>
+  <div class="chosen" id="chosen" aria-live="polite"></div>
+  <ul class="summary" id="summary"></ul>
+  <ul class="issues" id="issues" aria-live="polite"></ul>
+  <form id="label-form" class="save-row" novalidate>
+    <label class="field grow"><span data-i18n="f.name">Vêtement</span><input name="name" maxlength="60" autocomplete="off" dir="auto" data-i18n-attr="placeholder:f.namePh"></label>
+    <div class="row">
+      <button class="btn primary" id="save" type="submit" data-i18n="btn.save">Enregistrer l'étiquette</button>
+      <button class="btn" id="clear" type="button" data-i18n="btn.clear">Nouvelle étiquette</button>
+    </div>
+  </form>
+  <p class="status" id="label-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-saved">
+  <h2 id="h-saved" data-i18n="saved.title">Mes étiquettes</h2>
+  <ul class="saved" id="saved"></ul>
+  <p class="status" id="saved-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-dict">
+  <h2 id="h-dict" data-i18n="dict.title">Dictionnaire des symboles</h2>
+  <label class="visually-hidden" for="search" data-i18n="dict.label">Rechercher un symbole</label>
+  <input id="search" type="search" autocomplete="off" data-i18n-attr="placeholder:dict.ph">
+  <p class="status" id="dict-status" role="status" aria-live="polite"></p>
+  <div id="dict"></div>
+</section>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <button class="btn" id="pick-backup" type="button" data-i18n="btn.restore">Restaurer…</button>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden" tabindex="-1" aria-hidden="true">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">Vos étiquettes restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

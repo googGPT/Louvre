@@ -1,0 +1,74 @@
+/* BankFeeLens — styles. Thème clair/sombre automatique, mêmes bases que les autres applis Louvre. */
+:root{--bg:#f3f6fa;--surface:#fff;--ink:#1a2a3c;--muted:#566a80;--line:#dde5ee;--accent:#1864ab;--accent-soft:#e7f1fb;--accent-ink:#fff;--good:#2b8a3e;--good-soft:#e6f4ea;--warn:#a35f00;--warn-soft:#fff3d6;--bad:#c92a2a;--bad-soft:#fdecec;--focus:#4dabf7;--radius:16px;
+font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg)}
+@media (prefers-color-scheme:dark){:root{--bg:#0d131c;--surface:#152030;--ink:#e7eef6;--muted:#a3b4c6;--line:#263649;--accent:#74c0fc;--accent-soft:#13304a;--accent-ink:#0b1622;--good:#69db7c;--good-soft:#14301d;--warn:#ffd43b;--warn-soft:#3a3010;--bad:#ff8787;--bad-soft:#3a1717}}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--bg);line-height:1.45}
+button,input,select,textarea{font:inherit;color:inherit}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,label.btn:focus-within{outline:3px solid var(--focus);outline-offset:2px}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.wrap{max-width:1120px;margin:0 auto;padding:0 16px}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:22px 0 8px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}.brand img{width:44px;height:44px;border-radius:12px}
+.brand strong{display:block;font-size:20px;letter-spacing:-.02em}.brand small{color:var(--muted);font-size:13px}
+.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.badge{font-size:12px;font-weight:700;padding:6px 11px;border-radius:999px;background:var(--good-soft);color:var(--good);white-space:nowrap}
+.hero h1{margin:18px 0 6px;font-size:clamp(26px,4.5vw,38px);line-height:1.1;letter-spacing:-.03em}
+.hero p{margin:0 0 18px;color:var(--muted);max-width:680px}
+.grid{display:grid;gap:16px;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}
+@media (max-width:820px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;min-width:0;margin-top:16px}
+.grid .panel{margin-top:0}
+.panel h2{margin:0 0 12px;font-size:18px;letter-spacing:-.01em}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.between{justify-content:space-between}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 16px;font-weight:650;cursor:pointer;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.small{min-height:36px;padding:6px 10px;font-size:13px}
+label.field{display:grid;gap:6px;font-size:14px;font-weight:600;margin:0;min-width:0}
+input,select,textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg);min-height:44px;min-width:0}
+input[type=checkbox]{width:20px;height:20px;min-height:0;accent-color:var(--accent);margin:0;flex:none}
+label.check{display:flex;gap:10px;align-items:center;font-size:14px;font-weight:600;min-height:44px}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:end}
+.form-grid .full{grid-column:1/-1}
+.status{min-height:22px;font-size:14px;margin:8px 0 0;color:var(--muted);overflow-wrap:anywhere}.status.error{color:var(--bad)}.status.ok{color:var(--good)}
+.warning{background:var(--bad-soft);color:var(--bad);border-radius:12px;padding:12px 14px;font-size:14px}
+.note{font-size:13px;color:var(--muted);margin:10px 0 0}
+.empty{color:var(--muted);text-align:center;padding:22px 10px;margin:0}
+footer{color:var(--muted);font-size:13px;padding:24px 0 40px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.hyp{background:var(--accent-soft);border-radius:12px;padding:12px 14px;font-size:14px;margin:0 0 16px;font-weight:600}
+.form-grid{margin-bottom:12px}
+/* Offres saisies */
+.items{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:8px}
+.items li{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
+.items li.editing{border-color:var(--accent);background:var(--accent-soft)}
+.items .txt{min-width:0}.items .txt b{display:block;overflow-wrap:anywhere}.items .txt span{display:block;font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.items .acts{display:flex;gap:6px}
+/* Classement */
+.verdict{background:var(--good-soft);color:var(--good);border-radius:12px;padding:12px 14px;font-weight:700;margin:0 0 12px;overflow-wrap:anywhere}
+.scroll{overflow-x:auto;max-width:100%}
+.rank{width:100%;border-collapse:collapse;font-size:14px}
+.rank th{text-align:start;font-size:12px;color:var(--muted);font-weight:700;padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+.rank td{padding:10px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+.rank td.name{min-width:120px;overflow-wrap:anywhere}
+.rank tr.best td{background:var(--good-soft)}
+.rank .num{text-align:end;white-space:nowrap;font-variant-numeric:tabular-nums}
+.rank .strong{font-weight:800;font-size:15px}
+.bar{height:6px;border-radius:999px;background:var(--line);margin-top:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:999px}
+.rank tr.best .bar i{background:var(--good)}
+.pill{white-space:nowrap;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;background:var(--good);color:#fff}
+@media (prefers-color-scheme:dark){.pill{color:#0b111d}}
+@media (max-width:560px){.rank .hide-s{display:none}}
+/* Détail */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:12px}
+.card{border:1px solid var(--line);border-radius:14px;padding:14px;min-width:0}
+.card.best{border-color:var(--good);border-width:2px}
+.card h3{margin:0 0 10px;font-size:16px;overflow-wrap:anywhere}
+.card dl{margin:0;display:grid;gap:4px;font-size:14px}
+.card dl div{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.card dl div.zero{color:var(--muted)}
+.card dl div.total{border-top:1px solid var(--line);padding-top:6px;margin-top:4px;font-weight:800}
+.card dt{min-width:0}.card dd{margin:0;font-variant-numeric:tabular-nums;font-weight:650}

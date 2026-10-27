@@ -1,0 +1,12 @@
+{
+  "name": "SeatArrange — plan de table",
+  "short_name": "SeatArrange",
+  "description": "Plan de table ou de rangées avec contraintes (ensemble, séparés, place fixe), placement automatique, ajustement manuel, impression et CSV.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#2f855a",
+  "background_color": "#f3f8f5",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

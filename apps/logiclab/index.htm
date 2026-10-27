@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LogicLab — Tables de vérité et formes normales</title>
+<meta name="description" content="LogicLab : saisissez une expression logique, obtenez sa table de vérité, sachez si c'est une tautologie, comparez deux expressions et calculez les formes normales. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#b8430b">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/logiclab/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>LogicLab</strong><small data-i18n="brand.tagline">Tables de vérité et formes normales</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Vrai, faux… ou les deux selon les cas ?</h1>
+  <p data-i18n="hero.text">Écrivez une expression logique : LogicLab dresse sa table de vérité, dit si c'est une tautologie, une contradiction ou une expression satisfiable, compare deux expressions et calcule les formes normales disjonctive et conjonctive.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les données enregistrées sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-expr">
+  <h2 id="h-expr" data-i18n="expr.title">Expressions</h2>
+  <form id="expr-form" novalidate>
+    <label class="field"><span data-i18n="f.a">Expression A</span>
+      <input id="expr-a" class="code" dir="ltr" spellcheck="false" autocomplete="off" autocapitalize="off" maxlength="300" placeholder="(p → q) ∧ p"></label>
+    <div class="palette" role="group" data-i18n-attr="aria-label:palette.label">
+      <button type="button" class="sym" data-ins="¬" data-i18n-attr="aria-label:sym.not;title:sym.not">¬</button>
+      <button type="button" class="sym" data-ins="∧" data-i18n-attr="aria-label:sym.and;title:sym.and">∧</button>
+      <button type="button" class="sym" data-ins="∨" data-i18n-attr="aria-label:sym.or;title:sym.or">∨</button>
+      <button type="button" class="sym" data-ins="⊕" data-i18n-attr="aria-label:sym.xor;title:sym.xor">⊕</button>
+      <button type="button" class="sym" data-ins="→" data-i18n-attr="aria-label:sym.imp;title:sym.imp">→</button>
+      <button type="button" class="sym" data-ins="↔" data-i18n-attr="aria-label:sym.iff;title:sym.iff">↔</button>
+      <button type="button" class="sym" data-ins="(" data-i18n-attr="aria-label:sym.open;title:sym.open">(</button>
+      <button type="button" class="sym" data-ins=")" data-i18n-attr="aria-label:sym.close;title:sym.close">)</button>
+    </div>
+    <label class="field"><span data-i18n="f.b">Expression B (facultatif, pour comparer)</span>
+      <input id="expr-b" class="code" dir="ltr" spellcheck="false" autocomplete="off" autocapitalize="off" maxlength="300" placeholder="q"></label>
+    <div class="row">
+      <label class="inline"><span data-i18n="f.notation">Écriture</span>
+        <select id="notation" class="auto">
+          <option value="symbols" data-i18n="notation.symbols">Symboles (¬ ∧ ∨)</option>
+          <option value="ascii" data-i18n="notation.ascii">Programmation (! &amp; |)</option>
+          <option value="words" data-i18n="notation.words">Mots (NOT AND OR)</option>
+        </select></label>
+      <label class="inline"><span data-i18n="f.order">Ordre des lignes</span>
+        <select id="order" class="auto">
+          <option value="falseFirst" data-i18n="order.falseFirst">Commencer par 0 (faux)</option>
+          <option value="trueFirst" data-i18n="order.trueFirst">Commencer par 1 (vrai)</option>
+        </select></label>
+    </div>
+    <div class="row top-gap">
+      <button class="btn primary" id="save-expr" type="submit" data-i18n="btn.save">Enregistrer</button>
+      <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+      <button class="btn" id="clear" type="button" data-i18n="btn.clear">Effacer</button>
+    </div>
+    <p class="hint top-gap" data-i18n="help">Variables : lettres ou mots (p, q, pluie, x1). Opérateurs : ¬ ! ~ NOT NON · ∧ &amp; · * AND ET · ∨ | + OR OU · ⊕ ^ XOR · → -&gt; =&gt; IMPLIES · ↔ &lt;-&gt; &lt;=&gt; IFF SSI. Constantes : 1 0 ⊤ ⊥. Priorité : ¬, puis ∧, ⊕, ∨, →, ↔ ; → se lit de droite à gauche.</p>
+    <p class="meta-line" id="save-state" aria-live="polite"></p>
+    <p class="status" id="expr-status" role="status"></p>
+  </form>
+</section>
+
+<section class="panel" aria-labelledby="h-result">
+  <h2 id="h-result" data-i18n="result.title">Résultat</h2>
+  <div id="verdict-a" class="verdict" role="status" aria-live="polite"></div>
+  <pre id="caret" class="caret" dir="ltr" hidden></pre>
+  <p class="meta-line" id="read-as"></p>
+  <div id="verdict-b" class="verdict top-gap" aria-live="polite"></div>
+  <ul id="diff" class="plain"></ul>
+</section>
+
+<section class="panel" aria-labelledby="h-table">
+  <div class="row between">
+    <h2 id="h-table" class="flush" data-i18n="table.title">Table de vérité</h2>
+    <div class="row">
+      <button class="btn small" id="export-csv" type="button" data-i18n="btn.csv">Exporter (CSV)</button>
+      <button class="btn small" id="print" type="button" data-i18n="btn.print">Imprimer</button>
+    </div>
+  </div>
+  <div class="row top-gap">
+    <label class="check"><input type="checkbox" id="show-subs" checked> <span data-i18n="table.subs">Colonnes intermédiaires</span></label>
+    <label class="check"><input type="checkbox" id="only-true"> <span data-i18n="table.onlyTrue">Seulement les lignes où A est vraie</span></label>
+  </div>
+  <p class="meta-line" id="table-note"></p>
+  <div class="scroll table-box top-gap" id="table-wrap" dir="ltr"></div>
+</section>
+
+<section class="panel" aria-labelledby="h-forms">
+  <h2 id="h-forms" data-i18n="forms.title">Formes normales de A</h2>
+  <div id="forms"></div>
+</section>
+
+<section class="panel" aria-labelledby="h-saved">
+  <h2 id="h-saved" data-i18n="saved.title">Expressions enregistrées</h2>
+  <ul id="saved" class="list"></ul>
+</section>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <label class="btn file" for="import" data-i18n="btn.import">Restaurer…</label>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status"></p>
+</section>
+<footer data-i18n="footer">Logique propositionnelle classique, jusqu'à 10 variables. Tout est calculé sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

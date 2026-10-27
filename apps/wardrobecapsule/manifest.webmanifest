@@ -1,0 +1,12 @@
+{
+  "name": "WardrobeCapsule — garde-robe capsule",
+  "short_name": "WardrobeCapsule",
+  "description": "Compte les tenues possibles d'une garde-robe capsule, propose des tenues et signale les manques.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#9c3d6b",
+  "background_color": "#faf4f7",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

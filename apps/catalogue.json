@@ -427,6 +427,146 @@
       "domain": "Voyage",
       "description": "Pèse les bagages objet par objet, signale les dépassements et propose quoi déplacer.",
       "family": "Déplacements"
+    },
+    {
+      "slug": "bankfeelens",
+      "name": "BankFeeLens",
+      "domain": "Finance",
+      "description": "Compare le coût annuel d'offres bancaires selon votre usage et les tarifs que vous saisissez.",
+      "family": "Argent et achats"
+    },
+    {
+      "slug": "fxbudget",
+      "name": "FXBudget",
+      "domain": "Voyage",
+      "description": "Convertit les dépenses de voyage avec vos propres taux datés et montre le reste par catégorie et par jour.",
+      "family": "Déplacements"
+    },
+    {
+      "slug": "gardenplanner",
+      "name": "GardenPlanner",
+      "domain": "Maison",
+      "description": "Dessine le potager en grille, date semis et récoltes, et signale les rotations à revoir.",
+      "family": "Maison et quotidien"
+    },
+    {
+      "slug": "jsoninspector",
+      "name": "JSONInspector",
+      "domain": "Développement",
+      "description": "Valide du JSON (ligne et colonne de l'erreur), arbre repliable, chemins JSONPath et clés dupliquées.",
+      "family": "Outils numériques"
+    },
+    {
+      "slug": "kanbanpocket",
+      "name": "KanbanPocket",
+      "domain": "Productivité",
+      "description": "Tableaux Kanban avec limite WIP, étiquettes, échéances, filtres et déplacement au clavier ou au doigt.",
+      "family": "Travail et organisation"
+    },
+    {
+      "slug": "laundrydecoder",
+      "name": "LaundryDecoder",
+      "domain": "Maison",
+      "description": "Explique les symboles d’entretien d’une étiquette de vêtement et résume les consignes.",
+      "family": "Maison et quotidien"
+    },
+    {
+      "slug": "laundryload",
+      "name": "LaundryLoad",
+      "domain": "Maison",
+      "description": "Regroupe le linge à laver en charges compatibles selon la couleur, la température et la capacité.",
+      "family": "Maison et quotidien"
+    },
+    {
+      "slug": "logiclab",
+      "name": "LogicLab",
+      "domain": "Éducation",
+      "description": "Tables de vérité, tautologies, équivalence de deux expressions et formes normales FND/FNC.",
+      "family": "Études et recherche"
+    },
+    {
+      "slug": "meetingminutes",
+      "name": "MeetingMinutes",
+      "domain": "Productivité",
+      "description": "Ordre du jour minuté, décisions et actions suivies d'une réunion à l'autre, compte rendu .md et .ics.",
+      "family": "Travail et organisation"
+    },
+    {
+      "slug": "petcarelog",
+      "name": "PetCareLog",
+      "domain": "Vie quotidienne",
+      "description": "Tient le carnet de soins des animaux : rappels, rendez-vous, courbe de poids et dépenses.",
+      "family": "Maison et quotidien"
+    },
+    {
+      "slug": "plantpulse",
+      "name": "PlantPulse",
+      "domain": "Maison",
+      "description": "Suit l’arrosage, l’engrais et le rempotage des plantes selon vos fréquences, avec retards et agenda.",
+      "family": "Maison et quotidien"
+    },
+    {
+      "slug": "pollbox",
+      "name": "PollBox",
+      "domain": "Événements",
+      "description": "Vote anonyme en faisant passer un appareil, résultats révélés à la clôture et export CSV.",
+      "family": "Travail et organisation"
+    },
+    {
+      "slug": "pricejournal",
+      "name": "PriceJournal",
+      "domain": "Achats",
+      "description": "Note les prix relevés par produit et magasin, suit leur évolution et le meilleur prix observé.",
+      "family": "Argent et achats"
+    },
+    {
+      "slug": "prioritymatrix",
+      "name": "PriorityMatrix",
+      "domain": "Productivité",
+      "description": "Matrice urgence × importance : urgence calculée selon votre seuil, classement au glisser ou au clavier.",
+      "family": "Travail et organisation"
+    },
+    {
+      "slug": "rentbuycompare",
+      "name": "RentBuyCompare",
+      "domain": "Immobilier",
+      "description": "Compare les coûts nets cumulés de la location et de l'achat selon vos hypothèses, point d'équilibre.",
+      "family": "Argent et achats"
+    },
+    {
+      "slug": "repairledger",
+      "name": "RepairLedger",
+      "domain": "Maison",
+      "description": "Suit les réparations de vos objets, leur coût cumulé face au prix d’achat et la fin des garanties.",
+      "family": "Maison et quotidien"
+    },
+    {
+      "slug": "salaryscenario",
+      "name": "SalaryScenario",
+      "domain": "Travail",
+      "description": "Compare des nets théoriques à partir d'un brut, de primes et de taux de retenue saisis, sans barème.",
+      "family": "Travail et organisation"
+    },
+    {
+      "slug": "seatarrange",
+      "name": "SeatArrange",
+      "domain": "Événements",
+      "description": "Plan de table ou de rangées avec contraintes, placement automatique, ajustement manuel et CSV.",
+      "family": "Travail et organisation"
+    },
+    {
+      "slug": "timelinebuilder",
+      "name": "TimelineBuilder",
+      "domain": "Productivité",
+      "description": "Frises chronologiques à l'échelle : périodes, dates avant notre ère, pistes, export SVG et CSV.",
+      "family": "Travail et organisation"
+    },
+    {
+      "slug": "wardrobecapsule",
+      "name": "WardrobeCapsule",
+      "domain": "Vie quotidienne",
+      "description": "Compte les tenues possibles d’une garde-robe capsule, propose des tenues et signale les manques.",
+      "family": "Maison et quotidien"
     }
   ]
 }

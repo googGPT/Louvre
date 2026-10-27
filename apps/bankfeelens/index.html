@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BankFeeLens — Le vrai coût de vos frais bancaires</title>
+<meta name="description" content="BankFeeLens : comparez le coût annuel d'offres bancaires selon votre propre usage (carte, tenue de compte, retraits, virements, découvert, opérations à l'étranger). Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#1864ab">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/bankfeelens/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>BankFeeLens</strong><small data-i18n="brand.tagline">Le vrai coût de vos frais bancaires</small></div></div>
+  <div class="tools"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale></div></div>
+</header>
+<main>
+<section class="hero">
+  <h1 data-i18n="hero.title">Quelle offre bancaire vous coûte le moins ?</h1>
+  <p data-i18n="hero.text">Décrivez votre usage, saisissez les tarifs de chaque offre : BankFeeLens calcule le coût annuel et les classe.</p>
+</section>
+<p class="hyp" data-i18n="hyp">Les tarifs sont ceux que vous saisissez.</p>
+<p id="warning" class="warning" hidden data-i18n="warning">Les données enregistrées sur cet appareil sont illisibles.</p>
+
+<div class="grid">
+<section class="panel" aria-labelledby="h-profile">
+  <h2 id="h-profile" data-i18n="profile.title">Votre usage</h2>
+  <form id="profile-form" novalidate>
+    <div class="form-grid">
+      <label class="field"><span data-i18n="f.withdrawals">Retraits hors réseau (par mois)</span><input name="withdrawals" inputmode="decimal" autocomplete="off" placeholder="0"></label>
+      <label class="field"><span data-i18n="f.transfers">Virements payants (par mois)</span><input name="transfers" inputmode="decimal" autocomplete="off" placeholder="0"></label>
+      <label class="field"><span data-i18n="f.foreignOps">Opérations à l'étranger (par mois)</span><input name="foreignOps" inputmode="decimal" autocomplete="off" placeholder="0"></label>
+      <label class="field"><span><span data-i18n="f.foreignAmount">Montant moyen par opération</span> (<span class="cur">€</span>)</span><input name="foreignAmount" inputmode="decimal" autocomplete="off" placeholder="0"></label>
+      <label class="field"><span data-i18n="f.overdraftDays">Jours à découvert (par an)</span><input name="overdraftDays" inputmode="numeric" autocomplete="off" placeholder="0"></label>
+      <label class="field"><span><span data-i18n="f.overdraftAmount">Découvert moyen</span> (<span class="cur">€</span>)</span><input name="overdraftAmount" inputmode="decimal" autocomplete="off" placeholder="0"></label>
+    </div>
+    <p class="note" data-i18n="profile.note">Moyennes par mois : 1,5 est accepté.</p>
+    <p class="status" id="profile-status" role="status" aria-live="polite"></p>
+  </form>
+</section>
+
+<section class="panel" aria-labelledby="h-offer">
+  <h2 id="h-offer" data-i18n="offer.title">Offres à comparer</h2>
+  <form id="offer-form" novalidate>
+    <div class="form-grid">
+      <label class="field full"><span data-i18n="f.name">Nom de l'offre</span><input name="name" maxlength="40" autocomplete="off" data-i18n-attr="placeholder:f.namePh"></label>
+      <label class="field"><span><span data-i18n="f.account">Tenue de compte (par mois)</span> (<span class="cur">€</span>)</span><input name="account" inputmode="decimal" autocomplete="off" placeholder="0"></label>
+      <label class="field"><span><span data-i18n="f.card">Carte (par an)</span> (<span class="cur">€</span>)</span><input name="card" inputmode="decimal" autocomplete="off" placeholder="0"></label>
+      <label class="field"><span><span data-i18n="f.withdrawalFee">Retrait hors réseau (l'unité)</span> (<span class="cur">€</span>)</span><input name="withdrawalFee" inputmode="decimal" autocomplete="off" placeholder="0"></label>
+      <label class="field"><span data-i18n="f.freeWithdrawals">Retraits gratuits (par mois)</span><input name="freeWithdrawals" inputmode="decimal" autocomplete="off" placeholder="0"></label>
+      <label class="field"><span><span data-i18n="f.transferFee">Virement (l'unité)</span> (<span class="cur">€</span>)</span><input name="transferFee" inputmode="decimal" autocomplete="off" placeholder="0"></label>
+      <label class="field"><span data-i18n="f.overdraftRate">Taux du découvert (% par an)</span><input name="overdraftRate" inputmode="decimal" autocomplete="off" placeholder="0"></label>
+      <label class="field"><span><span data-i18n="f.foreignFixed">Étranger : frais fixes par opération</span> (<span class="cur">€</span>)</span><input name="foreignFixed" inputmode="decimal" autocomplete="off" placeholder="0"></label>
+      <label class="field"><span data-i18n="f.foreignPct">Étranger : commission (% du montant)</span><input name="foreignPct" inputmode="decimal" autocomplete="off" placeholder="0"></label>
+    </div>
+    <div class="row">
+      <button class="btn primary" id="offer-submit" type="submit" data-i18n="btn.addOffer">Ajouter l'offre</button>
+      <button class="btn" id="offer-cancel" type="button" hidden data-i18n="btn.cancel">Annuler</button>
+      <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+    </div>
+    <p class="status" id="offer-status" role="status" aria-live="polite"></p>
+  </form>
+  <ul class="items" id="offer-list"></ul>
+</section>
+</div>
+
+<section class="panel" aria-labelledby="h-rank">
+  <h2 id="h-rank" data-i18n="rank.title">Classement sur un an</h2>
+  <div id="ranking" aria-live="polite"></div>
+</section>
+
+<section class="panel" aria-labelledby="h-detail">
+  <h2 id="h-detail" data-i18n="detail.title">Détail ligne par ligne</h2>
+  <div id="detail"></div>
+  <p class="note" data-i18n="method">Méthode.</p>
+</section>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Exports et sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="csv" type="button" data-i18n="btn.csv">Classement (CSV)</button>
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <label class="btn"><span data-i18n="btn.import">Restaurer…</span><input id="import" type="file" accept="application/json,.json" class="visually-hidden"></label>
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+</main>
+<footer data-i18n="footer">BankFeeLens ne connaît aucune banque. Vos données restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

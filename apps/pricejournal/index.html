@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PriceJournal — Le carnet de vos prix</title>
+<meta name="description" content="PriceJournal : notez les prix que vous relevez en magasin, suivez leur évolution au kilo, au litre ou à la pièce, repérez le meilleur prix observé. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#a61e4d">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/pricejournal/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>PriceJournal</strong><small data-i18n="brand.tagline">Le carnet de vos prix</small></div></div>
+  <div class="tools"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale></div></div>
+</header>
+<main>
+<section class="hero">
+  <h1 data-i18n="hero.title">Les prix montent-ils vraiment ?</h1>
+  <p data-i18n="hero.text">Notez les prix que vous relevez : PriceJournal suit leur évolution.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les données enregistrées sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-form">
+  <h2 id="h-form" data-i18n="form.title">Nouveau relevé</h2>
+  <form id="entry-form" novalidate>
+    <div class="form-grid">
+      <label class="field wide2"><span data-i18n="f.product">Produit</span><input name="product" maxlength="60" autocomplete="off" list="product-list" data-i18n-attr="placeholder:f.productPh"></label>
+      <label class="field"><span data-i18n="f.store">Magasin</span><input name="store" maxlength="40" autocomplete="off" list="store-list" data-i18n-attr="placeholder:f.storePh"></label>
+      <label class="field"><span data-i18n="f.date">Date du relevé</span><input name="date" type="date" min="1990-01-01" max="2100-12-31"></label>
+      <label class="field"><span><span data-i18n="f.price">Prix payé</span> (<span class="cur">€</span>)</span><input name="price" inputmode="decimal" autocomplete="off" placeholder="2.49"></label>
+      <label class="field"><span data-i18n="f.qty">Contenance</span><input name="qty" inputmode="decimal" autocomplete="off" placeholder="500"></label>
+      <label class="field"><span data-i18n="f.unit">Unité</span><select name="unit"><option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="cl">cl</option><option value="l">L</option><option value="piece" data-i18n="unit.piece">pièce(s)</option></select></label>
+      <label class="field"><span data-i18n="f.count">Nb d'unités du lot</span><input name="count" inputmode="numeric" autocomplete="off" value="1"></label>
+    </div>
+    <datalist id="product-list"></datalist><datalist id="store-list"></datalist>
+    <div class="row"><button class="btn primary" type="submit" data-i18n="btn.add">Ajouter le relevé</button><button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button></div>
+    <p class="status" id="form-status" role="status" aria-live="polite"></p>
+  </form>
+</section>
+
+<section class="panel" aria-labelledby="h-trend">
+  <div class="row between">
+    <h2 id="h-trend" data-i18n="trend.title">Évolution</h2>
+    <label class="pick"><span class="visually-hidden" data-i18n="trend.select">Produit affiché</span><select id="product-select"></select></label>
+  </div>
+  <div id="summary" aria-live="polite"></div>
+  <figure class="chart" id="chart-box" hidden>
+    <div id="chart"></div>
+    <figcaption class="legend" id="legend"></figcaption>
+  </figure>
+  <div id="entries"></div>
+</section>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Exports et sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="csv" type="button" data-i18n="btn.csv">Tous les relevés (CSV)</button>
+    <button class="btn" id="svg" type="button" data-i18n="btn.svg">Graphique (SVG)</button>
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <label class="btn"><span data-i18n="btn.import">Restaurer…</span><input id="import" type="file" accept="application/json,.json" class="visually-hidden"></label>
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+</main>
+<footer data-i18n="footer">Les prix sont ceux que vous relevez. Vos données restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

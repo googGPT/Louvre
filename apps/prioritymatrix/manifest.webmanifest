@@ -1,0 +1,12 @@
+{
+  "name": "PriorityMatrix — urgent ou important ?",
+  "short_name": "PriorityMatrix",
+  "description": "Matrice urgence × importance à critères explicites, avec listes d'actions et export.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#087f5b",
+  "background_color": "#f2f8f5",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

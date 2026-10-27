@@ -1,0 +1,12 @@
+{
+  "name": "PollBox — vote anonyme sur un appareil",
+  "short_name": "PollBox",
+  "description": "Vote anonyme sur un même appareil : choix unique ou multiple, écran « au suivant », résultats à la clôture, export CSV.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#1864ab",
+  "background_color": "#f2f6fb",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

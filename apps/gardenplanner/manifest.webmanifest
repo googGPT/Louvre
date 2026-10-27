@@ -1,0 +1,12 @@
+{
+  "name": "GardenPlanner — plan du potager et calendrier",
+  "short_name": "GardenPlanner",
+  "description": "Parcelles en grille, cultures placées, calendrier de semis, plantation et récolte, alerte de rotation.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#5c6b12",
+  "background_color": "#f6f7ef",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

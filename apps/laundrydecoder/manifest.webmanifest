@@ -1,0 +1,12 @@
+{
+  "name": "LaundryDecoder — symboles d'entretien textile",
+  "short_name": "LaundryDecoder",
+  "description": "Explique les symboles d'entretien d'une étiquette de vêtement et résume les consignes, conflits signalés.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#3949ab",
+  "background_color": "#f4f5fb",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

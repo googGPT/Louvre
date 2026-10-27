@@ -1,0 +1,12 @@
+{
+  "name": "PlantPulse — arrosage, engrais et rempotage",
+  "short_name": "PlantPulse",
+  "description": "Suit l'arrosage, l'engrais et le rempotage des plantes selon les fréquences saisies, avec retards et historique.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#3f7d20",
+  "background_color": "#f4f8f1",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

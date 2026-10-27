@@ -1,0 +1,80 @@
+/* GardenPlanner — styles. Thème clair/sombre automatique, mêmes bases que les autres applis Louvre (accent vert olive). */
+:root{--bg:#f6f7ef;--surface:#fff;--ink:#262b12;--muted:#636a4a;--line:#e0e3cf;--accent:#5c6b12;--accent-soft:#eef1d9;--accent-ink:#fff;--good:#2b8a3e;--good-soft:#e6f4ea;--bad:#c92a2a;--bad-soft:#fdecec;--warn:#8a5300;--warn-soft:#fff3db;--focus:#9db53a;--radius:16px;
+--f1:#f4a3a3;--f2:#a8d5a2;--f3:#c6b4f0;--f4:#f7d77c;--f5:#f6b980;--f6:#e6c9f2;--f7:#9fd8e3;--f8:#e8a7c4;--f9:#d6d29a;--f0:#cfd2d6;
+font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg)}
+@media (prefers-color-scheme:dark){:root{--bg:#11130b;--surface:#1a1d11;--ink:#eef0e2;--muted:#b0b694;--line:#30351f;--accent:#c4d66b;--accent-soft:#2c3314;--accent-ink:#11130b;--good:#69db7c;--good-soft:#14301d;--bad:#ff8787;--bad-soft:#3a1717;--warn:#ffc46b;--warn-soft:#3a2a0d;
+--f1:#8a3d3d;--f2:#3f6b39;--f3:#5a4a8a;--f4:#7d6620;--f5:#85512a;--f6:#6d4b7c;--f7:#2f6b76;--f8:#7a3d5a;--f9:#66623a;--f0:#4a4d52}}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--bg);line-height:1.45}
+button,input,select,textarea{font:inherit;color:inherit}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.wrap{max-width:1080px;margin:0 auto;padding:0 18px}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:22px 0 8px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}.brand img{width:44px;height:44px;border-radius:12px}
+.brand strong{display:block;font-size:20px;letter-spacing:-.02em}.brand small{color:var(--muted);font-size:13px}
+.badge{font-size:12px;font-weight:700;padding:6px 11px;border-radius:999px;background:var(--good-soft);color:var(--good);white-space:nowrap}
+.hero h1{margin:18px 0 6px;font-size:clamp(26px,4.5vw,38px);line-height:1.1;letter-spacing:-.03em}
+.hero p{margin:0 0 18px;color:var(--muted);max-width:700px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;min-width:0;margin-bottom:16px}
+.panel h2{margin:0 0 12px;font-size:18px;letter-spacing:-.01em}.panel h2.flush{margin:0}
+.panel h3{font-size:15px;margin:18px 0 8px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.row>*{min-width:0;max-width:100%}.row.tight{gap:8px}.row.between{justify-content:space-between}
+.row .grow{flex:1 1 180px;width:auto}
+.top-gap{margin-top:14px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 16px;font-weight:650;cursor:pointer;min-height:44px;max-width:100%}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.small{min-height:36px;padding:6px 10px;font-size:13px}
+.btn.icon{min-width:44px;padding:6px 10px;font-size:18px;line-height:1}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+[dir="rtl"] .flip{display:inline-block;transform:scaleX(-1)}
+label.field,div.field{display:grid;gap:6px;font-size:14px;font-weight:600;margin-bottom:12px;min-width:0}
+input,select,textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg);min-height:44px;min-width:0;max-width:100%}
+.pair{display:flex;flex-wrap:wrap;gap:6px}.pair select{flex:1 1 170px;width:auto}.pair input{flex:1 1 110px;width:auto}
+.status{min-height:22px;font-size:14px;margin:8px 0 0;color:var(--muted)}.status.error{color:var(--bad)}.status.ok{color:var(--good)}.status.warn{color:var(--warn)}
+.hint{font-size:13px;color:var(--muted);margin:4px 0 10px}
+.meta{font-size:14px;color:var(--muted);margin:12px 0 8px;overflow-wrap:anywhere}
+.warning{background:var(--bad-soft);color:var(--bad);border-radius:12px;padding:12px 14px;font-size:14px}
+.empty{color:var(--muted);text-align:center;padding:14px 10px;margin:0}
+footer{color:var(--muted);font-size:13px;padding:8px 0 40px}
+.year-nav,.month-nav{display:flex;align-items:center;gap:8px}
+.year{font-weight:800;font-size:18px;min-width:52px;text-align:center}
+.month-nav{display:grid;grid-template-columns:auto minmax(0,1fr) auto;margin-bottom:8px}.month-nav h2{margin:0;text-align:center;text-transform:capitalize}
+details.add{margin-top:12px;border:1px dashed var(--line);border-radius:12px;padding:10px 12px}
+details.add summary{cursor:pointer;font-weight:650;color:var(--accent);overflow-wrap:anywhere}
+details.add[open] summary{margin-bottom:10px}
+/* Formulaires */
+.form-grid{display:grid;gap:10px;align-items:end}.form-grid label.field,.form-grid div.field{margin:0}.form-grid .span{grid-column:1/-1}
+.form-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.form-grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:760px){.form-grid.four{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.form-grid.two{grid-template-columns:1fr}}
+fieldset.box{border:1px solid var(--line);border-radius:14px;margin:12px 0;padding:10px 12px 12px;min-width:0}
+fieldset.box legend{font-size:14px;font-weight:600;padding:0 6px}
+.steps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.steps .field{margin:0}
+@media (max-width:640px){.steps{grid-template-columns:1fr}}
+/* Grille du potager */
+.grid-scroll{overflow-x:auto;padding:2px}
+.garden{display:grid;gap:3px;background:#6b4f2a;border-radius:12px;padding:6px;max-width:720px}
+.cell{aspect-ratio:1;min-width:0;min-height:0;border:0;border-radius:5px;background:#a98457;color:#1d1a10;font-size:clamp(9px,2.6vw,14px);font-weight:800;cursor:pointer;padding:0;position:relative;overflow:hidden;text-transform:capitalize}
+.cell:hover{filter:brightness(1.08)}
+.cell sup{position:absolute;top:1px;inset-inline-end:3px;font-size:9px}
+.fam-solanaceae{background:var(--f1)}.fam-brassicaceae{background:var(--f2)}.fam-fabaceae{background:var(--f3)}.fam-cucurbitaceae{background:var(--f4)}.fam-apiaceae{background:var(--f5)}
+.fam-amaryllidaceae{background:var(--f6)}.fam-asteraceae{background:var(--f7)}.fam-amaranthaceae{background:var(--f8)}.fam-poaceae{background:var(--f9)}.fam-other{background:var(--f0)}
+@media (prefers-color-scheme:dark){.cell{color:#fff}.cell:not([class*="fam-"]){background:#5a4528}.garden{background:#3a2c18}}
+.swatch{display:inline-block;width:12px;height:12px;border-radius:3px;margin-inline-end:8px;vertical-align:-1px}
+/* Listes */
+.list{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
+.list>li{border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
+.list>li.empty{display:block;border-style:dashed}
+.list .txt{min-width:0}.list .txt b{display:block;overflow-wrap:anywhere}.list .txt span{display:block;font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.list .txt span.warn{color:var(--warn);background:var(--warn-soft);border-radius:8px;padding:4px 8px;margin-top:4px;font-weight:600}
+.list .txt span.note{font-style:italic}
+.list .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+@media (max-width:480px){.list>li{grid-template-columns:1fr}}
+.tasks>li{display:block;padding:0}
+.tasks label.check{display:grid;grid-template-columns:24px minmax(0,1fr);gap:10px;align-items:start;padding:10px 12px;cursor:pointer;min-height:44px}
+.tasks input{width:22px;height:22px;min-height:0;margin:1px 0 0;accent-color:var(--accent)}
+.tasks li.done{background:var(--accent-soft)}.tasks li.done b{text-decoration:line-through;color:var(--muted)}
+.tasks li.late{border-color:var(--bad)}.tasks li.late span{color:var(--bad)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}

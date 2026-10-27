@@ -1,0 +1,12 @@
+{
+  "name": "PetCareLog — carnet de soins de vos animaux",
+  "short_name": "PetCareLog",
+  "description": "Soins récurrents, rendez-vous, courbe de poids et dépenses de vos animaux, avec vos propres récurrences.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#a14d16",
+  "background_color": "#faf5f1",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
