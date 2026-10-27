@@ -18,7 +18,7 @@ def run():
    page.locator('#file').set_input_files({'name':'bonjour.txt','mimeType':'text/plain','buffer':data})
    page.locator('#expected').fill(h)
    page.locator('#calculate').click()
-   page.wait_for_function(f"document.querySelector('#digest').textContent.trim()==='{h}'")
+   page.wait_for_function(f"() => document.querySelector('#digest').textContent.trim()==='{h}'")
    assert 'Correspondance' in page.locator('#comparison').inner_text()
    with page.expect_download() as d:page.locator('#download').click()
    assert h in pathlib.Path(d.value.path()).read_text()
@@ -41,7 +41,7 @@ def run():
    ip.locator('#file').set_input_files({'name':'bonjour.txt','mimeType':'text/plain','buffer':data})
    ip.locator('#expected').fill(h)
    ip.locator('#calculate').click()
-   ip.wait_for_function(f"document.querySelector('#digest').textContent.trim()==='{h}'")
+   ip.wait_for_function(f"() => document.querySelector('#digest').textContent.trim()==='{h}'")
    assert 'Übereinstimmung' in ip.locator('#comparison').inner_text()
    heads={'fr':'Résultat cryptographique','en':'Cryptographic result','es':'Resultado criptográfico','ar':'النتيجة التشفيرية','pt':'Resultado criptográfico','de':'Kryptografisches Ergebnis','it':'Risultato crittografico'}
    for lang in ['fr','en','es','ar','pt','de','it']:
@@ -59,7 +59,7 @@ def run():
    ip.locator('#louvre-lang').select_option('en')
    assert ip.locator('#filesize').inner_text()=='0.0 KB'
    ip.locator('#expected').fill('abcd');ip.locator('#calculate').click()
-   ip.wait_for_function("document.querySelector('#message').textContent.length>0")
+   ip.wait_for_function("() => document.querySelector('#message').textContent.length>0")
    assert ip.locator('#message').inner_text()=='A SHA-256 checksum has exactly 64 hexadecimal digits.'
    assert not errors,errors
    browser.close()

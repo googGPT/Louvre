@@ -35,6 +35,11 @@ for t in "$dir"/tests/*.test.cjs "$dir"/tests/*.test.mjs; do  # tests métier
 done
 
 if [ -f "$dir/tests/browser.test.py" ]; then     # test dans un vrai navigateur
+  # wait_for_function avec une expression (et non une fonction fléchée) passe par eval, que la CSP bloque :
+  # l'échec n'apparaît qu'en cas d'attente, donc de façon aléatoire. On l'interdit d'emblée.
+  if grep -nE "wait_for_function\((f?)(\"|')(\"\"|'')?[^(]" "$dir/tests/browser.test.py" | grep -vE "\(f?(\"|')(\"\"|'')?\(\)\s*=>"; then
+    echo "wait_for_function doit recevoir une fonction fléchée « () => … » (CSP sans eval)"; exit 1
+  fi
   python "$dir/tests/browser.test.py"            # Chromium : LOUVRE_CHROMIUM ou /usr/bin/chromium
 fi
 
