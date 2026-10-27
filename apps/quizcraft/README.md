@@ -9,7 +9,7 @@ Application Web statique, gratuite, sans API ni compte, pour créer ses question
 - Recherche sans accents dans les questions, réponses et thèmes ; filtres par thème, maîtrise et difficulté ; tris par ajout, thème et difficulté.
 - Révélation indépendante des réponses dans chaque fiche, édition, suppression avec confirmation.
 - Export **JSON version 1** pour la sauvegarde/restauration, export CSV avec neutralisation des formules, copie brute pour récupérer un stockage éventuellement endommagé.
-- PWA après premier chargement : mode hors ligne pour les fichiers statiques, cache `shell-v2`.
+- PWA après premier chargement : mode hors ligne pour les fichiers statiques, cache `shell-v3`.
 
 ## Utilisation
 1. Ajouter une question et sa réponse attendue, un thème et une difficulté.
