@@ -1,7 +1,7 @@
 """End-to-end browser QA, designed to run in GitHub Actions with Chromium."""
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, expect
 import tempfile,threading,os,json
 ROOT=Path(__file__).resolve().parents[1]
 class Handler(SimpleHTTPRequestHandler):
@@ -70,8 +70,8 @@ try:
         # Invalid JSON must not overwrite local records
         bad=Path(temp)/'invalid.json';bad.write_text('{"app":"untrusted","version":1,"records":[]}',encoding='utf-8')
         page.locator('#import').set_input_files(str(bad))
-        assert page.locator('#items .item').count()==2
-        assert 'Import refusé' in page.locator('#status').inner_text()
+        expect(page.locator('#status')).to_contain_text('Import refusé')  # attend la fin de l'import asynchrone
+        expect(page.locator('#items .item')).to_have_count(2)
         # Historic schema without optional fields is supported
         legacy=Path(temp)/'legacy.json'
         legacy.write_text(json.dumps({'app':'mileagebook','version':1,'records':[{'id':'legacy123','day':'2026-02-10','purpose':'Ancien trajet','km':80,'rate':0.4,'paid':'non'}]}),encoding='utf-8')

@@ -86,8 +86,15 @@ def main():
             assert len(persisted['expenses'])==1 and len(persisted['bills'])==1
             assert not external,external
             assert not errors,errors
+            # Mode hors ligne : le service worker prend le contrôle, puis l'appli recharge sans réseau.
+            page.reload(); page.wait_for_function('navigator.serviceWorker.controller!==null',timeout=15000)
+            context.set_offline(True)
+            page.reload(wait_until='domcontentloaded')
+            assert page.title().startswith('MoneyUntil')
+            assert 'Courses' in page.locator('#expense-list').inner_text()
+            context.set_offline(False)
             browser.close()
-        print('BROWSER PASS MoneyUntil: setup, precise inputs, expense/bill, scenario non-persistence, JSON download/import, mobile 390px')
+        print('BROWSER PASS MoneyUntil: setup, precise inputs, expense/bill, scenario non-persistence, JSON download/import, mobile 390px, offline reload')
     finally:
         server.shutdown()
         server.server_close()
