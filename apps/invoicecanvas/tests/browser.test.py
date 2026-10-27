@@ -171,7 +171,7 @@ def run():
             assert page.locator('.archive-card strong').first.inner_text()=='F-2026-0002'
 
             # Static shell offline, no external API connections. Saved local docs persist.
-            page.wait_for_function('navigator.serviceWorker && navigator.serviceWorker.controller !== null',timeout=20000)
+            page.wait_for_function('() => (navigator.serviceWorker && navigator.serviceWorker.controller !== null)',timeout=20000)
             context.set_offline(True);page.reload(wait_until='domcontentloaded')
             expect(page.locator('.archive-card')).to_have_count(2)
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth+2')

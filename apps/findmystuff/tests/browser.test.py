@@ -87,7 +87,7 @@ def run():
             page.locator('.loan-status').wait_for(state='detached',timeout=12000)
             page.locator('[data-action="delete"]').click()
             page.locator('#confirm-yes').click()
-            page.wait_for_function("document.querySelector('#stat-total').textContent === '0'",timeout=12000)
+            page.wait_for_function("() => (document.querySelector('#stat-total').textContent === '0')",timeout=12000)
             backup=pathlib.Path(tmp)/'good.json';backup.write_text(json.dumps(data),encoding='utf-8')
             page.locator('#import-file').set_input_files(str(backup))
             page.locator('#confirm-yes').click()
@@ -100,7 +100,7 @@ def run():
             # Service worker must finish installation and control this tab before offline navigation.
             page.evaluate('navigator.serviceWorker.ready')
             page.reload(wait_until='domcontentloaded')
-            page.wait_for_function('!!navigator.serviceWorker.controller',timeout=12000)
+            page.wait_for_function('() => (!!navigator.serviceWorker.controller)',timeout=12000)
             context.set_offline(True)
             page.reload(wait_until='domcontentloaded',timeout=12000)
             page.get_by_text('Clé de sécurité',exact=True).first.wait_for()

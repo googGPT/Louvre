@@ -20,8 +20,8 @@ try:
    typ=fld['type'];v=fld.get('sample')
    if typ=='select':page.locator('[name="'+fld['key']+'"]').select_option(str(v))
    else:page.locator('[name="'+fld['key']+'"]').fill(str(v))
-  page.locator('#save-button').click();page.wait_for_function('document.querySelectorAll("#items .item").length===1')
-  page.reload();page.wait_for_function('document.querySelectorAll("#items .item").length===1')
+  page.locator('#save-button').click();page.wait_for_function('() => (document.querySelectorAll("#items .item").length===1)')
+  page.reload();page.wait_for_function('() => (document.querySelectorAll("#items .item").length===1)')
   assert not errors, errors
   assert page.locator('body').evaluate('(e)=>e.scrollWidth <= innerWidth+2')
   with page.expect_download(timeout=10000) as d:page.locator('#export').click()
@@ -31,8 +31,8 @@ try:
   page.locator('#items .item .item-actions button').first.click();assert page.locator('#save-button').inner_text()=='Enregistrer les modifications'
   page.locator('#cancel-edit').click()
   page.on('dialog',lambda x:x.accept())
-  page.locator('#items .item .item-actions button').nth(1).click();page.wait_for_function('document.querySelectorAll("#items .item").length===0')
-  page.locator('#import').set_input_files(backup);page.wait_for_function('document.querySelectorAll("#items .item").length===1')
+  page.locator('#items .item .item-actions button').nth(1).click();page.wait_for_function('() => (document.querySelectorAll("#items .item").length===0)')
+  page.locator('#import').set_input_files(backup);page.wait_for_function('() => (document.querySelectorAll("#items .item").length===1)')
   # Régression : nom d'objectif réservé et échéance réellement dépassée.
   past=page.evaluate("() => AppLogic.addDays(AppLogic.dayKey(), -3)")
   page.locator('[name="goal"]').fill('__proto__')
@@ -41,7 +41,7 @@ try:
   page.locator('[name="done"]').select_option('non')
   page.locator('[name="priority"]').select_option('haute')
   page.locator('#save-button').click()
-  page.wait_for_function('document.querySelectorAll("#items .item").length===2')
+  page.wait_for_function('() => (document.querySelectorAll("#items .item").length===2)')
   assert page.locator('#summary .stat-value').first.inner_text()=='2'
   assert page.locator('#summary .stat-value').nth(3).inner_text()=='1'
   assert page.locator('#goal-progress .goal-card').count()==2
@@ -60,7 +60,7 @@ try:
   page.locator('[name="milestone"]').fill('Injection CSV')
   page.locator('[name="due"]').fill(past)
   page.locator('#save-button').click()
-  page.wait_for_function('document.querySelectorAll("#items .item").length===3')
+  page.wait_for_function('() => (document.querySelectorAll("#items .item").length===3)')
   with page.expect_download(timeout=10000) as d2:page.locator('#export-csv').click()
   csv=Path(d2.value.path()).read_text(encoding='utf-8-sig')
   assert "\"'=HYPERLINK" in csv
@@ -72,10 +72,10 @@ try:
   assert 'Import refusé' in page.locator('#status').inner_text()
   assert page.locator('#warning').is_visible()
   page.locator('#import').set_input_files(backup)
-  page.wait_for_function('document.querySelectorAll("#items .item").length===1')
+  page.wait_for_function('() => (document.querySelectorAll("#items .item").length===1)')
   assert page.locator('#warning').is_hidden()
   page.reload()
-  page.wait_for_function("navigator.serviceWorker.controller !== null",timeout=15000)
+  page.wait_for_function("() => (navigator.serviceWorker.controller !== null)",timeout=15000)
   page.wait_for_timeout(1200);page.reload();page.wait_for_timeout(450)
   page.context.set_offline(True);page.reload(wait_until='domcontentloaded');page.wait_for_selector('#record-form input')
   assert page.locator('#items .item').count()==1

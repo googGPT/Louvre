@@ -129,7 +129,7 @@ def run():
             page.reload(wait_until='domcontentloaded')
             assert page.locator('#stat-stock').inner_text()=='2'
             # PWA cached shell should reload without network after SW ready.
-            page.wait_for_function("navigator.serviceWorker && navigator.serviceWorker.controller !== null", timeout=15000)
+            page.wait_for_function("() => (navigator.serviceWorker && navigator.serviceWorker.controller !== null)", timeout=15000)
             context.set_offline(True)
             page.reload(wait_until='domcontentloaded')
             assert page.locator('#stat-stock').inner_text()=='2'

@@ -32,7 +32,7 @@ try:
             page.locator('[name="difficulty"]').select_option(difficulty)
             page.locator('#save-button').click()
         save('Question principale','Réponse vérifiée', '__proto__')
-        page.wait_for_function('document.querySelectorAll("#items .item").length===1')
+        page.wait_for_function('() => (document.querySelectorAll("#items .item").length===1)')
         assert page.locator('#summary .stat-value').first.inner_text()=='1'
         assert page.locator('#theme-progress .theme-card').count()==1
 
@@ -46,7 +46,7 @@ try:
         assert card.locator('.answer').is_hidden()
 
         save('=HYPERLINK("https://example.invalid")','Réponse dangereuse','Économie','difficile')
-        page.wait_for_function('document.querySelectorAll("#items .item").length===2')
+        page.wait_for_function('() => (document.querySelectorAll("#items .item").length===2)')
         assert page.locator('#summary .stat-value').first.inner_text()=='2'
         assert page.locator('#theme-progress .theme-card').count()==2
         assert page.locator('#category-filter option').count()==3
@@ -95,9 +95,9 @@ try:
         page.locator('#save-button').click()
         assert 'Question modifiée' in page.locator('#items').inner_text()
         page.locator('#items .item').first.get_by_role('button',name='Supprimer').click()
-        page.wait_for_function('document.querySelectorAll("#items .item").length===1')
+        page.wait_for_function('() => (document.querySelectorAll("#items .item").length===1)')
         page.locator('#import').set_input_files(saved)
-        page.wait_for_function('document.querySelectorAll("#items .item").length===2')
+        page.wait_for_function('() => (document.querySelectorAll("#items .item").length===2)')
 
         # Une lecture de fichier lente ne doit jamais écraser des modifications récentes.
         page.evaluate("""() => {
@@ -109,7 +109,7 @@ try:
           };
         }""")
         page.locator('#import').set_input_files(saved)
-        page.wait_for_function('typeof window._releaseImport==="function"')
+        page.wait_for_function('() => (typeof window._releaseImport==="function")')
         page.locator('#items .item').first.get_by_role('button',name='Modifier').click()
         page.locator('[name="question"]').fill('Modification plus récente à conserver')
         page.locator('#save-button').click()
@@ -127,10 +127,10 @@ try:
         expect(page.locator('#status')).to_contain_text('Import refusé')
         assert page.locator('#warning').is_visible()
         page.locator('#import').set_input_files(saved)
-        page.wait_for_function('document.querySelectorAll("#items .item").length===2')
+        page.wait_for_function('() => (document.querySelectorAll("#items .item").length===2)')
         assert page.locator('#warning').is_hidden()
         page.reload()
-        page.wait_for_function('navigator.serviceWorker.controller !== null',timeout=20000)
+        page.wait_for_function('() => (navigator.serviceWorker.controller !== null)',timeout=20000)
         context.set_offline(True)
         page.reload(wait_until='domcontentloaded')
         page.locator('[name="question"]').wait_for()

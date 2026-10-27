@@ -2,7 +2,7 @@
 // Généré par scripts/build_sw.py : ne pas modifier à la main (relancer le script).
 // Le nom du cache contient une empreinte du contenu : toute modification de l'appli
 // produit un nouveau nom, donc une mise à jour automatique chez les visiteurs.
-const CACHE = "louvre-qrforge-17338f4ccf8e";
+const CACHE = "louvre-qrforge-f4b4eeca775d";
 const ASSETS = ["./", "./app.js", "./core.js", "./icon.svg", "./index.htm", "./index.html", "./manifest.webmanifest", "./style.css", "./vendor/LICENSE-MIT.txt", "./vendor/qrcode.js"];
 const OLD_PREFIXES = ["louvre-qrforge-"];
 

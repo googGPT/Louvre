@@ -26,15 +26,15 @@ def run():
             page.locator('[name=weight]').fill('3')
             page.locator('[name=score]').fill('8')
             page.locator('#save-button').click()
-            page.wait_for_function("document.querySelectorAll('#items .item').length===1")
+            page.wait_for_function("() => (document.querySelectorAll('#items .item').length===1)")
             page.reload()
-            page.wait_for_function("document.querySelectorAll('#items .item').length===1")
+            page.wait_for_function("() => (document.querySelectorAll('#items .item').length===1)")
             assert page.locator('#summary .stat').count()==4
             assert not page.locator('a').filter(has_text='Louvre ↗').count()
             page.locator('#sample').click()
             page.on('dialog',lambda dialog:dialog.accept())
             page.locator('#sample').click()
-            page.wait_for_function("document.querySelectorAll('#items .item').length>=7")
+            page.wait_for_function("() => (document.querySelectorAll('#items .item').length>=7)")
             assert page.locator('#issues').inner_text().find('critères manquants')!=-1
             page.locator('#search').fill('voiture a')
             expect(page.locator('#items .item')).to_have_count(1)  # attend la fin du filtrage
@@ -50,17 +50,17 @@ def run():
             page.locator('#search').fill('voiture a')
             expect(page.locator('#items .item')).to_have_count(1)  # filtre appliqué avant de supprimer
             page.locator('#items .item .item-actions button').nth(1).click()
-            page.wait_for_function("document.querySelectorAll('#items .item').length===0")
+            page.wait_for_function("() => (document.querySelectorAll('#items .item').length===0)")
             page.locator('#search').fill('')
-            page.wait_for_function("document.querySelectorAll('#items .item').length>=6")  # liste complète réaffichée
+            page.wait_for_function("() => (document.querySelectorAll('#items .item').length>=6)")  # liste complète réaffichée
             page.locator('#import').set_input_files({'name':'backup.json','mimeType':'application/json','buffer':backup.encode('utf-8')})
-            page.wait_for_function("document.querySelectorAll('#items .item').length>=7")
+            page.wait_for_function("() => (document.querySelectorAll('#items .item').length>=7)")
             page.locator('#import').set_input_files({'name':'bad.json','mimeType':'application/json','buffer':b'{"app":"wrong","records":[]}'})
             assert page.locator('#items .item').count()>=7
             assert page.evaluate('document.documentElement.scrollWidth <= window.innerWidth + 2')
-            page.wait_for_function('navigator.serviceWorker.controller !== null',timeout=15000)
+            page.wait_for_function('() => (navigator.serviceWorker.controller !== null)',timeout=15000)
             ctx.set_offline(True);page.reload(wait_until='domcontentloaded')
-            page.wait_for_function("document.querySelectorAll('#items .item').length>=7")
+            page.wait_for_function("() => (document.querySelectorAll('#items .item').length>=7)")
             assert not errors,errors
             browser.close()
             print('BROWSER PASS: create, reload, example, inconsistent criteria warning, search, edit, delete, JSON/CSV, restore, offline, 390px')

@@ -28,14 +28,14 @@ try:
         assert page.locator('#result-number').inner_text()=='14'
         page.locator('#name').fill('Froid Bordeaux')
         page.locator('#save-button').click()
-        page.wait_for_function('document.querySelectorAll("#items .item").length===1')
+        page.wait_for_function('() => (document.querySelectorAll("#items .item").length===1)')
         assert '14 °F' in page.locator('#items .item .converted').inner_text()
         # Nouvelle conversion hors températures
         page.locator('[data-preset="l-gal"]').click()
         assert 'gal US' in page.locator('#result-unit').inner_text()
         page.locator('#name').fill('Bouteille test')
         page.locator('#save-button').click()
-        page.wait_for_function('document.querySelectorAll("#items .item").length===2')
+        page.wait_for_function('() => (document.querySelectorAll("#items .item").length===2)')
         page.reload()
         assert page.locator('#items .item').count()==2
         # Historique filtrable et modifier
@@ -51,7 +51,7 @@ try:
         page.locator('#value').fill('-20')
         assert page.locator('#result-number').inner_text()=='-4'
         page.locator('#save-button').click()
-        page.wait_for_function("document.querySelector('#status').textContent.includes('enregistrée')")
+        page.wait_for_function("() => (document.querySelector('#status').textContent.includes('enregistrée'))")
         assert page.locator('#items .item').count()==2
         # Contrôle de valeur impossible sans écriture
         page.locator('[data-preset="c-f"]').click()
@@ -75,22 +75,22 @@ try:
         assert '"Froid Bordeaux";-20;"°C";-4;"°F"' in csv
         # Suppression confirmée et restauration
         page.locator('#items .item').filter(has_text='Bouteille test').get_by_role('button',name='Supprimer').click()
-        page.wait_for_function('document.querySelectorAll("#items .item").length===1')
+        page.wait_for_function('() => (document.querySelectorAll("#items .item").length===1)')
         page.locator('#import').set_input_files(download.path())
-        page.wait_for_function('document.querySelectorAll("#items .item").length===2')
+        page.wait_for_function('() => (document.querySelectorAll("#items .item").length===2)')
         # Sauvegarde invalide refusée, sans destruction des données
         with tempfile.TemporaryDirectory() as tmp:
             invalid=Path(tmp)/'bad.json';invalid.write_text('{"app":"wrong","version":1,"records":[]}',encoding='utf-8')
             page.locator('#import').set_input_files(str(invalid))
-            page.wait_for_function("document.querySelector('#status').textContent.includes('Import refusé')")
+            page.wait_for_function("() => (document.querySelector('#status').textContent.includes('Import refusé'))")
             assert page.locator('#items .item').count()==2
             # Sauvegarde historique pure v1 restaurable
             legacy=Path(tmp)/'legacy.json';legacy.write_text(json.dumps({'app':'sizematch','version':1,'records':[{'id':'legacy0001','name':'Ancienne conversion','value':1,'from':'km','to':'mile'}]},ensure_ascii=False),encoding='utf-8')
             page.locator('#import').set_input_files(str(legacy))
-            page.wait_for_function('document.querySelectorAll("#items .item").length===1')
+            page.wait_for_function('() => (document.querySelectorAll("#items .item").length===1)')
             assert 'Ancienne conversion' in page.locator('#items .item').inner_text()
         # Ré-enregistrement et persistance hors ligne après activation du SW
-        page.wait_for_function("navigator.serviceWorker && navigator.serviceWorker.controller!==null",timeout=25000)
+        page.wait_for_function("() => (navigator.serviceWorker && navigator.serviceWorker.controller!==null)",timeout=25000)
         page.reload(wait_until='domcontentloaded')
         context.set_offline(True)
         page.reload(wait_until='domcontentloaded')

@@ -2,7 +2,7 @@
 // Généré par scripts/build_sw.py : ne pas modifier à la main (relancer le script).
 // Le nom du cache contient une empreinte du contenu : toute modification de l'appli
 // produit un nouveau nom, donc une mise à jour automatique chez les visiteurs.
-const CACHE = "louvre-decisiondeck-0ef9f6a92e8b";
+const CACHE = "louvre-decisiondeck-783d6ad55535";
 const ASSETS = ["./", "./app.js", "./core.js", "./icon.svg", "./index.htm", "./index.html", "./manifest.webmanifest", "./style.css"];
 const OLD_PREFIXES = ["louvre-decisiondeck-", "louvre-decisiondeck-shell-"];
 

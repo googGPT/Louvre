@@ -124,7 +124,7 @@ try:
         # Mobile et mode hors ligne après chargement de la coquille.
         assert page.locator('body').evaluate('(e)=>e.scrollWidth<=window.innerWidth+2')
         page.reload(wait_until='domcontentloaded')
-        page.wait_for_function('navigator.serviceWorker.controller !== null',timeout=20000)
+        page.wait_for_function('() => (navigator.serviceWorker.controller !== null)',timeout=20000)
         context.set_offline(True)
         page.reload(wait_until='domcontentloaded')
         page.locator('#foreground').wait_for()

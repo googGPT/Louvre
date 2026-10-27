@@ -87,7 +87,7 @@ def main():
             assert not external,external
             assert not errors,errors
             # Mode hors ligne : le service worker prend le contrôle, puis l'appli recharge sans réseau.
-            page.reload(); page.wait_for_function('navigator.serviceWorker.controller!==null',timeout=15000)
+            page.reload(); page.wait_for_function('() => (navigator.serviceWorker.controller!==null)',timeout=15000)
             context.set_offline(True)
             page.reload(wait_until='domcontentloaded')
             assert page.title().startswith('MoneyUntil')

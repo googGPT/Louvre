@@ -54,7 +54,7 @@ try:
         assert 'RRULE:FREQ=DAILY;INTERVAL=1' in ical.value.path().read_text(encoding='utf-8')
         page.on('dialog',lambda dialog:dialog.accept())
         page.locator('button[data-action="delete"]').click()
-        page.wait_for_function('document.querySelector("#count").textContent==="0"')
+        page.wait_for_function('() => (document.querySelector("#count").textContent==="0")')
         # Reject a malformed imported archive; existing zero records must not be overwritten.
         invalid=ROOT/'tests'/'_invalid_temp.json'
         try:
@@ -63,7 +63,7 @@ try:
             page.get_by_text('Import refusé',exact=False).wait_for(timeout=10000)
         finally:invalid.unlink(missing_ok=True)
         page.locator('#import').set_input_files(j.value.path())
-        page.wait_for_function('document.querySelector("#count").textContent==="1"')
+        page.wait_for_function('() => (document.querySelector("#count").textContent==="1")')
         # Explicitly test old backups without room/history migration data.
         legacy=ROOT/'tests'/'_legacy_temp.json'
         try:
@@ -74,9 +74,9 @@ try:
             page.locator('.task h3').filter(has_text='Ancienne tâche').wait_for(timeout=10000)
             assert page.locator('#count').inner_text()=='1'
         finally:legacy.unlink(missing_ok=True)
-        page.wait_for_function('navigator.serviceWorker.ready')
+        page.wait_for_function('() => (navigator.serviceWorker.ready)')
         page.reload(wait_until='domcontentloaded')
-        page.wait_for_function('!!navigator.serviceWorker.controller')
+        page.wait_for_function('() => (!!navigator.serviceWorker.controller)')
         context.set_offline(True)
         page.reload(wait_until='domcontentloaded',timeout=14000)
         page.get_by_text('Ancienne tâche',exact=True).wait_for(timeout=10000)

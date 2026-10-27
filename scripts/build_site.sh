@@ -9,6 +9,7 @@ rm -rf _site                              # repart d'un dossier vide
 mkdir -p _site/apps _site/assets          # structure du site
 
 python scripts/build_home.py --check      # la page d'accueil doit être à jour et complète
+python scripts/apply_csp.py --check      # chaque page d.appli porte sa politique de sécurité à jour
 python scripts/build_sw.py --check        # chaque service worker doit correspondre au contenu de son appli
 cp index.html _site/index.html            # page d'accueil
 cp assets/home.css assets/home.js _site/assets/   # styles et script de l'accueil

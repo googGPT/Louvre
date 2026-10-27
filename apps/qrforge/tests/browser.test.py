@@ -119,7 +119,7 @@ def run():
    page.locator('#reset').click()
    # Static app cache only, no saved QR/SSID/passwords.
    assert page.evaluate('localStorage.length')==0
-   page.wait_for_function('navigator.serviceWorker && navigator.serviceWorker.controller!==null',timeout=18000)
+   page.wait_for_function('() => (navigator.serviceWorker && navigator.serviceWorker.controller!==null)',timeout=18000)
    context.set_offline(True)
    page.reload(wait_until='domcontentloaded')
    page.locator('#preview').wait_for(state='visible')

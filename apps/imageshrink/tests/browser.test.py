@@ -119,7 +119,7 @@ def run():
                 {'name':'img2.png','mimeType':'image/png','buffer':png}])
             assert page.locator('.file-card').count()==2
             page.locator('#process').click()
-            page.wait_for_function("document.querySelectorAll('.result-card').length===2",timeout=30000)
+            page.wait_for_function("() => (document.querySelectorAll('.result-card').length===2)",timeout=30000)
             assert '2 image(s) traitée(s)' in page.locator('#feedback').inner_text()
             assert page.locator('.download').count()==2
 
@@ -133,7 +133,7 @@ def run():
             page.locator('#file-input').set_input_files({
                 'name':'faux.png','mimeType':'image/png','buffer':b'<html>fake</html>'})
             page.locator('#process').click()
-            page.wait_for_function("document.querySelector('#process').disabled===false",timeout=20000)
+            page.wait_for_function("() => (document.querySelector('#process').disabled===false)",timeout=20000)
             assert page.locator('.result-card').count()==0
             assert '1 échec(s)' in page.locator('#feedback').inner_text()
 
@@ -145,7 +145,7 @@ def run():
 
             # Pas de données d'images persistées dans le localStorage.
             assert page.evaluate("Object.keys(localStorage).filter(k=>/imageshrink/i.test(k)).length")==0
-            page.wait_for_function("navigator.serviceWorker.controller !== null",timeout=20000)
+            page.wait_for_function("() => (navigator.serviceWorker.controller !== null)",timeout=20000)
             context.set_offline(True)
             page.reload(wait_until='domcontentloaded')
             assert page.locator('main').count()==1
