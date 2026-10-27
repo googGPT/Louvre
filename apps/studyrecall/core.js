@@ -10,7 +10,8 @@
   const MAX_TEXT = 500; // longueur maximale d'une question ou d'une réponse
   const MAX_DECK = 60; // longueur maximale d'un nom de paquet
 
-  function fail(message) { throw new Error(message); }
+  // Les erreurs portent une clé de traduction (et des paramètres JSON après « | ») : l'interface les traduit.
+  function fail(key, params) { throw new Error(params ? `${key}|${JSON.stringify(params)}` : key); }
 
   // --- Dates : jours civils « AAAA-MM-JJ » en heure locale (midi, pour éviter les changements d'heure).
   function isDay(s) {
@@ -24,7 +25,7 @@
     return `${date.getFullYear()}-${z(date.getMonth() + 1)}-${z(date.getDate())}`;
   }
   function addDays(day, n) {
-    if (!isDay(day)) fail('Date invalide');
+    if (!isDay(day)) fail('err.date');
     const [y, m, d] = day.split('-').map(Number);
     return dayKey(new Date(y, m - 1, d + n, 12));
   }
@@ -35,24 +36,24 @@
 
   // --- Cartes
   function cleanText(value, label, max) {
-    if (typeof value !== 'string') fail(`${label} invalide`);
+    if (typeof value !== 'string') fail('err.backup');
     const text = value.trim();
-    if (!text) fail(`${label} obligatoire`);
-    if (text.length > max) fail(`${label} trop longue (${max} caractères au plus)`);
+    if (!text) fail(`err.${label}Required`);
+    if (text.length > max) fail(`err.${label}Long`, { max });
     return text;
   }
   function cleanDeck(value) {
     const deck = typeof value === 'string' ? value.trim() : '';
-    if (deck.length > MAX_DECK) fail(`Paquet trop long (${MAX_DECK} caractères au plus)`);
+    if (deck.length > MAX_DECK) fail('err.deckLong', { max: MAX_DECK });
     return deck || 'Général';
   }
   function createCard(input, today, id) {
-    if (!isDay(today)) fail('Date du jour invalide');
-    if (typeof id !== 'string' || !/^[a-z0-9-]{6,64}$/i.test(id)) fail('Identifiant invalide');
+    if (!isDay(today)) fail('err.date');
+    if (typeof id !== 'string' || !/^[a-z0-9-]{6,64}$/i.test(id)) fail('err.id');
     return {
       id,
-      front: cleanText(input.front, 'Question', MAX_TEXT),
-      back: cleanText(input.back, 'Réponse', MAX_TEXT),
+      front: cleanText(input.front, 'front', MAX_TEXT),
+      back: cleanText(input.back, 'back', MAX_TEXT),
       deck: cleanDeck(input.deck),
       box: 1, // une nouvelle carte commence dans la boîte 1…
       due: today, // …et se révise dès aujourd'hui
@@ -63,14 +64,14 @@
     };
   }
   function editCard(card, input) {
-    return { ...card, front: cleanText(input.front, 'Question', MAX_TEXT), back: cleanText(input.back, 'Réponse', MAX_TEXT), deck: cleanDeck(input.deck) };
+    return { ...card, front: cleanText(input.front, 'front', MAX_TEXT), back: cleanText(input.back, 'back', MAX_TEXT), deck: cleanDeck(input.deck) };
   }
 
   // Révision : « je savais » fait monter d'une boîte (jusqu'à 5), « à revoir » renvoie en boîte 1.
   function review(card, known, today) {
-    if (!isDay(today)) fail('Date du jour invalide');
-    if (typeof known !== 'boolean') fail('Réponse de révision invalide');
-    if (card.due > today) fail('Cette carte n\'est pas encore à réviser');
+    if (!isDay(today)) fail('err.date');
+    if (typeof known !== 'boolean') fail('err.answer');
+    if (card.due > today) fail('err.notDue');
     const box = known ? Math.min(BOXES, card.box + 1) : 1;
     return {
       ...card,
@@ -123,22 +124,22 @@
   // --- Sauvegarde : validation stricte avant toute écriture.
   const KEYS = ['back', 'box', 'created', 'deck', 'due', 'front', 'id', 'lapses', 'last', 'reviews']; // ordre alphabétique
   function validateCard(c) {
-    if (!c || typeof c !== 'object' || Array.isArray(c)) fail('Carte invalide');
-    if (Object.keys(c).sort().join(',') !== KEYS.join(',')) fail('Champs de carte inattendus');
-    if (typeof c.id !== 'string' || !/^[a-z0-9-]{6,64}$/i.test(c.id)) fail('Identifiant de carte invalide');
-    cleanText(c.front, 'Question', MAX_TEXT); cleanText(c.back, 'Réponse', MAX_TEXT); cleanDeck(c.deck);
-    if (!Number.isInteger(c.box) || c.box < 1 || c.box > BOXES) fail('Boîte invalide');
-    if (!isDay(c.due) || !isDay(c.created)) fail('Date de carte invalide');
-    if (c.last !== null && !isDay(c.last)) fail('Date de révision invalide');
-    if (!Number.isSafeInteger(c.reviews) || c.reviews < 0 || !Number.isSafeInteger(c.lapses) || c.lapses < 0 || c.lapses > c.reviews) fail('Compteurs de révision invalides');
+    if (!c || typeof c !== 'object' || Array.isArray(c)) fail('err.backup');
+    if (Object.keys(c).sort().join(',') !== KEYS.join(',')) fail('err.backup');
+    if (typeof c.id !== 'string' || !/^[a-z0-9-]{6,64}$/i.test(c.id)) fail('err.backup');
+    cleanText(c.front, 'front', MAX_TEXT); cleanText(c.back, 'back', MAX_TEXT); cleanDeck(c.deck);
+    if (!Number.isInteger(c.box) || c.box < 1 || c.box > BOXES) fail('err.backup');
+    if (!isDay(c.due) || !isDay(c.created)) fail('err.backup');
+    if (c.last !== null && !isDay(c.last)) fail('err.backup');
+    if (!Number.isSafeInteger(c.reviews) || c.reviews < 0 || !Number.isSafeInteger(c.lapses) || c.lapses < 0 || c.lapses > c.reviews) fail('err.backup');
     return { ...c, front: c.front.trim(), back: c.back.trim(), deck: cleanDeck(c.deck) };
   }
   function validateBackup(data) {
-    if (!data || typeof data !== 'object' || Array.isArray(data)) fail('Sauvegarde illisible');
-    if (data.app !== 'studyrecall' || data.version !== VERSION || !Array.isArray(data.cards)) fail('Ce fichier n\'est pas une sauvegarde StudyRecall');
-    if (data.cards.length > MAX_CARDS) fail(`Trop de cartes (${MAX_CARDS} au plus)`);
+    if (!data || typeof data !== 'object' || Array.isArray(data)) fail('err.backup');
+    if (data.app !== 'studyrecall' || data.version !== VERSION || !Array.isArray(data.cards)) fail('err.notBackup');
+    if (data.cards.length > MAX_CARDS) fail('err.tooMany', { max: MAX_CARDS });
     const cards = data.cards.map(validateCard);
-    if (new Set(cards.map((c) => c.id)).size !== cards.length) fail('Identifiants de cartes en double');
+    if (new Set(cards.map((c) => c.id)).size !== cards.length) fail('err.backup');
     return cards;
   }
   function backup(cards) {

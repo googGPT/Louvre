@@ -37,7 +37,7 @@ textarea{min-height:76px;resize:vertical}
 .empty{color:var(--muted);text-align:center;padding:26px 10px}
 /* Statistiques */
 .kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px}
-.kpi{background:var(--bg);border-radius:12px;padding:12px}.kpi span{display:block;font-size:12px;color:var(--muted);font-weight:600}.kpi strong{font-size:24px;letter-spacing:-.02em}
+.kpi{background:var(--bg);border-radius:12px;padding:12px}.kpi span{display:block;font-size:12px;color:var(--muted);font-weight:600}.kpi{min-width:0}.kpi strong{display:block;font-size:clamp(17px,5.6vw,24px);letter-spacing:-.02em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 .boxes{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;align-items:end;height:110px;margin:30px 0 4px}
 .boxes div{background:color-mix(in srgb,var(--accent) 60%,transparent);border-radius:8px 8px 4px 4px;position:relative;min-height:6px}
 .boxes div b{position:absolute;top:-20px;left:0;right:0;text-align:center;font-size:12px}
@@ -49,7 +49,10 @@ textarea{min-height:76px;resize:vertical}
 .list li{border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
 .list .txt{min-width:0}.list .txt b{display:block;overflow-wrap:anywhere}.list .txt span{display:block;font-size:13px;color:var(--muted);overflow-wrap:anywhere}
 .list .txt span.tag{font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:999px;display:inline-block;margin-top:4px}
-.list .acts{display:flex;gap:6px}.list .acts button{min-height:36px;padding:6px 10px;font-size:13px}
+.list .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+@media (max-width:520px){.list li{grid-template-columns:minmax(0,1fr)}.list .acts{justify-content:flex-start}}
+.cal-head h2{min-width:0;overflow-wrap:anywhere}
+.list .acts button{min-height:36px;padding:6px 10px;font-size:13px}
 footer{color:var(--muted);font-size:13px;padding:24px 0 40px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 /* BillCalendar : calendrier mensuel et listes */
@@ -72,3 +75,4 @@ footer{color:var(--muted);font-size:13px;padding:24px 0 40px}
 .cats{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:14px}
 .cats li{display:grid;grid-template-columns:110px minmax(0,1fr) 92px;gap:8px;align-items:center}
 .cats .bar{height:8px;border-radius:999px;background:var(--line);overflow:hidden}.cats .bar i{display:block;height:100%;background:var(--accent)}
+[dir="rtl"] #prev,[dir="rtl"] #next{transform:scaleX(-1)} /* flèches dans le sens de lecture */

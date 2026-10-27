@@ -11,43 +11,44 @@
     ml: { dim: 'volume', factor: 1, label: 'ml' },
     cl: { dim: 'volume', factor: 10, label: 'cl' },
     l: { dim: 'volume', factor: 1000, label: 'L' },
-    piece: { dim: 'pièce', factor: 1, label: 'pièce(s)' },
+    piece: { dim: 'pièce', factor: 1, label: 'pcs' },
   });
   // Unité d'affichage du prix unitaire par dimension, et taille en unités de base.
-  const PER = Object.freeze({ masse: { label: '€/kg', size: 1000 }, volume: { label: '€/L', size: 1000 }, 'pièce': { label: '€/pièce', size: 1 } });
+  const PER = Object.freeze({ masse: { unit: 'kg', size: 1000 }, volume: { unit: 'L', size: 1000 }, 'pièce': { unit: 'pcs', size: 1 } }); // prix par kg, par litre, par pièce
   const MAX_ITEMS = 40, MAX_LISTS = 200, MAX_NAME = 80;
 
-  function fail(m) { throw new Error(m); }
+  // Les erreurs portent une clé de traduction (et des paramètres JSON après « | ») : l'interface les traduit.
+  function fail(key, params) { throw new Error(params ? `${key}|${JSON.stringify(params)}` : key); }
 
   // « 2,49 » ou « 2.49 » -> 249 centimes (refuse les montants ambigus).
   function parseCents(value) {
     const s = String(value).trim().replace(/\s/g, '').replace(',', '.');
-    if (!/^\d{1,6}(\.\d{1,2})?$/.test(s)) fail('Prix invalide (ex. 2,49)');
+    if (!/^\d{1,6}(\.\d{1,2})?$/.test(s)) fail('err.price');
     const [a, b = ''] = s.split('.');
     const cents = Number(a) * 100 + Number((b + '00').slice(0, 2));
-    if (cents <= 0) fail('Le prix doit être positif');
+    if (cents <= 0) fail('err.pricePositive');
     return cents;
   }
   // Quantité décimale positive (ex. 1,5), au plus 3 décimales.
-  function parseQty(value, label = 'Quantité') {
+  function parseQty(value, label = 'err.qty') {
     const s = String(value).trim().replace(',', '.');
-    if (!/^\d{1,6}(\.\d{1,3})?$/.test(s) || Number(s) <= 0) fail(`${label} invalide`);
+    if (!/^\d{1,6}(\.\d{1,3})?$/.test(s) || Number(s) <= 0) fail(label);
     return Number(s);
   }
 
   function cleanName(v) {
-    if (typeof v !== 'string' || !v.trim()) fail('Nom du produit obligatoire');
-    if (v.trim().length > MAX_NAME) fail(`Nom trop long (${MAX_NAME} caractères au plus)`);
+    if (typeof v !== 'string' || !v.trim()) fail('err.nameRequired');
+    if (v.trim().length > MAX_NAME) fail('err.nameLong', { max: MAX_NAME });
     return v.trim();
   }
 
   // Produit saisi : prix total payé, nombre d'unités du lot, contenance d'une unité.
   function makeItem(input, id) {
-    if (typeof id !== 'string' || !/^[a-z0-9-]{6,64}$/i.test(id)) fail('Identifiant invalide');
+    if (typeof id !== 'string' || !/^[a-z0-9-]{6,64}$/i.test(id)) fail('err.id');
     const unit = input.unit;
-    if (!Object.prototype.hasOwnProperty.call(UNITS, unit)) fail('Unité inconnue');
-    const count = input.count === undefined || input.count === '' ? 1 : parseQty(input.count, 'Nombre d\'unités');
-    if (!Number.isInteger(count) || count > 999) fail('Nombre d\'unités : entier de 1 à 999');
+    if (!Object.prototype.hasOwnProperty.call(UNITS, unit)) fail('err.unit');
+    const count = input.count === undefined || input.count === '' ? 1 : parseQty(input.count, 'err.count');
+    if (!Number.isInteger(count) || count > 999) fail('err.count');
     return { id, name: cleanName(input.name), priceCents: parseCents(input.price), qty: parseQty(input.qty), unit, count };
   }
 
@@ -73,7 +74,7 @@
       const best = unitPriceCents(sorted[0]), worst = unitPriceCents(sorted[sorted.length - 1]);
       result.push({
         dim,
-        per: PER[dim].label,
+        per: PER[dim].unit,
         rows: sorted.map((item, rank) => {
           const up = unitPriceCents(item);
           return {
@@ -90,36 +91,35 @@
     return { groups: result, mixed: result.length > 1 };
   }
 
-  function eur(cents) { return (cents / 100).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' }); }
 
   // --- Listes enregistrées et sauvegarde
   function makeList(name, id, items = []) {
-    if (typeof id !== 'string' || !/^[a-z0-9-]{6,64}$/i.test(id)) fail('Identifiant invalide');
+    if (typeof id !== 'string' || !/^[a-z0-9-]{6,64}$/i.test(id)) fail('err.id');
     return { id, name: cleanName(name), items };
   }
   function validateItem(it) {
-    if (!it || typeof it !== 'object' || Array.isArray(it)) fail('Produit invalide');
-    if (Object.keys(it).sort().join(',') !== 'count,id,name,priceCents,qty,unit') fail('Champs de produit inattendus');
-    if (!Number.isSafeInteger(it.priceCents) || it.priceCents <= 0 || it.priceCents > 99999999) fail('Prix enregistré invalide');
-    if (typeof it.qty !== 'number' || !(it.qty > 0) || it.qty > 999999) fail('Quantité enregistrée invalide');
+    if (!it || typeof it !== 'object' || Array.isArray(it)) fail('err.backup');
+    if (Object.keys(it).sort().join(',') !== 'count,id,name,priceCents,qty,unit') fail('err.backup');
+    if (!Number.isSafeInteger(it.priceCents) || it.priceCents <= 0 || it.priceCents > 99999999) fail('err.backup');
+    if (typeof it.qty !== 'number' || !(it.qty > 0) || it.qty > 999999) fail('err.backup');
     return makeItem({ name: it.name, price: (it.priceCents / 100).toFixed(2), qty: String(it.qty), unit: it.unit, count: String(it.count) }, it.id);
   }
   function validateBackup(data) {
-    if (!data || typeof data !== 'object' || Array.isArray(data)) fail('Sauvegarde illisible');
-    if (data.app !== 'pricelens' || data.version !== VERSION || !Array.isArray(data.lists)) fail('Ce fichier n\'est pas une sauvegarde PriceLens');
-    if (data.lists.length > MAX_LISTS) fail('Trop de comparaisons');
+    if (!data || typeof data !== 'object' || Array.isArray(data)) fail('err.backup');
+    if (data.app !== 'pricelens' || data.version !== VERSION || !Array.isArray(data.lists)) fail('err.notBackup');
+    if (data.lists.length > MAX_LISTS) fail('err.backup');
     const lists = data.lists.map((l) => {
-      if (!l || typeof l !== 'object' || Object.keys(l).sort().join(',') !== 'id,items,name' || !Array.isArray(l.items)) fail('Comparaison invalide');
-      if (l.items.length > MAX_ITEMS) fail(`Trop de produits dans une comparaison (${MAX_ITEMS} au plus)`);
+      if (!l || typeof l !== 'object' || Object.keys(l).sort().join(',') !== 'id,items,name' || !Array.isArray(l.items)) fail('err.backup');
+      if (l.items.length > MAX_ITEMS) fail('err.tooMany', { max: MAX_ITEMS });
       const items = l.items.map(validateItem);
-      if (new Set(items.map((i) => i.id)).size !== items.length) fail('Produits en double');
+      if (new Set(items.map((i) => i.id)).size !== items.length) fail('err.backup');
       return makeList(l.name, l.id, items);
     });
-    if (new Set(lists.map((l) => l.id)).size !== lists.length) fail('Comparaisons en double');
+    if (new Set(lists.map((l) => l.id)).size !== lists.length) fail('err.backup');
     return lists;
   }
   function backup(lists) { return JSON.stringify({ app: 'pricelens', version: VERSION, lists: validateBackup({ app: 'pricelens', version: VERSION, lists }) }, null, 2); }
 
-  root.PriceCore = Object.freeze({ VERSION, UNITS, PER, MAX_ITEMS, parseCents, parseQty, makeItem, baseQty, unitPriceCents, compare, eur, makeList, validateBackup, backup });
+  root.PriceCore = Object.freeze({ VERSION, UNITS, PER, MAX_ITEMS, parseCents, parseQty, makeItem, baseQty, unitPriceCents, compare, makeList, validateBackup, backup });
   if (typeof module !== 'undefined' && module.exports) module.exports = root.PriceCore;
 })(typeof window === 'undefined' ? globalThis : window);

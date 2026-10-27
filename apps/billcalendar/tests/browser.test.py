@@ -25,7 +25,7 @@ def main():
         with sync_playwright() as p:
             exe = os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium')
             browser = p.chromium.launch(headless=True, executable_path=exe if os.path.exists(exe) else None, args=['--no-sandbox'])
-            context = browser.new_context(viewport={'width': 390, 'height': 844}, accept_downloads=True, timezone_id='Europe/Paris')
+            context = browser.new_context(viewport={'width': 390, 'height': 844}, accept_downloads=True, timezone_id='Europe/Paris', locale='fr-FR')
             page = context.new_page()
             errors, external = [], []
             page.on('pageerror', lambda e: errors.append(str(e)))
@@ -92,7 +92,7 @@ def main():
             page.locator('#sample').click()
             assert page.evaluate(f"() => localStorage.getItem('{KEY}')") == '[['
             page.locator('#import').set_input_files({'name': 'b.json', 'mimeType': 'application/json', 'buffer': backup.encode('utf-8')})
-            expect(page.locator('#backup-status')).to_contain_text('6 facture(s)')
+            expect(page.locator('#backup-status')).to_contain_text('6 factures')
 
             # Hors ligne.
             page.reload()
@@ -104,8 +104,42 @@ def main():
 
             assert not external, external
             assert not errors, errors
+
+            # --- Langues : 7 langues complètes, arabe de droite à gauche, devise au choix, export agenda traduit.
+            intl = browser.new_context(viewport={'width': 390, 'height': 844}, locale='pt-BR', accept_downloads=True)
+            ip = intl.new_page()
+            ip.on('pageerror', lambda e: errors.append(str(e)))
+            ip.on('dialog', lambda d: d.accept())
+            ip.goto(origin)
+            expect(ip.locator('h1')).to_have_text('Quanto custam realmente as suas subscrições.')
+            assert ip.evaluate('() => LouvreI18n.currency') == 'BRL'  # Brésil -> real proposé
+            ip.locator('#sample').click()
+            expect(ip.locator('#bills > li')).to_have_count(5)
+            for lang in ['fr', 'en', 'es', 'ar', 'pt', 'de', 'it']:
+                ip.locator('#louvre-lang').select_option(lang)
+                assert ip.evaluate('() => document.documentElement.dir') == ('rtl' if lang == 'ar' else 'ltr')
+                wide = ip.evaluate('''() => document.documentElement.scrollWidth <= innerWidth + 2 ? [] :
+                  [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 2)
+                    .slice(0, 5).map((e) => `${e.tagName}.${e.className} « ${(e.textContent || '').trim().slice(0, 40)} »`)''')
+                assert not wide, f'débordement en {lang} : {wide}'
+                expect(ip.locator('#cal .dow')).to_have_count(7)
+            assert ip.evaluate('() => LouvreI18n.missing()') == [], ip.evaluate('() => LouvreI18n.missing()')
+            ip.locator('#louvre-lang').select_option('en')
+            ip.locator('#louvre-currency').select_option('GBP')
+            expect(ip.locator('#k-month')).to_contain_text('£')
+            expect(ip.locator('#cur-symbol')).to_have_text('£')
+            expect(ip.locator('[name=category] option').first).to_have_text('Housing')
+            ip.locator('#louvre-lang').select_option('de')
+            with ip.expect_download() as d:
+                ip.locator('#export-ics').click()
+            ics = pathlib.Path(d.value.path()).read_text(encoding='utf-8')
+            assert 'Jeden Monat' in ics and '£' in ics, ics[:400]
+            ip.locator('[name=name]').fill('X'); ip.locator('[name=amount]').fill('abc')
+            ip.locator('#save').click()
+            expect(ip.locator('#form-status')).to_have_text('Ungültiger Betrag (z. B. 12,99)')
+            assert not errors, errors
             browser.close()
-        print('BROWSER PASS BillCalendar: validation, yearly->monthly, calendar, navigation, pause, edit, ICS, backup/restore, corrupted storage, offline, mobile')
+        print('BROWSER PASS BillCalendar: validation, yearly->monthly, calendar, navigation, pause, edit, ICS, backup/restore, corrupted storage, offline, mobile, 7 languages, RTL, currency, translated ICS')
     finally:
         server.shutdown()
         server.server_close()

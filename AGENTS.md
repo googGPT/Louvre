@@ -11,6 +11,7 @@ Ces règles s'appliquent à l'ensemble du dépôt, aux applications et à toutes
 - Montants en centimes entiers ; dates en jours civils ; sauvegardes validées avant écriture ; mode protégé conservé si une restauration échoue.
 - Avant toute PR : `bash scripts/test_app.sh <slug>` pour chaque appli touchée, puis `bash scripts/build_site.sh`.
 - Une appli sans vraie logique métier (simple formulaire générique) ne doit pas être publiée.
+- Applis multilingues : aucun texte d'interface en dur ; tout passe par `messages.js` (7 langues complètes, vérifiées par `scripts/check_messages.cjs`), les montants par `LouvreI18n.money` (devise choisie) et les dates par `LouvreI18n.date`. Ne jamais modifier les copies `louvre-i18n.*` dans une appli : modifier `shared/` puis lancer `scripts/sync_shared.py`.
 
 ## Sources et honnêteté documentaire
 

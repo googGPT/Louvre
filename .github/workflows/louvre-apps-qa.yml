@@ -9,6 +9,7 @@ on:
       - 'index.html'
       - 'assets/**'
       - 'scripts/**'
+      - 'shared/**'
       - '.github/workflows/louvre-apps-qa.yml'
   workflow_dispatch:  # lancement manuel : teste toutes les applis
 permissions:
@@ -35,7 +36,7 @@ jobs:
             chosen="$all"                                   # lancement manuel : tout
           else
             changed=$(git diff --name-only "origin/${BASE_REF}...HEAD")
-            if echo "$changed" | grep -qE '^(scripts/test_app\.sh|\.github/workflows/louvre-apps-qa\.yml)$'; then
+            if echo "$changed" | grep -qE '^(scripts/test_app\.sh|scripts/check_messages\.cjs|shared/.*|\.github/workflows/louvre-apps-qa\.yml)$'; then
               chosen="$all"                                 # la recette change : tout retester
             else
               chosen=$(echo "$changed" | sed -nE 's#^apps/([^/]+)/.*#\1#p' | sort -u | while read -r s; do [ -f "apps/$s/index.html" ] && echo "$s"; done || true)
@@ -62,7 +63,11 @@ jobs:
       - name: Outils de test (Playwright, décodeur QR indépendant)
         run: python -m pip install --disable-pip-version-check 'playwright>=1.45,<2' 'zxing-cpp>=2.2,<4' 'Pillow>=10,<13'
       - name: Tester ${{ matrix.slug }}
-        run: bash scripts/test_app.sh "${{ matrix.slug }}"
+        run: |
+          set -o pipefail
+          bash scripts/test_app.sh "${{ matrix.slug }}" 2>&1 | tee test.log || {
+            # La fin du journal devient une annotation, lisible sans télécharger les logs.
+            tail -n 25 test.log | cut -c1-300 | sed 's/%/%25/g' | awk 'BEGIN{ORS="%0A"}1' | sed 's/^/::error title=${{ matrix.slug }}::/'; echo; exit 1; }
 
   site:
     name: Site complet (accueil, catalogue, fichiers hors ligne)

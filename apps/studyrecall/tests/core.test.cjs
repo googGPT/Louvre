@@ -12,8 +12,8 @@ test('une nouvelle fiche part en boîte 1, à réviser aujourd\'hui, paquet « G
   assert.equal(c.box, 1);
   assert.equal(c.due, T);
   assert.equal(c.deck, 'Général');
-  assert.throws(() => C.createCard({ front: ' ', back: 'R' }, T, 'card-0002'), /Question obligatoire/);
-  assert.throws(() => C.createCard({ front: 'Q', back: 'x'.repeat(501) }, T, 'card-0002'), /trop longue/);
+  assert.throws(() => C.createCard({ front: ' ', back: 'R' }, T, 'card-0002'), /err\.frontRequired/);
+  assert.throws(() => C.createCard({ front: 'Q', back: 'x'.repeat(501) }, T, 'card-0002'), /err\.backLong/);
 });
 
 test('« je savais » fait monter d\'une boîte et espace la révision : 2, 4, 8, 16 jours', () => {
@@ -40,7 +40,7 @@ test('« à revoir » renvoie en boîte 1, à revoir demain, et compte un oubli'
 });
 
 test('une fiche pas encore due ne peut pas être révisée', () => {
-  assert.throws(() => C.review(card({ due: '2026-10-30' }), true, T), /pas encore/);
+  assert.throws(() => C.review(card({ due: '2026-10-30' }), true, T), /err\.notDue/);
 });
 
 test('file du jour : retards d\'abord, puis boîtes basses, filtre par paquet', () => {
@@ -84,10 +84,10 @@ test('sauvegarde : aller-retour exact, contenus inattendus refusés', () => {
   const cards = [C.review(card(), true, T), card({ id: 'eeeeee', deck: 'Histoire' })];
   assert.deepEqual(C.validateBackup(JSON.parse(C.backup(cards))), cards);
   const ok = { app: 'studyrecall', version: 1, cards };
-  assert.throws(() => C.validateBackup({ ...ok, app: 'autre' }), /pas une sauvegarde/);
-  assert.throws(() => C.validateBackup({ ...ok, cards: [{ ...cards[0], extra: 1 }] }), /inattendus/);
-  assert.throws(() => C.validateBackup({ ...ok, cards: [{ ...cards[0], box: 6 }] }), /Boîte/);
-  assert.throws(() => C.validateBackup({ ...ok, cards: [{ ...cards[0], lapses: 9 }] }), /Compteurs/);
-  assert.throws(() => C.validateBackup({ ...ok, cards: [cards[0], cards[0]] }), /double/);
-  assert.throws(() => C.validateBackup({ ...ok, cards: [{ ...cards[0], due: '2026-13-01' }] }), /Date/);
+  assert.throws(() => C.validateBackup({ ...ok, app: 'autre' }), /err\.notBackup/);
+  assert.throws(() => C.validateBackup({ ...ok, cards: [{ ...cards[0], extra: 1 }] }), /err\.backup/);
+  assert.throws(() => C.validateBackup({ ...ok, cards: [{ ...cards[0], box: 6 }] }), /err\.backup/);
+  assert.throws(() => C.validateBackup({ ...ok, cards: [{ ...cards[0], lapses: 9 }] }), /err\.backup/);
+  assert.throws(() => C.validateBackup({ ...ok, cards: [cards[0], cards[0]] }), /err\.backup/);
+  assert.throws(() => C.validateBackup({ ...ok, cards: [{ ...cards[0], due: '2026-13-01' }] }), /err\.backup/);
 });

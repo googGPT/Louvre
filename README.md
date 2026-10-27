@@ -32,6 +32,19 @@ bash scripts/build_site.sh       # assemble le site comme en production (_site/)
 
 Pour une nouvelle appli, ajouter aussi son entrée dans `apps/catalogue.json`. La CI refuse un service worker, une CSP ou une page d'accueil non régénérés.
 
+### Langues (7) et devises
+
+Le mécanisme commun est [`shared/louvre-i18n.js`](shared/louvre-i18n.js) : français, anglais, espagnol, arabe (de droite à gauche), portugais, allemand et italien. La langue vient du menu (choix mémorisé pour toutes les applis), sinon du navigateur. La devise se choisit à part : une langue ne dit pas dans quel pays on vit.
+
+Pour rendre une appli multilingue :
+
+1. Écrire ses textes dans `apps/<slug>/messages.js` (`window.LouvreMessages = { fr: {…}, en: {…}, … }`) et marquer le HTML avec `data-i18n="clé"`.
+2. Dans `core.js`, lever des erreurs sous forme de clés (`err.price`), traduites par l'interface ; aucun montant ni date formatés en dur.
+3. Lancer `python scripts/sync_shared.py`, qui copie le mécanisme dans l'appli pour le mode hors ligne.
+4. `node scripts/check_messages.cjs <slug>` vérifie que les 7 langues ont toutes les clés, les mêmes paramètres et les mêmes pluriels.
+
+Applis déjà multilingues : accueil, PriceLens, StudyRecall et BillCalendar.
+
 ### Automatisation
 
 - **`louvre-apps-qa.yml`** : sur chaque PR, teste chaque appli modifiée et assemble le site complet.

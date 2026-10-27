@@ -11,7 +11,7 @@ test('prix saisis en euros, convertis en centimes sans erreur d\'arrondi', () =>
   assert.equal(C.parseCents('2,49'), 249);
   assert.equal(C.parseCents('2.5'), 250);
   assert.equal(C.parseCents(' 1 299,90 '), 129990);
-  for (const bad of ['2,499', '-1', 'abc', '0', '0,00', '']) assert.throws(() => C.parseCents(bad), /Prix|positif/);
+  for (const bad of ['2,499', '-1', 'abc', '0', '0,00', '']) assert.throws(() => C.parseCents(bad), /^Error: err\.price/);
 });
 
 test('prix au kilo, au litre et à la pièce', () => {
@@ -29,7 +29,7 @@ test('classement du moins cher au plus cher, écarts et économie', () => {
   ]);
   assert.equal(mixed, false);
   const g = groups[0];
-  assert.equal(g.per, '€/kg');
+  assert.equal(g.per, 'kg'); // l'interface affiche « €/kg », « $/kg »… selon la devise
   assert.deepEqual(g.rows.map((r) => r.name), ['5 kg', '1 kg', '500 g', '4 × 125 g']);
   assert.deepEqual(g.rows.map((r) => r.unitPriceCents), [198, 219, 258, 378]);
   assert.equal(g.rows[1].vsBest, 10.6); // (2,19 - 1,98) / 1,98
@@ -52,19 +52,19 @@ test('masses, volumes et pièces sont classés séparément', () => {
 });
 
 test('saisies refusées : unité inconnue, lot non entier, nom vide', () => {
-  assert.throws(() => item('X', '1', '1', 'oz'), /Unité/);
-  assert.throws(() => item('X', '1', '1', 'g', '1.5'), /entier/);
-  assert.throws(() => item(' ', '1', '1', 'g'), /Nom/);
-  assert.throws(() => item('X', '1', '0', 'g'), /Quantité/);
+  assert.throws(() => item('X', '1', '1', 'oz'), /err\.unit/);
+  assert.throws(() => item('X', '1', '1', 'g', '1.5'), /err\.count/);
+  assert.throws(() => item(' ', '1', '1', 'g'), /err\.nameRequired/);
+  assert.throws(() => item('X', '1', '0', 'g'), /err\.qty/);
 });
 
 test('sauvegarde : aller-retour exact et contenus refusés', () => {
   const lists = [C.makeList('Courses', 'list-0001', [item('Riz', '2,19', '1', 'kg'), item('Soda', '3,60', '33', 'cl', '6')])];
   assert.deepEqual(C.validateBackup(JSON.parse(C.backup(lists))), lists);
   const ok = { app: 'pricelens', version: 1, lists };
-  assert.throws(() => C.validateBackup({ ...ok, app: 'autre' }), /pas une sauvegarde/);
-  assert.throws(() => C.validateBackup({ ...ok, lists: [{ ...lists[0], extra: 1 }] }), /Comparaison invalide/);
-  assert.throws(() => C.validateBackup({ ...ok, lists: [{ ...lists[0], items: [{ ...lists[0].items[0], unit: 'oz' }] }] }), /Unité/);
-  assert.throws(() => C.validateBackup({ ...ok, lists: [{ ...lists[0], items: [{ ...lists[0].items[0], priceCents: -5 }] }] }), /Prix/);
-  assert.throws(() => C.validateBackup({ ...ok, lists: [lists[0], lists[0]] }), /double/);
+  assert.throws(() => C.validateBackup({ ...ok, app: 'autre' }), /err\.notBackup/);
+  assert.throws(() => C.validateBackup({ ...ok, lists: [{ ...lists[0], extra: 1 }] }), /err\.backup/);
+  assert.throws(() => C.validateBackup({ ...ok, lists: [{ ...lists[0], items: [{ ...lists[0].items[0], unit: 'oz' }] }] }), /err\.unit/);
+  assert.throws(() => C.validateBackup({ ...ok, lists: [{ ...lists[0], items: [{ ...lists[0].items[0], priceCents: -5 }] }] }), /err\.backup/);
+  assert.throws(() => C.validateBackup({ ...ok, lists: [lists[0], lists[0]] }), /err\.backup/);
 });
