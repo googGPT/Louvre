@@ -1,0 +1,22 @@
+# Garde-fou : refuse une PR qui modifie une appli sans renouveler son cache hors ligne.
+name: Louvre — garde-fou du cache hors ligne
+on:
+  pull_request:  # contrôle chaque PR…
+    paths:
+      - 'apps/**'  # …qui touche au moins une appli
+      - 'scripts/check_sw_cache_bump.py'  # …ou le script lui-même
+      - '.github/workflows/louvre-sw-cache-guard.yml'  # …ou ce workflow
+  workflow_dispatch:  # permet aussi un lancement manuel
+permissions:
+  contents: read  # lecture seule : le contrôle ne modifie rien
+jobs:
+  cache-bump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # historique complet, pour comparer avec la branche cible
+          persist-credentials: false
+      - name: Vérifier que chaque appli modifiée a un nouveau nom de cache
+        run: python scripts/check_sw_cache_bump.py "origin/${{ github.base_ref || 'main' }}" HEAD
