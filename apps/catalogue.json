@@ -252,6 +252,13 @@
       "domain": "Éducation",
       "description": "Mesure la vitesse et la précision de frappe pendant un exercice chronométré.",
       "family": "Études et recherche"
+    },
+    {
+      "slug": "studyrecall",
+      "name": "StudyRecall",
+      "domain": "Éducation",
+      "description": "Planifie les révisions de fiches par répétition espacée (boîtes de Leitner).",
+      "family": "Études et recherche"
     }
   ]
 }

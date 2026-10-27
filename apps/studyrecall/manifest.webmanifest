@@ -1,0 +1,12 @@
+{
+  "name": "StudyRecall — révisions espacées",
+  "short_name": "StudyRecall",
+  "description": "Fiches de révision avec répétition espacée (boîtes de Leitner), sans compte ni serveur.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#3b5bdb",
+  "background_color": "#f3f7f8",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
