@@ -1,0 +1,18 @@
+{
+  "name": "KeyboardCoach — Entraînement de frappe",
+  "short_name": "KeyboardCoach",
+  "description": "Vitesse brute et corrigée, précision et temps actif sans connexion",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "theme_color": "#153549",
+  "background_color": "#f1f6f8",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
