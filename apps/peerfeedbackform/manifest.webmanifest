@@ -1,0 +1,12 @@
+{
+  "name": "PeerFeedbackForm — évaluation entre pairs",
+  "short_name": "PeerFeedback",
+  "description": "Grilles d'évaluation entre pairs, moyennes et écarts par étudiant, coefficient individuel WebPA expliqué et export CSV.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#0f766e",
+  "background_color": "#f2f7f6",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

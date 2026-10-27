@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TimeBlocks — Agenda en blocs</title>
+<meta name="description" content="TimeBlocks : planifiez votre journée en blocs de travail, repérez les chevauchements, gardez des pauses et exportez vers votre agenda (.ics). Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#5f3dc4">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/timeblocks/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>TimeBlocks</strong><small data-i18n="brand.tagline">Agenda en blocs</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Chaque heure a sa place.</h1>
+  <p data-i18n="hero.text">Posez vos blocs de travail sur la journée.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les plannings enregistrés sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-day">
+  <div class="row spread"><h2 id="h-day" data-i18n="day.title">Journée</h2><button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button></div>
+  <div class="row">
+    <button class="btn icon" id="prev-day" type="button" data-i18n-attr="aria-label:day.prev;title:day.prev"><span class="flip" aria-hidden="true">‹</span></button>
+    <label class="visually-hidden" for="day" data-i18n="day.pick">Jour affiché</label>
+    <input id="day" type="date" class="day-input">
+    <button class="btn icon" id="next-day" type="button" data-i18n-attr="aria-label:day.next;title:day.next"><span class="flip" aria-hidden="true">›</span></button>
+    <button class="btn" id="today" type="button" data-i18n="day.today">Aujourd'hui</button>
+  </div>
+  <p class="day-label" id="day-label"></p>
+  <div class="row end settings">
+    <label class="field"><span data-i18n="set.start">Début de la plage de travail</span><input id="work-start" type="time" step="300"></label>
+    <label class="field"><span data-i18n="set.end">Fin de la plage</span><input id="work-end" type="time" step="300"></label>
+    <label class="field"><span data-i18n="set.step">Pas</span><select id="step"><option value="5" data-i18n="set.step5">5 min</option><option value="15" data-i18n="set.step15">15 min</option></select></label>
+  </div>
+  <p class="status" id="day-status" role="status" aria-live="polite"></p>
+</section>
+
+<div class="grid">
+  <section class="panel" aria-labelledby="h-agenda">
+    <h2 id="h-agenda" data-i18n="agenda.title">Agenda</h2>
+    <p class="hint" data-i18n="agenda.hint">Glissez un bloc pour le déplacer.</p>
+    <div id="timeline" class="timeline"></div>
+    <p class="status" id="agenda-status" role="status" aria-live="polite"></p>
+  </section>
+
+  <div class="col">
+    <section class="panel" aria-labelledby="h-block">
+      <h2 id="h-block" data-i18n="block.title">Nouveau bloc</h2>
+      <form id="block-form" novalidate>
+        <label class="field"><span data-i18n="f.title">Intitulé</span><input name="title" maxlength="60" data-i18n-attr="placeholder:f.titlePh" required></label>
+        <div class="two">
+          <label class="field"><span data-i18n="f.start">Début</span><input name="start" type="time" step="300" required></label>
+          <label class="field"><span data-i18n="f.end">Fin</span><input name="end" type="time" step="300" required></label>
+        </div>
+        <label class="field"><span data-i18n="f.cat">Catégorie</span><select name="cat" id="cat"></select></label>
+        <div class="row">
+          <button class="btn primary" id="submit" type="submit" data-i18n="btn.add">Ajouter</button>
+          <button class="btn" id="cancel-edit" type="button" hidden data-i18n="btn.cancel">Annuler</button>
+          <button class="btn bad" id="delete-block" type="button" hidden data-i18n="btn.delete">Supprimer</button>
+        </div>
+        <p class="status" id="form-status" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section class="panel" aria-labelledby="h-sum">
+      <h2 id="h-sum" data-i18n="sum.title">Bilan de la journée</h2>
+      <div class="kpis" id="kpis"></div>
+      <ul class="bars" id="bars"></ul>
+      <p class="note" id="run"></p>
+      <div id="clashes" class="clashes" hidden></div>
+      <p class="note" id="gaps"></p>
+    </section>
+  </div>
+</div>
+
+<div class="grid">
+  <section class="panel" aria-labelledby="h-tpl">
+    <h2 id="h-tpl" data-i18n="tpl.title">Modèles de journée</h2>
+    <p class="hint" data-i18n="tpl.hint">Enregistrez une journée type pour la réutiliser.</p>
+    <div class="row">
+      <label class="visually-hidden" for="tpl-select" data-i18n="tpl.select">Modèle</label>
+      <select id="tpl-select" class="grow"></select>
+      <button class="btn" id="tpl-replace" type="button" data-i18n="tpl.replace">Remplacer la journée</button>
+      <button class="btn" id="tpl-merge" type="button" data-i18n="tpl.merge">Ajouter à la journée</button>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="tpl-save" type="button" data-i18n="tpl.save">Enregistrer cette journée comme modèle</button>
+      <button class="btn" id="tpl-delete" type="button" data-i18n="tpl.delete">Supprimer le modèle</button>
+    </div>
+    <p class="status" id="tpl-status" role="status" aria-live="polite"></p>
+  </section>
+
+  <section class="panel" aria-labelledby="h-export">
+    <h2 id="h-export" data-i18n="export.title">Export et sauvegarde</h2>
+    <div class="row end">
+      <label class="field"><span data-i18n="export.scope">Période</span><select id="ics-scope"><option value="day" data-i18n="export.day">Ce jour</option><option value="all" data-i18n="export.all">Tous les jours planifiés</option></select></label>
+      <button class="btn primary" id="export-ics" type="button" data-i18n="btn.ics">Agenda (.ics)</button>
+      <button class="btn" id="print" type="button" data-i18n="btn.print">Imprimer</button>
+    </div>
+    <p class="hint" data-i18n="export.icsNote">Heures locales sans fuseau.</p>
+    <div class="row">
+      <button class="btn" id="export" type="button" data-i18n="btn.export">Sauvegarde (JSON)</button>
+      <label class="btn" for="import" data-i18n="btn.import">Restaurer…</label>
+      <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+      <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+    </div>
+    <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+  </section>
+</div>
+<footer data-i18n="footer">Vos plannings restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

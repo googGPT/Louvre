@@ -1,0 +1,12 @@
+{
+  "name": "VehicleServiceLog — le carnet d'entretien de vos véhicules",
+  "short_name": "ServiceLog",
+  "description": "Interventions, échéances d'entretien en km ou en mois, kilométrage estimé, rappels et exports.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#1864ab",
+  "background_color": "#f2f6fa",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

@@ -567,6 +567,146 @@
       "domain": "Vie quotidienne",
       "description": "Compte les tenues possibles d’une garde-robe capsule, propose des tenues et signale les manques.",
       "family": "Maison et quotidien"
+    },
+    {
+      "slug": "flighttimemath",
+      "name": "FlightTimeMath",
+      "domain": "Voyage",
+      "description": "Calcule durées de vol et d'escale en heures locales et fuseaux, arrivée J+1 et correspondances trop courtes.",
+      "family": "Déplacements"
+    },
+    {
+      "slug": "hypothesisgraph",
+      "name": "HypothesisGraph",
+      "domain": "Recherche",
+      "description": "Dessine le schéma des hypothèses entre variables (médiation, modération), signale les boucles, exporte SVG.",
+      "family": "Études et recherche"
+    },
+    {
+      "slug": "iconstudio",
+      "name": "IconStudio",
+      "domain": "Design",
+      "description": "Petites icônes SVG sur grille : formes, calques, annulation, contraste, export SVG propre ou PNG.",
+      "family": "Outils numériques"
+    },
+    {
+      "slug": "jetlagplanner",
+      "name": "JetLagPlanner",
+      "domain": "Voyage",
+      "description": "Visualise des horaires de sommeil décalés entre fuseaux, sans conseil médical.",
+      "family": "Déplacements"
+    },
+    {
+      "slug": "notegarden",
+      "name": "NoteGarden",
+      "domain": "Productivité",
+      "description": "Notes locales reliées par [[liens]] : rétroliens, étiquettes, recherche plein texte et export Markdown.",
+      "family": "Travail et organisation"
+    },
+    {
+      "slug": "oralpresentationclock",
+      "name": "OralPresentationClock",
+      "domain": "Éducation",
+      "description": "Chronomètre de soutenances : ordre de passage, seuils d'alerte, plein écran, dépassements et CSV.",
+      "family": "Études et recherche"
+    },
+    {
+      "slug": "parkingspotmemory",
+      "name": "ParkingSpotMemory",
+      "domain": "Mobilité",
+      "description": "Enregistre niveau, zone et repères où un véhicule est garé, avec minuterie de stationnement et historique.",
+      "family": "Déplacements"
+    },
+    {
+      "slug": "peerfeedbackform",
+      "name": "PeerFeedbackForm",
+      "domain": "Éducation",
+      "description": "Évaluation entre pairs : grille, moyennes et écarts par étudiant, coefficient WebPA expliqué et CSV.",
+      "family": "Études et recherche"
+    },
+    {
+      "slug": "regexworkbench",
+      "name": "RegexWorkbench",
+      "domain": "Développement",
+      "description": "Teste des expressions régulières : groupes, remplacement, explication et arrêt des expressions qui s'emballent.",
+      "family": "Outils numériques"
+    },
+    {
+      "slug": "roadtripcost",
+      "name": "RoadTripCost",
+      "domain": "Voyage",
+      "description": "Calcule le coût d'un voyage routier par étape et par personne : carburant, péages, hébergement, repas.",
+      "family": "Déplacements"
+    },
+    {
+      "slug": "samplesizecalc",
+      "name": "SampleSizeCalc",
+      "domain": "Recherche",
+      "description": "Calcule la taille d'échantillon d'une enquête ou d'une comparaison de deux proportions, formules détaillées.",
+      "family": "Études et recherche"
+    },
+    {
+      "slug": "surveycomposer",
+      "name": "SurveyComposer",
+      "domain": "Recherche",
+      "description": "Conçoit un questionnaire avec conditions d'affichage, repère ses défauts et exporte le dictionnaire des codes.",
+      "family": "Études et recherche"
+    },
+    {
+      "slug": "transitcompare",
+      "name": "TransitCompare",
+      "domain": "Mobilité",
+      "description": "Classe vos itinéraires selon le temps, le prix et les correspondances, avec votre valeur du temps.",
+      "family": "Déplacements"
+    },
+    {
+      "slug": "tripdocumentlist",
+      "name": "TripDocumentList",
+      "domain": "Voyage",
+      "description": "Liste les papiers de chaque voyageur et vérifie leurs échéances face aux dates du voyage et à votre marge.",
+      "family": "Déplacements"
+    },
+    {
+      "slug": "vehicleservicelog",
+      "name": "VehicleServiceLog",
+      "domain": "Mobilité",
+      "description": "Carnet d'entretien : interventions, échéances en km ou en mois, kilométrage estimé et rappels.",
+      "family": "Déplacements"
+    },
+    {
+      "slug": "volunteerroster",
+      "name": "VolunteerRoster",
+      "domain": "Événements",
+      "description": "Affecte les bénévoles aux créneaux selon disponibilités et compétences, signale les trous et exporte en CSV.",
+      "family": "Travail et organisation"
+    },
+    {
+      "slug": "noisediary",
+      "name": "NoiseDiary",
+      "domain": "Maison",
+      "description": "Tient un journal daté des nuisances sonores observées, avec statistiques, export CSV et rapport imprimable.",
+      "family": "Maison et quotidien"
+    },
+    {
+      "slug": "commutecarbon",
+      "name": "CommuteCarbon",
+      "domain": "Mobilité",
+      "description": "Estime les émissions de trajets avec des facteurs configurables et compare des scénarios.",
+      "family": "Déplacements"
+    },
+    {
+      "slug": "timeblocks",
+      "name": "TimeBlocks",
+      "domain": "Productivité",
+      "description": "Journée en blocs de travail : chevauchements, pauses, totaux par catégorie, modèles et export .ics.",
+      "family": "Travail et organisation"
+    },
+    {
+      "slug": "readabilitylab",
+      "name": "ReadabilityLab",
+      "domain": "Texte",
+      "description": "Mesure la longueur des phrases, repère mots longs et répétitions, avec la formule de lisibilité de chaque langue.",
+      "family": "Outils numériques"
     }
   ]
 }

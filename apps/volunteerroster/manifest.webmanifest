@@ -1,0 +1,12 @@
+{
+  "name": "VolunteerRoster — planning des bénévoles",
+  "short_name": "VolunteerRoster",
+  "description": "Disponibilités et compétences des bénévoles, postes et créneaux, affectation automatique, trous de couverture, planning par personne et CSV.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#4338ca",
+  "background_color": "#f4f4fb",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

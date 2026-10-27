@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CommuteCarbon — Les émissions de vos trajets</title>
+<meta name="description" content="CommuteCarbon : estimez les émissions de vos trajets réguliers avec vos propres facteurs d'émission (g CO2e/km), en km ou en miles, covoiturage compris, et comparez des scénarios. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#56690a">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/commutecarbon/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>CommuteCarbon</strong><small data-i18n="brand.tagline">Les émissions de vos trajets</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Combien émettent vos trajets réguliers ?</h1>
+  <p data-i18n="hero.text">Saisissez vos facteurs d'émission, puis vos trajets : distance, mode, occupants, aller-retour et jours par semaine. CommuteCarbon calcule les totaux par semaine, par mois et par an, et compare vos scénarios.</p>
+  <p class="assume" data-i18n="hero.assume">Calculs sur hypothèses : les résultats ne valent que ce que valent les facteurs que vous saisissez. L'appli ne fournit aucune valeur officielle.</p>
+  <div class="row"><button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button><p class="status grow" id="sample-status" role="status" aria-live="polite"></p></div>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les données enregistrées sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-factors">
+  <h2 id="h-factors" data-i18n="factors.title">Facteurs d'émission</h2>
+  <p class="hint" data-i18n="factors.hint">Un facteur « par véhicule-km » est partagé entre les occupants ; un facteur « par passager-km » s'applique à chaque personne. Indiquez la source de vos valeurs dans le nom si besoin.</p>
+  <ul class="list" id="factors"></ul>
+  <form id="factor-form" novalidate class="top-gap">
+    <div class="form-grid three">
+      <label class="field"><span data-i18n="f.factorName">Mode</span><input id="fa-name" maxlength="60" autocomplete="off" data-i18n-attr="placeholder:f.factorNamePh"></label>
+      <label class="field"><span data-i18n="f.factorValue">Facteur (g CO2e/km)</span><input id="fa-value" inputmode="decimal" autocomplete="off" placeholder="0"></label>
+      <label class="field"><span data-i18n="f.basis">Base</span><select id="fa-basis"><option value="vehicle" data-i18n="basis.vehicle">par véhicule-km</option><option value="passenger" data-i18n="basis.passenger">par passager-km</option></select></label>
+    </div>
+    <div class="row top-gap">
+      <button class="btn primary" id="save-factor" type="submit" data-i18n="btn.addFactor">Ajouter le facteur</button>
+      <button class="btn" id="cancel-factor" type="button" hidden data-i18n="btn.cancel">Annuler</button>
+    </div>
+    <p class="status" id="factor-status" role="status" aria-live="polite"></p>
+  </form>
+</section>
+
+<section class="panel" aria-labelledby="h-scenario">
+  <div class="row between">
+    <h2 id="h-scenario" class="flush" data-i18n="scenario.title">Scénario</h2>
+    <div class="row tight">
+      <label class="visually-hidden" for="scenario-select" data-i18n="scenario.select">Scénario affiché</label>
+      <select id="scenario-select" class="auto"></select>
+      <button class="btn small" id="new-scenario" type="button" data-i18n="btn.new">Nouveau</button>
+      <button class="btn small" id="dup-scenario" type="button" data-i18n="btn.duplicate">Dupliquer</button>
+      <button class="btn small" id="rename-scenario" type="button" data-i18n="btn.rename">Renommer</button>
+      <button class="btn small" id="delete-scenario" type="button" data-i18n="btn.delete">Supprimer</button>
+    </div>
+  </div>
+  <div class="kpis top-gap" aria-live="polite">
+    <div class="kpi"><span data-i18n="kpi.week">Par semaine</span><strong id="k-week">—</strong></div>
+    <div class="kpi"><span data-i18n="kpi.month">Par mois</span><strong id="k-month">—</strong></div>
+    <div class="kpi"><span data-i18n="kpi.year">Par an</span><strong id="k-year">—</strong></div>
+    <div class="kpi"><span data-i18n="kpi.distance">Distance par semaine</span><strong id="k-dist">—</strong></div>
+  </div>
+  <label class="field weeks"><span data-i18n="f.weeks">Semaines de trajets par an</span><input id="weeks" inputmode="numeric" autocomplete="off"><small class="hint" data-i18n="f.weeksHint">À ajuster selon vos congés et absences ; le total mensuel vaut l'annuel divisé par 12.</small></label>
+  <ul class="list" id="trips"></ul>
+  <form id="trip-form" novalidate class="top-gap">
+    <h3 class="sub" id="trip-form-title" data-i18n="trip.add">Ajouter un trajet</h3>
+    <div class="form-grid four">
+      <label class="field span2"><span data-i18n="f.tripName">Trajet</span><input name="name" maxlength="60" autocomplete="off" data-i18n-attr="placeholder:f.tripNamePh"></label>
+      <label class="field"><span data-i18n="f.distance">Distance aller</span><input name="distance" inputmode="decimal" autocomplete="off" placeholder="12,5"></label>
+      <label class="field"><span data-i18n="f.unit">Unité</span><select name="unit"><option value="km" data-i18n="unit.km">km</option><option value="mi" data-i18n="unit.mi">miles</option></select></label>
+      <label class="field span2"><span data-i18n="f.mode">Mode (facteur)</span><select name="factor"></select></label>
+      <label class="field"><span data-i18n="f.passengers">Occupants (vous compris)</span><input name="passengers" inputmode="numeric" autocomplete="off" value="1"></label>
+      <label class="field"><span data-i18n="f.days">Jours par semaine</span><input name="days" inputmode="numeric" autocomplete="off" value="5"></label>
+      <label class="check span"><input type="checkbox" name="roundTrip" checked> <span data-i18n="f.roundTrip">Aller-retour (distance comptée deux fois)</span></label>
+    </div>
+    <p class="hint" id="passenger-hint" hidden data-i18n="f.passengersIgnored">Ce mode a un facteur par passager-km : le nombre d'occupants ne change pas votre part.</p>
+    <div class="row top-gap">
+      <button class="btn primary" id="save-trip" type="submit" data-i18n="btn.addTrip">Ajouter le trajet</button>
+      <button class="btn" id="cancel-trip" type="button" hidden data-i18n="btn.cancel">Annuler</button>
+    </div>
+    <p class="status" id="trip-status" role="status" aria-live="polite"></p>
+  </form>
+</section>
+
+<section class="panel" aria-labelledby="h-compare">
+  <div class="row between">
+    <h2 id="h-compare" class="flush" data-i18n="compare.title">Comparaison des scénarios</h2>
+    <label class="row tight ref"><span data-i18n="compare.ref">Référence</span><select id="ref-select" class="auto"></select></label>
+  </div>
+  <div id="verdict" class="verdict" hidden></div>
+  <div class="scroll"><table class="cmp" id="compare"></table></div>
+  <div class="row top-gap"><button class="btn" id="export-csv" type="button" data-i18n="btn.csv">Exporter (CSV)</button></div>
+  <p class="status" id="compare-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <button class="btn" id="pick-backup" type="button" data-i18n="btn.import">Restaurer…</button>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden" tabindex="-1" aria-hidden="true">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">CommuteCarbon n'envoie rien : vos facteurs et vos trajets restent sur cet appareil. Les estimations dépendent entièrement des facteurs saisis.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

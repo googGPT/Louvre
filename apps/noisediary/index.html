@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NoiseDiary — Journal des nuisances sonores</title>
+<meta name="description" content="NoiseDiary : notez jour, heures, type, intensité perçue et source supposée des bruits observés ; statistiques par plage horaire, jour et nuit, export CSV et rapport imprimable. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#c2410c">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/noisediary/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>NoiseDiary</strong><small data-i18n="brand.tagline">Journal des nuisances sonores</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Noter chaque bruit, au jour et à l'heure près</h1>
+  <p data-i18n="hero.text">Consignez les nuisances sonores que vous constatez : jour, heures de début et de fin, type de bruit, intensité perçue et source supposée. NoiseDiary en tire des statistiques factuelles et un relevé imprimable.</p>
+</section>
+<p class="notice" role="note" data-i18n="notice">NoiseDiary ne mesure pas de décibels : l'intensité est votre perception, notée de 1 à 5. L'appli ne donne aucun avis juridique et ne dit pas si un bruit est légal ou non.</p>
+<p id="warning" class="warning" hidden data-i18n="warning">Le journal enregistré sur cet appareil est illisible.</p>
+
+<div class="grid">
+<div class="col">
+  <section class="panel" aria-labelledby="h-form">
+    <h2 id="h-form" data-i18n="form.title">Nouvelle observation</h2>
+    <form id="entry-form" novalidate>
+      <div class="form-grid three">
+        <label class="field"><span data-i18n="f.day">Jour</span><input name="day" type="date"></label>
+        <label class="field"><span data-i18n="f.start">Début</span><input name="start" type="time"></label>
+        <label class="field"><span data-i18n="f.end">Fin</span><input name="end" type="time"></label>
+      </div>
+      <p class="hint" data-i18n="form.midnight">Une fin plus tôt que le début signifie que le bruit s'est terminé le lendemain.</p>
+      <div class="form-grid two">
+        <label class="field"><span data-i18n="f.type">Type de bruit</span><select name="type" id="type-select"></select></label>
+        <label class="field"><span data-i18n="f.intensity">Intensité perçue</span><select name="intensity" id="intensity-select"></select></label>
+      </div>
+      <label class="field"><span data-i18n="f.source">Source supposée</span><input name="source" maxlength="80" data-i18n-attr="placeholder:f.sourcePh"></label>
+      <label class="field"><span data-i18n="f.notes">Notes factuelles</span><textarea name="notes" maxlength="500" data-i18n-attr="placeholder:f.notesPh"></textarea></label>
+      <div class="row">
+        <button class="btn primary" id="save" type="submit" data-i18n="btn.add">Ajouter</button>
+        <button class="btn" id="cancel-edit" type="button" hidden data-i18n="btn.cancel">Annuler la modification</button>
+        <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+      </div>
+      <p class="status" id="form-status" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <section class="panel" aria-labelledby="h-night">
+    <h2 id="h-night" data-i18n="night.title">Plage de nuit</h2>
+    <form id="night-form" novalidate>
+      <div class="form-grid two">
+        <label class="field"><span data-i18n="night.start">Début de la nuit</span><input name="nightStart" id="night-start" type="time"></label>
+        <label class="field"><span data-i18n="night.end">Fin de la nuit</span><input name="nightEnd" id="night-end" type="time"></label>
+      </div>
+      <p class="hint" data-i18n="night.hint">Sert uniquement aux statistiques « nuits concernées ». Une nuit porte la date du jour où elle commence.</p>
+      <button class="btn" id="save-night" type="submit" data-i18n="btn.saveNight">Appliquer</button>
+      <p class="status" id="night-status" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+</div>
+
+<div class="col">
+  <section class="panel" aria-labelledby="h-stats">
+    <h2 id="h-stats" data-i18n="stats.title">Statistiques</h2>
+    <div class="form-grid two">
+      <label class="field"><span data-i18n="p.from">Du</span><input id="from" type="date"></label>
+      <label class="field"><span data-i18n="p.to">Au</span><input id="to" type="date"></label>
+    </div>
+    <div class="row">
+      <button class="btn small" id="p-30" type="button" data-i18n="p.last30">30 derniers jours</button>
+      <button class="btn small" id="p-all" type="button" data-i18n="p.all">Toute la période</button>
+    </div>
+    <p class="status" id="stats-status" role="status" aria-live="polite"></p>
+    <div class="kpis">
+      <div class="kpi"><span data-i18n="kpi.count">Observations</span><strong id="k-count">0</strong></div>
+      <div class="kpi"><span data-i18n="kpi.total">Durée totale</span><strong id="k-total">—</strong></div>
+      <div class="kpi"><span data-i18n="kpi.nights">Nuits concernées</span><strong id="k-nights">0</strong></div>
+      <div class="kpi"><span data-i18n="kpi.night">Durée de nuit</span><strong id="k-night">—</strong></div>
+      <div class="kpi"><span data-i18n="kpi.days">Jours avec bruit</span><strong id="k-days">0</strong></div>
+      <div class="kpi"><span data-i18n="kpi.avg">Intensité perçue moyenne</span><strong id="k-avg">—</strong></div>
+    </div>
+    <h3 data-i18n="stats.hours">Minutes de bruit par heure</h3>
+    <div class="hours" id="hours" role="img" dir="ltr"></div>
+    <div class="hours-legend" dir="ltr" aria-hidden="true"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div>
+    <h3 data-i18n="stats.weekdays">Par jour de la semaine</h3>
+    <ul class="bars" id="weekdays"></ul>
+    <h3 data-i18n="stats.types">Par type</h3>
+    <ul class="bars" id="types"></ul>
+    <h3 data-i18n="stats.sources">Sources supposées</h3>
+    <ul class="bars" id="sources"></ul>
+  </section>
+</div>
+</div>
+
+<section class="panel" aria-labelledby="h-journal">
+  <h2 id="h-journal" data-i18n="journal.title">Journal</h2>
+  <p class="hint" id="journal-count"></p>
+  <ul class="list" id="journal"></ul>
+  <p class="empty" id="journal-empty" data-i18n="journal.empty">Aucune observation sur cette période.</p>
+</section>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Exports et sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export-csv" type="button" data-i18n="btn.csv">Tableau (CSV)</button>
+    <button class="btn" id="print" type="button" data-i18n="btn.print">Rapport imprimable</button>
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <label class="btn file" for="import" data-i18n="btn.import">Restaurer…</label>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="hint" data-i18n="backup.hint">Le CSV et le rapport reprennent la période choisie dans les statistiques.</p>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">Relevé personnel de perceptions : ni mesure acoustique, ni avis juridique. Votre journal reste sur cet appareil.</footer>
+</div>
+<section id="report" class="report" aria-hidden="true"></section>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

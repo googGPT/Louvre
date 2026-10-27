@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ReadabilityLab — Longueur des phrases et lisibilité</title>
+<meta name="description" content="ReadabilityLab : mesurez la longueur des phrases, repérez phrases et mots trop longs et répétitions, avec des formules de lisibilité propres à chaque langue. Le texte reste sur votre appareil.">
+<meta name="theme-color" content="#a61e4d">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/readabilitylab/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>ReadabilityLab</strong><small data-i18n="brand.tagline">Longueur des phrases et lisibilité</small></div></div>
+  <div class="row tools"><span class="badge" data-i18n="badge">Texte local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Vos phrases sont-elles trop longues ?</h1>
+  <p data-i18n="hero.text">Collez un texte : ReadabilityLab mesure les phrases et les mots.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les textes enregistrés sur cet appareil sont illisibles.</p>
+
+<div class="grid">
+<section class="panel" aria-labelledby="h-text">
+  <div class="row spread">
+    <h2 id="h-text" class="flat" data-i18n="text.title">Texte</h2>
+    <div class="row">
+      <label class="visually-hidden" for="doc-select" data-i18n="doc.select">Texte affiché</label>
+      <select id="doc-select" class="auto"></select>
+      <button class="btn" id="new-doc" type="button" data-i18n="btn.new">Nouveau</button>
+      <button class="btn" id="rename-doc" type="button" data-i18n="btn.rename">Renommer</button>
+      <button class="btn" id="delete-doc" type="button" data-i18n="btn.delete">Supprimer</button>
+      <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+    </div>
+  </div>
+  <div class="settings">
+    <label class="field"><span data-i18n="f.lang">Langue du texte</span><select id="text-lang"></select></label>
+    <label class="field"><span data-i18n="f.longSentence">Phrase longue au-delà de (mots)</span><input id="long-sentence" inputmode="numeric" maxlength="3"></label>
+    <label class="field"><span data-i18n="f.longWord">Mot long à partir de (lettres)</span><input id="long-word" inputmode="numeric" maxlength="3"></label>
+  </div>
+  <label class="field"><span data-i18n="f.text">Texte à analyser</span>
+    <textarea id="text" dir="auto" maxlength="50000" spellcheck="false" data-i18n-attr="placeholder:f.textPh"></textarea>
+  </label>
+  <p class="counter" id="counter"></p>
+  <p class="status" id="text-status" role="status" aria-live="polite"></p>
+</section>
+
+<div class="col">
+<section class="panel" aria-labelledby="h-stats">
+  <h2 id="h-stats" data-i18n="stats.title">Mesures</h2>
+  <div class="kpis" id="kpis"></div>
+  <h3 class="sub" data-i18n="dist.title">Longueur des phrases (mots)</h3>
+  <div class="dist" id="dist"></div>
+</section>
+<section class="panel" aria-labelledby="h-formulas">
+  <h2 id="h-formulas" data-i18n="formulas.title">Formules de lisibilité</h2>
+  <div id="formulas" aria-live="polite"></div>
+  <details class="about">
+    <summary data-i18n="formulas.aboutTitle">Quelle formule pour quelle langue ?</summary>
+    <ul id="formula-list"></ul>
+    <p data-i18n="formulas.aboutText">Ces formules ont été établies pour une langue précise.</p>
+  </details>
+</section>
+</div>
+</div>
+
+<section class="panel" aria-labelledby="h-long">
+  <h2 id="h-long" data-i18n="long.title">Phrases trop longues</h2>
+  <ol class="sentences" id="long-list"></ol>
+</section>
+
+<div class="grid two">
+<section class="panel" aria-labelledby="h-words">
+  <h2 id="h-words" data-i18n="words.title">Mots longs</h2>
+  <p class="hint" id="long-words-pct"></p>
+  <ul class="chips" id="long-words"></ul>
+</section>
+<section class="panel" aria-labelledby="h-rep">
+  <h2 id="h-rep" data-i18n="rep.title">Répétitions</h2>
+  <ul class="chips" id="repeats"></ul>
+  <p class="hint" id="doubled"></p>
+</section>
+</div>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Exports et sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export-csv" type="button" data-i18n="btn.csv">Phrases (CSV)</button>
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <label class="btn" for="import" data-i18n="btn.import">Restaurer…</label>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">Le texte analysé reste sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

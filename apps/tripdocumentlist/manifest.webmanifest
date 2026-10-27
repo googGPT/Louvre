@@ -1,0 +1,12 @@
+{
+  "name": "TripDocumentList — papiers de voyage en règle",
+  "short_name": "TripDocumentList",
+  "description": "Documents de voyage par voyageur, échéances contrôlées par rapport aux dates du voyage et à votre marge.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#0c7c6e",
+  "background_color": "#f1f7f5",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

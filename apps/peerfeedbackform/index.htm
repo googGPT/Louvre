@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PeerFeedbackForm — Évaluation entre pairs</title>
+<meta name="description" content="PeerFeedbackForm : grilles d'évaluation entre pairs, saisie des évaluations, moyennes et écarts par étudiant, coefficient individuel WebPA expliqué et export CSV. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#0f766e">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/peerfeedbackform/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>PeerFeedbackForm</strong><small data-i18n="brand.tagline">Évaluation entre pairs</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Qui a vraiment porté le projet ?</h1>
+  <p data-i18n="hero.text">Chaque étudiant note ses coéquipiers sur vos critères. PeerFeedbackForm calcule les moyennes reçues, leur dispersion et un coefficient individuel de contribution (méthode WebPA) qui module la note de l'équipe.</p>
+  <div class="row"><button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button></div>
+  <p class="status" id="sample-status" role="status" aria-live="polite"></p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les données enregistrées sur cet appareil sont illisibles.</p>
+
+<div class="grid">
+<section class="panel" aria-labelledby="h-grid">
+  <h2 id="h-grid" data-i18n="grid.title">Grille</h2>
+  <label class="field"><span data-i18n="f.title">Nom de l'évaluation</span><input id="s-title" maxlength="80" autocomplete="off" data-i18n-attr="placeholder:f.titlePh"></label>
+  <div class="form-grid three">
+    <label class="field"><span data-i18n="f.scaleMin">Note minimale</span><input id="s-min" inputmode="numeric" maxlength="2"></label>
+    <label class="field"><span data-i18n="f.scaleMax">Note maximale</span><input id="s-max" inputmode="numeric" maxlength="3"></label>
+    <label class="field"><span data-i18n="f.markMax">Barème</span><input id="s-markmax" inputmode="numeric" maxlength="4"></label>
+  </div>
+  <label class="field"><span data-i18n="f.self">Auto-évaluation</span>
+    <select id="s-self"><option value="exclude" data-i18n="self.exclude">Saisie mais exclue des calculs</option><option value="include" data-i18n="self.include">Comptée dans les calculs</option></select></label>
+  <h3 data-i18n="crit.title">Critères</h3>
+  <ol class="list" id="criteria"></ol>
+  <form id="crit-form" class="inline-form" novalidate>
+    <label class="field grow"><span data-i18n="f.criterion">Nouveau critère</span><input id="c-name" maxlength="80" autocomplete="off" data-i18n-attr="placeholder:f.criterionPh"></label>
+    <button class="btn primary" id="add-crit" type="submit" data-i18n="btn.addCrit">Ajouter le critère</button>
+  </form>
+  <p class="status" id="grid-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-students">
+  <h2 id="h-students" data-i18n="students.title">Étudiants et équipes</h2>
+  <form id="stud-form" novalidate>
+    <div class="form-grid">
+      <label class="field"><span data-i18n="f.student">Nom</span><input id="st-name" maxlength="80" autocomplete="off" data-i18n-attr="placeholder:f.studentPh"></label>
+      <label class="field"><span data-i18n="f.team">Équipe</span><input id="st-team" maxlength="40" autocomplete="off" list="team-list" data-i18n-attr="placeholder:f.teamPh"></label>
+    </div>
+    <datalist id="team-list"></datalist>
+    <button class="btn primary" id="add-student" type="submit" data-i18n="btn.addStudent">Ajouter l'étudiant</button>
+  </form>
+  <p class="status" id="students-status" role="status" aria-live="polite"></p>
+  <div id="students"></div>
+</section>
+</div>
+
+<section class="panel" aria-labelledby="h-entry">
+  <h2 id="h-entry" data-i18n="entry.title">Saisie des évaluations</h2>
+  <p class="hint" data-i18n="entry.help">Choisissez l'évaluateur, puis la note qu'il donne à chaque membre de son équipe, critère par critère. Chaque choix est enregistré immédiatement.</p>
+  <div class="row">
+    <label class="field grow"><span data-i18n="f.rater">Évaluateur</span><select id="rater"></select></label>
+    <p class="pill-info" id="rater-progress"></p>
+  </div>
+  <div class="scroll" id="entry"></div>
+  <div class="row"><button class="btn" id="next-rater" type="button" data-i18n="btn.nextRater">Évaluateur suivant</button></div>
+  <p class="status" id="entry-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-results">
+  <h2 id="h-results" data-i18n="results.title">Résultats</h2>
+  <div id="results"></div>
+  <details class="method" id="method">
+    <summary data-i18n="method.title">Comment le coefficient WebPA est-il calculé ?</summary>
+    <ol>
+      <li data-i18n="method.s1">Pour chaque évaluateur, on additionne les notes qu'il donne à chaque coéquipier (tous critères confondus).</li>
+      <li data-i18n="method.s2">On divise chaque total par la somme de ses totaux : chaque évaluateur distribue ainsi exactement 1 point, qu'il note large ou sévère.</li>
+      <li data-i18n="method.s3">Le coefficient d'un étudiant est la somme des parts reçues, multipliée par (taille de l'équipe ÷ nombre d'évaluateurs retenus). Si tout le monde a répondu, la moyenne des coefficients vaut 1.</li>
+      <li data-i18n="method.s4">Note individuelle = note de l'équipe × coefficient, plafonnée au barème.</li>
+      <li data-i18n="method.s5">Un évaluateur qui n'a pas noté tous les membres concernés (ou n'a donné que des zéros) est écarté du calcul. L'auto-évaluation n'entre en jeu que si vous la comptez.</li>
+    </ol>
+    <p class="hint" data-i18n="method.note">Moyenne et écart-type portent sur la note moyenne de chaque évaluation reçue (écart-type d'échantillon, n − 1). Ce sont des aides à la décision : la note finale reste celle de l'enseignant.</p>
+  </details>
+  <div class="row"><button class="btn" id="export-csv" type="button" data-i18n="btn.csv">Exporter les résultats (CSV)</button></div>
+  <p class="status" id="results-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <label class="btn" for="import" data-i18n="btn.import">Restaurer…</label>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">Critères, échelle et notes sont ceux que vous saisissez ; l'appli ne fait que les calculs. Vos données restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

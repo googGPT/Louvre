@@ -1,0 +1,12 @@
+{
+  "name": "OralPresentationClock — chronomètre de soutenances",
+  "short_name": "OralClock",
+  "description": "Chronomètre de soutenances et présentations orales : ordre de passage, seuils d'alerte, plein écran, dépassements et export CSV.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#c2410c",
+  "background_color": "#f8f5f2",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

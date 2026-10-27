@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IconStudio — Petites icônes SVG sur grille</title>
+<meta name="description" content="IconStudio : dessinez de petites icônes SVG sur une grille (formes, couleurs, calques), annulez, prévisualisez à plusieurs tailles et exportez en SVG propre ou PNG. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#c2255c">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/iconstudio/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>IconStudio</strong><small data-i18n="brand.tagline">Petites icônes SVG sur grille</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Une icône nette, forme par forme.</h1>
+  <p data-i18n="hero.text">Rectangles, cercles, lignes, polylignes et chemins sur une grille.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les icônes enregistrées sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-icon">
+  <div class="row spread"><h2 id="h-icon" data-i18n="icon.title">Icône</h2><button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button></div>
+  <div class="row">
+    <label class="visually-hidden" for="icon-select" data-i18n="icon.select">Icône affichée</label>
+    <select id="icon-select" class="grow"></select>
+    <button class="btn" id="new-icon" type="button" data-i18n="btn.new">Nouvelle</button>
+    <button class="btn" id="rename-icon" type="button" data-i18n="btn.rename">Renommer</button>
+    <button class="btn" id="delete-icon" type="button" data-i18n="btn.delete">Supprimer</button>
+  </div>
+  <div class="row end" style="margin-top:10px">
+    <label class="field narrow"><span data-i18n="icon.grid">Grille</span><select id="grid-size"><option value="16">16 × 16</option><option value="24">24 × 24</option><option value="32">32 × 32</option><option value="48">48 × 48</option></select></label>
+    <label class="check"><input id="bg-on" type="checkbox"> <span data-i18n="icon.bg">Fond plein</span></label>
+    <label class="color-field"><span class="visually-hidden" data-i18n="icon.bgColor">Couleur du fond</span><input id="bg-color" type="color" value="#ffffff"></label>
+  </div>
+  <p class="status" id="icon-status" role="status" aria-live="polite"></p>
+</section>
+
+<div class="grid">
+  <section class="panel" aria-labelledby="h-draw">
+    <h2 id="h-draw" data-i18n="draw.title">Dessin</h2>
+    <div class="tools" role="radiogroup" aria-labelledby="h-draw" id="tools">
+      <label class="tool"><input type="radio" name="tool" value="select" checked><span data-i18n="tool.select">Choisir</span></label>
+      <label class="tool"><input type="radio" name="tool" value="rect"><span data-i18n="tool.rect">Rectangle</span></label>
+      <label class="tool"><input type="radio" name="tool" value="circle"><span data-i18n="tool.circle">Cercle</span></label>
+      <label class="tool"><input type="radio" name="tool" value="line"><span data-i18n="tool.line">Ligne</span></label>
+      <label class="tool"><input type="radio" name="tool" value="polyline"><span data-i18n="tool.polyline">Polyligne</span></label>
+      <label class="tool"><input type="radio" name="tool" value="path"><span data-i18n="tool.path">Chemin</span></label>
+    </div>
+    <p class="hint" id="tool-hint" aria-live="polite"></p>
+    <div class="canvas-wrap" dir="ltr"><div id="canvas" class="canvas" tabindex="0" role="img" data-i18n-attr="aria-label:canvas.label"></div></div>
+    <div class="row" id="poly-box" hidden>
+      <button class="btn primary" id="poly-finish" type="button" data-i18n="poly.finish">Terminer la polyligne</button>
+      <label class="check"><input id="poly-closed" type="checkbox"> <span data-i18n="poly.closed">Fermée</span></label>
+      <button class="btn" id="poly-cancel" type="button" data-i18n="poly.cancel">Annuler les points</button>
+    </div>
+    <div id="path-box" hidden>
+      <label class="field"><span data-i18n="path.label">Chemin (commandes M L H V C Q Z)</span><textarea id="path-d" rows="2" dir="ltr" spellcheck="false" placeholder="M4 4L20 20"></textarea></label>
+      <button class="btn primary" id="path-add" type="button" data-i18n="path.add">Ajouter le chemin</button>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="undo" type="button" data-i18n="btn.undo">Annuler</button>
+      <button class="btn" id="redo" type="button" data-i18n="btn.redo">Rétablir</button>
+    </div>
+    <p class="status" id="draw-status" role="status" aria-live="polite"></p>
+  </section>
+
+  <div class="col">
+    <section class="panel" aria-labelledby="h-style">
+      <h2 id="h-style" data-i18n="style.title">Style</h2>
+      <p class="hint" data-i18n="style.hint">S'applique aux nouvelles formes et à la forme choisie.</p>
+      <div class="style-grid">
+        <div class="color-row"><label class="color-field"><span data-i18n="style.fill">Remplissage</span><input id="fill" type="color" value="#4263eb"></label><label class="check"><input id="fill-none" type="checkbox"> <span data-i18n="style.none">aucun</span></label></div>
+        <div class="color-row"><label class="color-field"><span data-i18n="style.stroke">Contour</span><input id="stroke" type="color" value="#212529"></label><label class="check"><input id="stroke-none" type="checkbox"> <span data-i18n="style.none">aucun</span></label></div>
+        <label class="field"><span data-i18n="style.sw">Épaisseur</span><input id="sw" inputmode="decimal" value="2"></label>
+        <label class="field"><span data-i18n="style.rx">Arrondi des coins</span><input id="rx" inputmode="decimal" value="0"></label>
+        <label class="check"><input id="round" type="checkbox" checked> <span data-i18n="style.round">Bouts et angles arrondis</span></label>
+      </div>
+    </section>
+    <section class="panel" aria-labelledby="h-layers">
+      <h2 id="h-layers" data-i18n="layers.title">Calques</h2>
+      <p class="hint" data-i18n="layers.hint">Le premier de la liste est dessiné au-dessus.</p>
+      <ul id="layers" class="layers"></ul>
+      <div id="props-box" hidden>
+        <h3 data-i18n="props.title">Forme choisie</h3>
+        <div id="props" class="props"></div>
+        <div class="row nudge" role="group" id="nudge" data-i18n-attr="aria-label:nudge.group">
+          <button class="btn small" type="button" data-dx="-1" data-dy="0" data-i18n-attr="aria-label:nudge.left">←</button>
+          <button class="btn small" type="button" data-dx="0" data-dy="-1" data-i18n-attr="aria-label:nudge.up">↑</button>
+          <button class="btn small" type="button" data-dx="0" data-dy="1" data-i18n-attr="aria-label:nudge.down">↓</button>
+          <button class="btn small" type="button" data-dx="1" data-dy="0" data-i18n-attr="aria-label:nudge.right">→</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div class="grid">
+  <section class="panel" aria-labelledby="h-preview">
+    <h2 id="h-preview" data-i18n="preview.title">Aperçu</h2>
+    <div id="previews" class="previews"></div>
+    <h3 data-i18n="contrast.title">Contraste</h3>
+    <ul id="contrast" class="contrast" aria-live="polite"></ul>
+    <p class="hint" data-i18n="contrast.note">Seuil indicatif : 3:1 pour les éléments graphiques (WCAG 1.4.11).</p>
+  </section>
+  <section class="panel" aria-labelledby="h-export">
+    <h2 id="h-export" data-i18n="export.title">Export et sauvegarde</h2>
+    <div class="row end">
+      <button class="btn primary" id="export-svg" type="button" data-i18n="btn.exportSvg">SVG</button>
+      <label class="field narrow"><span data-i18n="export.pngSize">Taille PNG</span><select id="png-size"><option>16</option><option>32</option><option>64</option><option>128</option><option selected>256</option><option>512</option></select></label>
+      <button class="btn" id="export-png" type="button" data-i18n="btn.exportPng">PNG</button>
+    </div>
+    <label class="field"><span data-i18n="export.code">Code SVG</span><textarea id="svg-code" rows="6" readonly dir="ltr" spellcheck="false"></textarea></label>
+    <div class="row" style="margin-top:10px">
+      <label class="btn" for="import-svg" data-i18n="btn.importSvg">Importer un SVG…</label>
+      <input id="import-svg" type="file" accept="image/svg+xml,.svg" class="visually-hidden">
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="export" type="button" data-i18n="btn.export">Sauvegarde (JSON)</button>
+      <label class="btn" for="import" data-i18n="btn.import">Restaurer…</label>
+      <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+      <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+    </div>
+    <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+  </section>
+</div>
+<footer data-i18n="footer">Vos icônes restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

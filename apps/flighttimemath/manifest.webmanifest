@@ -1,0 +1,12 @@
+{
+  "name": "FlightTimeMath — vols, escales et fuseaux",
+  "short_name": "FlightTimeMath",
+  "description": "Calcule durées de vol et d'escale en heures locales et fuseaux IANA, arrivée J+1 et correspondances trop courtes.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#1864ab",
+  "background_color": "#f2f6fb",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

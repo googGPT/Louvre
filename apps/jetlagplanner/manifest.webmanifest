@@ -1,0 +1,12 @@
+{
+  "name": "JetLagPlanner — décaler son sommeil pas à pas",
+  "short_name": "JetLagPlanner",
+  "description": "Visualise des horaires de sommeil décalés entre fuseaux, sans conseil médical.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#6741d9",
+  "background_color": "#f5f3fc",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

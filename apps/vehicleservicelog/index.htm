@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VehicleServiceLog — Le carnet d'entretien de vos véhicules</title>
+<meta name="description" content="VehicleServiceLog : interventions datées avec kilométrage et coût, échéances d'entretien en km ou en mois (le premier atteint), kilométrage estimé, rappels, exports CSV et agenda. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#1864ab">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/vehicleservicelog/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>VehicleServiceLog</strong><small data-i18n="brand.tagline">Le carnet d'entretien de vos véhicules</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Plus jamais une vidange oubliée.</h1>
+  <p data-i18n="hero.text">Notez chaque intervention avec sa date, son kilométrage et son coût. Fixez vos propres intervalles en kilomètres et/ou en mois : VehicleServiceLog estime votre kilométrage du jour et vous dit quelle échéance arrive en premier.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les données enregistrées sur cet appareil sont illisibles.</p>
+<p id="alerts" class="alerts" hidden role="status" aria-live="polite"></p>
+
+<section class="panel" aria-labelledby="h-veh">
+  <div class="row between">
+    <h2 id="h-veh" class="flush" data-i18n="veh.title">Mes véhicules</h2>
+    <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+  </div>
+  <div class="tabs" id="veh-tabs" role="group" data-i18n-attr="aria-label:veh.choose"></div>
+  <form id="veh-form" novalidate class="form-grid two">
+    <label class="field"><span data-i18n="f.vehName">Nom</span><input name="name" maxlength="40" data-i18n-attr="placeholder:f.vehNamePh" autocomplete="off"></label>
+    <label class="field"><span data-i18n="f.vehNote">Précision (facultatif)</span><input name="note" maxlength="60" data-i18n-attr="placeholder:f.vehNotePh" autocomplete="off"></label>
+    <div class="row span">
+      <button class="btn primary" id="save-veh" type="submit" data-i18n="btn.addVeh">Ajouter le véhicule</button>
+      <button class="btn" id="edit-veh" type="button" data-i18n="btn.editVeh">Modifier le véhicule affiché</button>
+      <button class="btn" id="cancel-veh" type="button" hidden data-i18n="btn.cancel">Annuler</button>
+      <button class="btn" id="delete-veh" type="button" data-i18n="btn.deleteVeh">Supprimer le véhicule affiché</button>
+    </div>
+  </form>
+  <p class="status" id="veh-status" role="status" aria-live="polite"></p>
+</section>
+
+<div id="veh-area">
+<section class="panel" aria-labelledby="h-odo">
+  <h2 id="h-odo"><span data-i18n="odo.title">Compteur</span> <span class="who" id="who-odo"></span></h2>
+  <div class="kpis" id="kpis"></div>
+  <p class="hint" id="pace-note"></p>
+  <form id="read-form" novalidate class="form-grid three">
+    <label class="field"><span data-i18n="f.readDate">Date du relevé</span><input name="date" type="date"></label>
+    <label class="field"><span data-i18n="f.readKm">Compteur (km)</span><input name="km" inputmode="numeric" autocomplete="off" placeholder="45200"></label>
+    <div class="field"><span aria-hidden="true">&nbsp;</span><button class="btn primary" id="add-read" type="submit" data-i18n="btn.addRead">Noter le relevé</button></div>
+  </form>
+  <p class="status" id="read-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-due">
+  <h2 id="h-due"><span data-i18n="due.title">Échéances</span> <span class="who" id="who-due"></span></h2>
+  <ul class="list" id="dues"></ul>
+  <details class="add" id="sch-add">
+    <summary data-i18n="due.add">Ajouter une échéance d'entretien</summary>
+    <p class="hint" data-i18n="due.hint">Indiquez l'intervalle de votre carnet constructeur ou de votre garagiste : en kilomètres, en mois, ou les deux (le premier atteint compte).</p>
+    <form id="sch-form" novalidate class="form-grid three">
+      <label class="field span"><span data-i18n="f.schName">Entretien</span><input name="name" maxlength="60" data-i18n-attr="placeholder:f.schNamePh" autocomplete="off"></label>
+      <label class="field"><span data-i18n="f.everyKm">Tous les … km (facultatif)</span><input name="everyKm" inputmode="numeric" autocomplete="off"></label>
+      <label class="field"><span data-i18n="f.everyMonths">Tous les … mois (facultatif)</span><input name="everyMonths" inputmode="numeric" autocomplete="off"></label>
+      <span class="spacer" aria-hidden="true"></span>
+      <label class="field"><span data-i18n="f.baseDate">Dernière fois faite le</span><input name="baseDate" type="date"></label>
+      <label class="field"><span data-i18n="f.baseKm">À (km)</span><input name="baseKm" inputmode="numeric" autocomplete="off"></label>
+      <div class="field"><span aria-hidden="true">&nbsp;</span><button class="btn primary" id="add-sch" type="submit" data-i18n="btn.addSch">Ajouter l'échéance</button></div>
+    </form>
+  </details>
+  <p class="status" id="due-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-srv">
+  <h2 id="h-srv"><span data-i18n="srv.title">Interventions</span> <span class="who" id="who-srv"></span></h2>
+  <form id="srv-form" novalidate class="form-grid three">
+    <label class="field"><span data-i18n="f.srvSchedule">Échéance concernée</span><select name="schedule" id="srv-schedule"></select></label>
+    <label class="field"><span data-i18n="f.srvLabel">Intervention</span><input name="label" maxlength="60" data-i18n-attr="placeholder:f.srvLabelPh" autocomplete="off"></label>
+    <label class="field"><span data-i18n="f.srvDate">Date</span><input name="date" type="date"></label>
+    <label class="field"><span data-i18n="f.srvKm">Kilométrage (km)</span><input name="km" inputmode="numeric" autocomplete="off"></label>
+    <label class="field"><span><span data-i18n="f.srvCost">Coût</span> (<span class="cur">€</span>)</span><input name="amount" inputmode="decimal" autocomplete="off" placeholder="0"></label>
+    <label class="field"><span data-i18n="f.srvNote">Garage, remarque (facultatif)</span><input name="note" maxlength="200" autocomplete="off"></label>
+    <div class="row span"><button class="btn primary" id="add-srv" type="submit" data-i18n="btn.addSrv">Enregistrer l'intervention</button></div>
+  </form>
+  <p class="status" id="srv-status" role="status" aria-live="polite"></p>
+  <p class="total" id="srv-total"></p>
+  <ul class="list compact" id="services"></ul>
+</section>
+</div>
+
+<section class="panel" aria-labelledby="h-exp">
+  <h2 id="h-exp" data-i18n="exp.title">Rappels et exports</h2>
+  <form id="set-form" novalidate class="form-grid two">
+    <label class="field"><span data-i18n="f.soonDays">Prévenir … jours avant</span><input name="soonDays" inputmode="numeric" autocomplete="off"></label>
+    <label class="field"><span data-i18n="f.soonKm">ou … km avant</span><input name="soonKm" inputmode="numeric" autocomplete="off"></label>
+  </form>
+  <div class="row">
+    <button class="btn" id="export-ics" type="button" data-i18n="btn.ics">Agenda des échéances (.ics)</button>
+    <button class="btn" id="export-csv" type="button" data-i18n="btn.csv">Historique (CSV)</button>
+  </div>
+  <p class="hint" data-i18n="exp.hint">L'agenda place chaque échéance à sa date effective (estimée pour les kilomètres) avec une alerte : votre application d'agenda vous préviendra, même page fermée.</p>
+  <p class="status" id="exp-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <button class="btn" id="pick-backup" type="button" data-i18n="btn.import">Restaurer…</button>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden" tabindex="-1" aria-hidden="true">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">Les intervalles sont ceux que vous saisissez : VehicleServiceLog ne fournit aucun plan d'entretien constructeur. Vos données restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>
