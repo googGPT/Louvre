@@ -1,0 +1,236 @@
+{
+  "families": [
+    "Argent et achats",
+    "Maison et quotidien",
+    "Déplacements",
+    "Travail et organisation",
+    "Études et recherche",
+    "Outils numériques"
+  ],
+  "apps": [
+    {
+      "slug": "moneyuntil",
+      "name": "MoneyUntil",
+      "domain": "Finance",
+      "description": "Calcule le budget disponible par jour jusqu’à la prochaine paie.",
+      "family": "Argent et achats"
+    },
+    {
+      "slug": "receiptrescue",
+      "name": "ReceiptRescue",
+      "domain": "Maison et achats",
+      "description": "Classe les tickets, les retours et les dates de garantie.",
+      "family": "Argent et achats"
+    },
+    {
+      "slug": "snapaction",
+      "name": "SnapAction",
+      "domain": "Productivité",
+      "description": "Capture rapidement tâches et rappels datés.",
+      "family": "Travail et organisation"
+    },
+    {
+      "slug": "fridgefirst",
+      "name": "FridgeFirst",
+      "domain": "Alimentation",
+      "description": "Suit le stock alimentaire, les échéances et les idées de recettes.",
+      "family": "Maison et quotidien"
+    },
+    {
+      "slug": "homepulse",
+      "name": "HomePulse",
+      "domain": "Maison",
+      "description": "Planifie les entretiens du logement et leurs coûts.",
+      "family": "Maison et quotidien"
+    },
+    {
+      "slug": "parkwise",
+      "name": "ParkWise",
+      "domain": "Mobilité",
+      "description": "Compare des coûts de stationnement selon les tarifs saisis.",
+      "family": "Déplacements"
+    },
+    {
+      "slug": "findmystuff",
+      "name": "FindMyStuff",
+      "domain": "Organisation",
+      "description": "Mémorise où se trouvent les objets et à qui ils sont prêtés.",
+      "family": "Maison et quotidien"
+    },
+    {
+      "slug": "splitfair",
+      "name": "SplitFair",
+      "domain": "Finance",
+      "description": "Répartit les dépenses communes entre plusieurs personnes.",
+      "family": "Argent et achats"
+    },
+    {
+      "slug": "focusforge",
+      "name": "FocusForge",
+      "domain": "Productivité",
+      "description": "Enregistre et totalise les minutes de travail par projet.",
+      "family": "Travail et organisation"
+    },
+    {
+      "slug": "trippack",
+      "name": "TripPack",
+      "domain": "Voyage",
+      "description": "Prépare et coche des listes de bagages pour voyager.",
+      "family": "Déplacements"
+    },
+    {
+      "slug": "readtrail",
+      "name": "ReadTrail",
+      "domain": "Lecture",
+      "description": "Tient le journal des livres lus et des notes de lecture.",
+      "family": "Études et recherche"
+    },
+    {
+      "slug": "fuelmath",
+      "name": "FuelMath",
+      "domain": "Mobilité",
+      "description": "Estime le coût d’un trajet à partir du carburant et de la distance.",
+      "family": "Déplacements"
+    },
+    {
+      "slug": "decisiondeck",
+      "name": "DecisionDeck",
+      "domain": "Décision",
+      "description": "Compare plusieurs options à partir de critères pondérés.",
+      "family": "Travail et organisation"
+    },
+    {
+      "slug": "eventcount",
+      "name": "EventCount",
+      "domain": "Événements",
+      "description": "Gère les invités, les réponses et le budget d’un événement.",
+      "family": "Travail et organisation"
+    },
+    {
+      "slug": "roundplan",
+      "name": "RoundPlan",
+      "domain": "Sport",
+      "description": "Construit et chronomètre des entraînements fractionnés.",
+      "family": "Maison et quotidien"
+    },
+    {
+      "slug": "worldmeet",
+      "name": "WorldMeet",
+      "domain": "Productivité",
+      "description": "Compare les fuseaux horaires pour planifier des réunions.",
+      "family": "Travail et organisation"
+    },
+    {
+      "slug": "chorewheel",
+      "name": "ChoreWheel",
+      "domain": "Maison",
+      "description": "Répartit et suit les tâches ménagères.",
+      "family": "Maison et quotidien"
+    },
+    {
+      "slug": "mileagebook",
+      "name": "MileageBook",
+      "domain": "Mobilité",
+      "description": "Enregistre les trajets et les kilomètres parcourus.",
+      "family": "Déplacements"
+    },
+    {
+      "slug": "travelday",
+      "name": "TravelDay",
+      "domain": "Voyage",
+      "description": "Organise les étapes et les dépenses d’un voyage.",
+      "family": "Déplacements"
+    },
+    {
+      "slug": "sizematch",
+      "name": "SizeMatch",
+      "domain": "Achats",
+      "description": "Convertit distances, masses, volumes et températures, même hors ligne.",
+      "family": "Argent et achats"
+    },
+    {
+      "slug": "goalladder",
+      "name": "GoalLadder",
+      "domain": "Productivité",
+      "description": "Découpe un objectif en étapes mesurables.",
+      "family": "Travail et organisation"
+    },
+    {
+      "slug": "quizcraft",
+      "name": "QuizCraft",
+      "domain": "Éducation",
+      "description": "Crée des mini-quiz et suit les questions maîtrisées.",
+      "family": "Études et recherche"
+    },
+    {
+      "slug": "gradepilot",
+      "name": "GradePilot",
+      "domain": "Éducation",
+      "description": "Calcule les moyennes pondérées et la note nécessaire à un objectif.",
+      "family": "Études et recherche"
+    },
+    {
+      "slug": "shiftledger",
+      "name": "ShiftLedger",
+      "domain": "Travail",
+      "description": "Additionne horaires, pauses et rémunération théorique.",
+      "family": "Travail et organisation"
+    },
+    {
+      "slug": "colorcontrast",
+      "name": "ColorContrast",
+      "domain": "Design",
+      "description": "Mesure le contraste des couleurs selon WCAG.",
+      "family": "Outils numériques"
+    },
+    {
+      "slug": "imageshrink",
+      "name": "ImageShrink",
+      "domain": "Fichiers",
+      "description": "Réduit les dimensions ou le poids des images localement.",
+      "family": "Outils numériques"
+    },
+    {
+      "slug": "qrforge",
+      "name": "QRForge",
+      "domain": "Fichiers",
+      "description": "Génère des QR codes sans transmettre les données à un service.",
+      "family": "Outils numériques"
+    },
+    {
+      "slug": "csvclinic",
+      "name": "CSVClinic",
+      "domain": "Données",
+      "description": "Nettoie des CSV, corrige des formats et retire les doublons.",
+      "family": "Outils numériques"
+    },
+    {
+      "slug": "textdiff",
+      "name": "TextDiff",
+      "domain": "Texte",
+      "description": "Compare deux textes et repère les ajouts ou suppressions.",
+      "family": "Outils numériques"
+    },
+    {
+      "slug": "citationcraft",
+      "name": "CitationCraft",
+      "domain": "Recherche",
+      "description": "Organise des références et échange des fichiers BibTeX/RIS/JSON.",
+      "family": "Études et recherche"
+    },
+    {
+      "slug": "invoicecanvas",
+      "name": "InvoiceCanvas",
+      "domain": "Finance",
+      "description": "Prépare des devis et projets de factures imprimables, non certifiés.",
+      "family": "Argent et achats"
+    },
+    {
+      "slug": "roomsketch",
+      "name": "RoomSketch",
+      "domain": "Maison",
+      "description": "Dessine un plan 2D de pièce et bloque les chevauchements de meubles.",
+      "family": "Maison et quotidien"
+    }
+  ]
+}
