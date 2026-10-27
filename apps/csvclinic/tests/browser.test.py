@@ -93,7 +93,7 @@ def run():
             # Import files locally, with strict file-size rejection.
             page.locator('#source-file').set_input_files({
                 'name':'table.csv','mimeType':'text/csv','buffer':b'Nom;Montant\nMarc;10\nLea;20'})
-            page.wait_for_function("document.querySelector('#source').value.includes('Marc;10')")
+            page.wait_for_function("() => (document.querySelector('#source').value.includes('Marc;10'))")
             assert page.locator('#download').is_disabled()
             page.locator('#run').click()
             assert page.locator('#after').inner_text()=='2'
@@ -105,7 +105,7 @@ def run():
             # Source data and exports should not be persisted to storage.
             assert page.evaluate('localStorage.length')==0
             assert page.evaluate('sessionStorage.length')==0
-            page.wait_for_function("navigator.serviceWorker && navigator.serviceWorker.controller !== null",timeout=20000)
+            page.wait_for_function("() => (navigator.serviceWorker && navigator.serviceWorker.controller !== null)",timeout=20000)
             context.set_offline(True)
             page.reload(wait_until='domcontentloaded')
             assert page.locator('#run').is_visible()

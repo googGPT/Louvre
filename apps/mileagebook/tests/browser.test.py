@@ -37,7 +37,7 @@ try:
         page.locator('[name="km"]').fill('10')
         page.locator('[name="rate"]').fill('0.50')
         page.locator('[name="paid"]').select_option('oui')
-        page.locator('#save-button').click();page.wait_for_function('document.querySelectorAll("#items .item").length===2')
+        page.locator('#save-button').click();page.wait_for_function('() => (document.querySelectorAll("#items .item").length===2)')
         page.locator('#paid-filter').select_option('non');assert page.locator('#items .item').count()==1
         page.locator('#paid-filter').select_option('tous')
         page.locator('#month').fill('2026-10');assert page.locator('#items .item').count()==1
@@ -66,7 +66,7 @@ try:
         page.locator('#items .item').filter(has_text='Mission').get_by_text('Supprimer').click()
         assert page.locator('#items .item').count()==1
         page.locator('#import').set_input_files(str(backup))
-        page.wait_for_function('document.querySelectorAll("#items .item").length===2')
+        page.wait_for_function('() => (document.querySelectorAll("#items .item").length===2)')
         # Invalid JSON must not overwrite local records
         bad=Path(temp)/'invalid.json';bad.write_text('{"app":"untrusted","version":1,"records":[]}',encoding='utf-8')
         page.locator('#import').set_input_files(str(bad))
@@ -77,7 +77,7 @@ try:
         legacy.write_text(json.dumps({'app':'mileagebook','version':1,'records':[{'id':'legacy123','day':'2026-02-10','purpose':'Ancien trajet','km':80,'rate':0.4,'paid':'non'}]}),encoding='utf-8')
         page.locator('#import').set_input_files(str(legacy))
         page.locator('#clear-filters').click()
-        page.wait_for_function('document.querySelectorAll("#items .item").length===1')
+        page.wait_for_function('() => (document.querySelectorAll("#items .item").length===1)')
         assert 'Ancien trajet' in page.locator('#items').inner_text()
         page.reload();page.locator('#items .item').first.wait_for()
         assert 'Ancien trajet' in page.locator('#items').inner_text()

@@ -115,13 +115,13 @@ def run():
                 'name':'document.txt','mimeType':'text/plain',
                 'buffer':b'Premiere ligne\nSeconde ligne'
             })
-            page.wait_for_function("document.querySelector('#original').value.includes('Seconde ligne')")
+            page.wait_for_function("() => (document.querySelector('#original').value.includes('Seconde ligne'))")
             assert page.locator('#export').is_disabled()
             page.locator('#file-revised').set_input_files({
                 'name':'document.txt','mimeType':'text/plain',
                 'buffer':b'Premiere ligne\nTroisieme ligne'
             })
-            page.wait_for_function("document.querySelector('#revised').value.includes('Troisieme ligne')")
+            page.wait_for_function("() => (document.querySelector('#revised').value.includes('Troisieme ligne'))")
             page.locator('#compare').click()
             assert page.locator('#stat-blocks').inner_text()=='1'
             page.locator('#swap').click()
@@ -131,7 +131,7 @@ def run():
             # Reset and offline, no data storage.
             assert page.evaluate("localStorage.length") == 0
             assert page.evaluate("sessionStorage.length") == 0
-            page.wait_for_function("navigator.serviceWorker && navigator.serviceWorker.controller !== null",timeout=20000)
+            page.wait_for_function("() => (navigator.serviceWorker && navigator.serviceWorker.controller !== null)",timeout=20000)
             page.locator('#reset').click()
             assert page.locator('#original').input_value() == ''
             assert page.locator('#export').is_disabled()

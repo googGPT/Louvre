@@ -2,7 +2,7 @@
 // Généré par scripts/build_sw.py : ne pas modifier à la main (relancer le script).
 // Le nom du cache contient une empreinte du contenu : toute modification de l'appli
 // produit un nouveau nom, donc une mise à jour automatique chez les visiteurs.
-const CACHE = "louvre-travelday-7fd8f25e4a3d";
+const CACHE = "louvre-travelday-e619b1150b4c";
 const ASSETS = ["./", "./app.js", "./core.js", "./icon.svg", "./index.htm", "./index.html", "./manifest.webmanifest", "./style.css"];
 const OLD_PREFIXES = ["louvre-travelday-"];
 

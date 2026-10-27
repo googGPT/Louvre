@@ -30,11 +30,11 @@ def run():
     page.locator('#add').click()
 
    form('2026-10-26','09:00','17:30',30,'Première équipe')
-   page.wait_for_function("document.querySelectorAll('.entry').length===1")
+   page.wait_for_function("() => (document.querySelectorAll('.entry').length===1)")
    assert '8 h 00' in page.locator('#hours').inner_text()
    assert '120' in page.locator('#pay').inner_text()
    form('2026-10-26','18:00','20:00',0,'Deuxième équipe')
-   page.wait_for_function("document.querySelectorAll('.entry').length===2")
+   page.wait_for_function("() => (document.querySelectorAll('.entry').length===2)")
    assert '10 h 00' in page.locator('#hours').inner_text()
    assert '2 h 00' in page.locator('#overtime').inner_text()
    assert '157' in page.locator('#pay').inner_text()
@@ -51,10 +51,10 @@ def run():
 
    # Ajout d'un service de nuit, date du début et alerte chevauchement.
    form('2026-10-26','22:00','06:00',30,'Nuit')
-   page.wait_for_function("document.querySelectorAll('.entry').length===3")
+   page.wait_for_function("() => (document.querySelectorAll('.entry').length===3)")
    assert '1' in page.locator('#overnight-total').inner_text()
    form('2026-10-27','05:00','07:00',0,'Chevauchement')
-   page.wait_for_function("document.querySelectorAll('.entry').length===4")
+   page.wait_for_function("() => (document.querySelectorAll('.entry').length===4)")
    assert page.locator('#overlap-warning').is_visible()
    assert page.locator('#day-list .day-entry').count()==2
    page.locator('#search').fill('nuit')
@@ -95,7 +95,7 @@ def run():
    page.locator('.entry').first.get_by_role('button',name='Supprimer').click()
    assert page.locator('.entry').count()==3
    page.locator('#import-file').set_input_files({'name':'backup.json','mimeType':'application/json','buffer':backup})
-   page.wait_for_function("document.querySelectorAll('.entry').length===4")
+   page.wait_for_function("() => (document.querySelectorAll('.entry').length===4)")
 
    # Stockage corrompu : export brut, blocage des modifications, import invalide.
    page.evaluate("() => localStorage.setItem('louvre-wave2-shiftledger-v1','NOT_JSON')")
@@ -115,12 +115,12 @@ def run():
    assert page.evaluate("() => localStorage.getItem('louvre-wave2-shiftledger-v1')")=='NOT_JSON'
    page.evaluate('() => { Storage.prototype.setItem = window._savedSetItem; }')
    page.locator('#import-file').set_input_files({'name':'backup.json','mimeType':'application/json','buffer':backup})
-   page.wait_for_function("document.querySelectorAll('.entry').length===4")
+   page.wait_for_function("() => (document.querySelectorAll('.entry').length===4)")
    assert page.locator('#warning').is_hidden()
 
    # Vérification hors ligne une fois le service worker actif.
    page.reload(wait_until='domcontentloaded')
-   page.wait_for_function('navigator.serviceWorker.controller !== null',timeout=20000)
+   page.wait_for_function('() => (navigator.serviceWorker.controller !== null)',timeout=20000)
    context.set_offline(True)
    page.reload(wait_until='domcontentloaded')
    page.locator('#list .entry').first.wait_for()

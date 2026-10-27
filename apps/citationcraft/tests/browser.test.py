@@ -192,7 +192,7 @@ def main():
 
             # PWA cached shell works offline, record survives reload.
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth+2')
-            page.wait_for_function('navigator.serviceWorker && navigator.serviceWorker.controller!==null',timeout=20000)
+            page.wait_for_function('() => (navigator.serviceWorker && navigator.serviceWorker.controller!==null)',timeout=20000)
             context.set_offline(True)
             page.reload(wait_until='domcontentloaded')
             expect(page.locator('.reference-card')).to_have_count(1)

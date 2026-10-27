@@ -25,7 +25,7 @@ def run():
             errors=[]
             page.on('pageerror',lambda err: errors.append(str(err)))
             page.goto(url,wait_until='domcontentloaded')
-            page.wait_for_function("document.querySelector('#add-equipment').disabled === false")
+            page.wait_for_function("() => (document.querySelector('#add-equipment').disabled === false)")
             assert page.title().startswith('HomePulse')
             page.locator('#add-equipment').click()
             page.locator('#equipment-name').fill('Filtre lave-linge')
@@ -36,21 +36,21 @@ def run():
             page.locator('#notes').fill('Test pompe')
             page.locator('#photo').set_input_files({'name':'test.png','mimeType':'image/png','buffer':tiny_png()})
             page.locator('#save-equipment').click()
-            page.wait_for_function("document.querySelector('#count-all').textContent === '1'")
+            page.wait_for_function("() => (document.querySelector('#count-all').textContent === '1')")
             assert page.get_by_text('Filtre lave-linge',exact=True).count()>=1
             page.reload(wait_until='domcontentloaded')
-            page.wait_for_function("document.querySelector('#count-all').textContent === '1'")
+            page.wait_for_function("() => (document.querySelector('#count-all').textContent === '1')")
             assert page.locator('.eq-photo').count()==1
             page.locator('.equipment-item button',has_text='Modifier').click()
             page.locator('#equipment-name').fill('Filtre corrigé')
             page.locator('#save-equipment').click()
-            page.wait_for_function("document.querySelector('.equipment-item strong').textContent === 'Filtre corrigé'")
+            page.wait_for_function("() => (document.querySelector('.equipment-item strong').textContent === 'Filtre corrigé')")
             page.locator('.equipment-item button',has_text='Effectué').click()
             page.locator('#done-date').fill('2026-10-25')
             page.locator('#done-cost').fill('12.50')
             page.locator('#done-note').fill('Nettoyé')
             page.locator('#done-form button[type="submit"]').click()
-            page.wait_for_function("document.querySelector('#count-cost').textContent.includes('12,50')")
+            page.wait_for_function("() => (document.querySelector('#count-cost').textContent.includes('12,50'))")
             assert page.locator('.history-row').count()==1
             with page.expect_download() as dl:page.locator('#export-json').click()
             backup=dl.value
@@ -62,13 +62,13 @@ def run():
             assert 'BEGIN:VEVENT' in ics and 'Filtre corrigé' in ics
             page.on('dialog',lambda dialog:dialog.accept())
             page.locator('.equipment-item button',has_text='Supprimer').click()
-            page.wait_for_function("document.querySelector('#count-all').textContent === '0'")
+            page.wait_for_function("() => (document.querySelector('#count-all').textContent === '0')")
             page.locator('#import-file').set_input_files({'name':'homepulse.json','mimeType':'application/json','buffer':json.dumps(body).encode()})
-            page.wait_for_function("document.querySelector('#count-all').textContent === '1'")
-            page.wait_for_function("navigator.serviceWorker && navigator.serviceWorker.controller !== null",timeout=14000)
+            page.wait_for_function("() => (document.querySelector('#count-all').textContent === '1')")
+            page.wait_for_function("() => (navigator.serviceWorker && navigator.serviceWorker.controller !== null)",timeout=14000)
             ctx.set_offline(True)
             page.reload(wait_until='domcontentloaded')
-            page.wait_for_function("document.querySelector('#count-all').textContent === '1'")
+            page.wait_for_function("() => (document.querySelector('#count-all').textContent === '1')")
             assert page.locator('.equipment-item').count()==1
             assert not errors,errors
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth+2'), 'mobile overflow'

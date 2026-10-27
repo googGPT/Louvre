@@ -2,7 +2,7 @@
 // Généré par scripts/build_sw.py : ne pas modifier à la main (relancer le script).
 // Le nom du cache contient une empreinte du contenu : toute modification de l'appli
 // produit un nouveau nom, donc une mise à jour automatique chez les visiteurs.
-const CACHE = "louvre-trippack-d6abbec91281";
+const CACHE = "louvre-trippack-07cc840656cb";
 const ASSETS = ["./", "./app.js", "./core.js", "./icon.svg", "./index.htm", "./index.html", "./manifest.webmanifest", "./style.css"];
 const OLD_PREFIXES = ["louvre-trippack-"];
 

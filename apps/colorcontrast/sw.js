@@ -2,7 +2,7 @@
 // Généré par scripts/build_sw.py : ne pas modifier à la main (relancer le script).
 // Le nom du cache contient une empreinte du contenu : toute modification de l'appli
 // produit un nouveau nom, donc une mise à jour automatique chez les visiteurs.
-const CACHE = "louvre-colorcontrast-dbe0cfb014c3";
+const CACHE = "louvre-colorcontrast-a23ed0f72b84";
 const ASSETS = ["./", "./app.js", "./core.js", "./icon.svg", "./index.htm", "./index.html", "./manifest.webmanifest", "./style.css"];
 const OLD_PREFIXES = ["louvre-colorcontrast-", "wave2-colorcontrast-"];
 

@@ -20,8 +20,8 @@ try:
    typ=fld['type'];v=fld.get('sample')
    if typ=='select':page.locator('[name="'+fld['key']+'"]').select_option(str(v))
    else:page.locator('[name="'+fld['key']+'"]').fill(str(v))
-  page.locator('#save-button').click();page.wait_for_function('document.querySelectorAll("#items .item").length===1')
-  page.reload();page.wait_for_function('document.querySelectorAll("#items .item").length===1')
+  page.locator('#save-button').click();page.wait_for_function('() => (document.querySelectorAll("#items .item").length===1)')
+  page.reload();page.wait_for_function('() => (document.querySelectorAll("#items .item").length===1)')
   assert not errors, errors
   assert page.locator('body').evaluate('(e)=>e.scrollWidth <= innerWidth+2')
   with page.expect_download(timeout=10000) as d:page.locator('#export').click()
@@ -31,9 +31,9 @@ try:
   page.locator('#items .item .item-actions button').first.click();assert page.locator('#save-button').inner_text()=='Mettre à jour'
   page.locator('#cancel-edit').click()
   page.on('dialog',lambda x:x.accept())
-  page.locator('#items .item .item-actions button').nth(1).click();page.wait_for_function('document.querySelectorAll("#items .item").length===0')
-  page.locator('#import').set_input_files(backup);page.wait_for_function('document.querySelectorAll("#items .item").length===1')
-  page.wait_for_function('navigator.serviceWorker.controller !== null',{ 'timeout':15000}) if False else None
+  page.locator('#items .item .item-actions button').nth(1).click();page.wait_for_function('() => (document.querySelectorAll("#items .item").length===0)')
+  page.locator('#import').set_input_files(backup);page.wait_for_function('() => (document.querySelectorAll("#items .item").length===1)')
+  page.wait_for_function('() => (navigator.serviceWorker.controller !== null)',{ 'timeout':15000}) if False else None
   page.wait_for_timeout(1200);page.reload();page.wait_for_timeout(450)
   page.context.set_offline(True);page.reload(wait_until='domcontentloaded');page.wait_for_selector('#record-form input')
   assert page.locator('#items .item').count()==1

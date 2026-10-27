@@ -36,7 +36,7 @@ def run():
             page.locator('#grade').fill('10')
             page.locator('#weight').fill('2')
             page.locator('#save').click()
-            page.wait_for_function("document.querySelectorAll('.grade-row').length===1")
+            page.wait_for_function("() => (document.querySelectorAll('.grade-row').length===1)")
             assert page.locator('#average').inner_text().startswith('10,00')
 
             # Prévision historique et simulation future recalculées.
@@ -55,7 +55,7 @@ def run():
 
             # Persistance après rechargement et modification.
             page.reload(wait_until='domcontentloaded')
-            page.wait_for_function("document.querySelectorAll('.grade-row').length===1")
+            page.wait_for_function("() => (document.querySelectorAll('.grade-row').length===1)")
             page.get_by_role('button',name='Modifier').click()
             page.locator('#grade').fill('16')
             page.locator('#save').click()
@@ -103,7 +103,7 @@ def run():
             page.get_by_role('button',name='Supprimer').first.click()
             assert page.locator('#grade-list .grade-row').count()==1
             page.locator('#import-file').set_input_files({'name':'backup.json','mimeType':'application/json','buffer':backup})
-            page.wait_for_function("document.querySelectorAll('.grade-row').length===2")
+            page.wait_for_function("() => (document.querySelectorAll('.grade-row').length===2)")
 
             # Corruption manuelle du stockage : export brut, zéro écrasement silencieux.
             page.evaluate("() => localStorage.setItem('louvre-wave2-gradepilot-v1','NOT_JSON')")
@@ -130,13 +130,13 @@ def run():
             assert page.evaluate("() => localStorage.getItem('louvre-wave2-gradepilot-v1')")=='NOT_JSON'
             page.evaluate('() => {Storage.prototype.setItem = window._setItem;}')
             page.locator('#import-file').set_input_files({'name':'backup.json','mimeType':'application/json','buffer':backup})
-            page.wait_for_function("document.querySelectorAll('.grade-row').length===2")
+            page.wait_for_function("() => (document.querySelectorAll('.grade-row').length===2)")
             assert page.locator('#warning').is_hidden()
             page.reload(wait_until='domcontentloaded')
             assert page.locator('#grade-list .grade-row').count()==2
 
             # PWA vérifiée après une installation initiale valide.
-            page.wait_for_function('navigator.serviceWorker.controller !== null',timeout=16000)
+            page.wait_for_function('() => (navigator.serviceWorker.controller !== null)',timeout=16000)
             context.set_offline(True)
             page.reload(wait_until='domcontentloaded')
             assert page.locator('main').count()==1

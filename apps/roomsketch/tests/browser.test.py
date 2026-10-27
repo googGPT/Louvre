@@ -198,7 +198,7 @@ def main():
             assert page.locator('#plan-view').evaluate('(e)=>getComputedStyle(e).visibility')=='visible'
             assert page.locator('.top').evaluate('(e)=>getComputedStyle(e).visibility')=='hidden'
             page.emulate_media(media='screen')
-            page.wait_for_function('navigator.serviceWorker && navigator.serviceWorker.controller !== null',timeout=20000)
+            page.wait_for_function('() => (navigator.serviceWorker && navigator.serviceWorker.controller !== null)',timeout=20000)
             context.set_offline(True)
             page.reload(wait_until='domcontentloaded')
             expect(page.locator('#plan-view g[data-id]')).to_have_count(2)

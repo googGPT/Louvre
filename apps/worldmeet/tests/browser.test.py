@@ -32,7 +32,7 @@ try:
         fill('Projet Global','Bordeaux','Europe/Paris','2026-11-10T14:00')
         assert '15:00' in page.locator('#local-preview').inner_text()
         page.locator('#save-button').click()
-        page.wait_for_function("document.querySelectorAll('#items .item').length === 1")
+        page.wait_for_function("() => (document.querySelectorAll('#items .item').length === 1)")
         page.locator('#add-attendee').click()
         assert page.locator('[name=meeting]').input_value()=='Projet Global'
         assert page.locator('[name=utc]').input_value()=='2026-11-10T14:00'
@@ -40,7 +40,7 @@ try:
         page.locator('[name=zone]').select_option('America/New_York')
         assert '09:00' in page.locator('#local-preview').inner_text()
         page.locator('#save-button').click()
-        page.wait_for_function("document.querySelectorAll('#comparison .attendee').length === 2")
+        page.wait_for_function("() => (document.querySelectorAll('#comparison .attendee').length === 2)")
         assert page.locator('#count-meetings').inner_text()=='1'
         assert page.locator('#count-zones').inner_text()=='2'
         assert '15:00' in page.locator('#comparison').inner_text()
@@ -66,7 +66,7 @@ try:
         assert data['version']==1 and len(data['records'])==2
         assert all(set(row)=={'id','meeting','participant','zone','utc'} for row in data['records'])
         page.reload(wait_until='domcontentloaded')
-        page.wait_for_function("document.querySelectorAll('#items .item').length === 2")
+        page.wait_for_function("() => (document.querySelectorAll('#items .item').length === 2)")
         # Search / edit / delete
         page.locator('#search').fill('New York')
         assert page.locator('#items .item').count()==1
@@ -76,17 +76,17 @@ try:
         page.locator('#cancel-edit').click()
         page.on('dialog',lambda d:d.accept())
         page.locator('#items .item .item-actions button').nth(1).click()
-        page.wait_for_function("document.querySelectorAll('#items .item').length === 1")
+        page.wait_for_function("() => (document.querySelectorAll('#items .item').length === 1)")
         page.locator('#import').set_input_files({'name':'worldmeet.json','mimeType':'application/json','buffer':json.dumps(data).encode()})
-        page.wait_for_function("document.querySelectorAll('#items .item').length === 2")
+        page.wait_for_function("() => (document.querySelectorAll('#items .item').length === 2)")
         # Invalid import cannot corrupt existing local records.
         page.locator('#import').set_input_files({'name':'broken.json','mimeType':'application/json','buffer':b'{"app":"WorldMeet"}'})
         assert page.locator('#items .item').count()==2
         assert 'Import refusé' in page.locator('#status').inner_text()
-        page.wait_for_function('navigator.serviceWorker.controller !== null',timeout=25000)
+        page.wait_for_function('() => (navigator.serviceWorker.controller !== null)',timeout=25000)
         page.context.set_offline(True)
         page.reload(wait_until='domcontentloaded')
-        page.wait_for_function("document.querySelectorAll('#items .item').length === 2")
+        page.wait_for_function("() => (document.querySelectorAll('#items .item').length === 2)")
         assert page.evaluate('document.documentElement.scrollWidth <= window.innerWidth+2')
         assert not errors,errors
         browser.close()

@@ -46,13 +46,13 @@ def main():
             assert page.locator('#parse-preview').inner_text().find('Date suggérée') >= 0
             assert page.locator('#due-local').input_value(), 'Date not automatically suggested'
             page.locator('#image-file').set_input_files({'name': 'capture.png', 'mimeType': 'image/png', 'buffer': PNG})
-            page.wait_for_function("document.querySelector('#image-label').textContent.includes('prête')", timeout=9000)
+            page.wait_for_function("() => (document.querySelector('#image-label').textContent.includes('prête'))", timeout=9000)
             page.locator('#create-button').click()
-            page.wait_for_function("document.querySelector('#metric-open').textContent==='1'")
+            page.wait_for_function("() => (document.querySelector('#metric-open').textContent==='1')")
             assert page.get_by_text('Envoyer le dossier demain à 14h30', exact=True).count() == 1
             assert page.get_by_text('Capture', exact=False).count() >= 1
             page.reload(wait_until='networkidle')
-            page.wait_for_function("document.querySelector('#metric-open').textContent==='1'")
+            page.wait_for_function("() => (document.querySelector('#metric-open').textContent==='1')")
             assert page.get_by_text('Envoyer le dossier demain à 14h30', exact=True).count() == 1
             page.locator('.task-row [data-action="image"]').click()
             assert page.locator('#image-dialog').evaluate('(node)=>node.open')
@@ -61,7 +61,7 @@ def main():
             page.locator('#edit-title-input').fill('Envoyer le dossier corrigé')
             page.locator('#edit-note').fill('Pièce à joindre après vérification')
             page.locator('#edit-form button[type="submit"]').click()
-            page.wait_for_function("document.querySelector('.task-row .task-body h3')?.textContent==='Envoyer le dossier corrigé'", timeout=10000)
+            page.wait_for_function("() => (document.querySelector('.task-row .task-body h3')?.textContent==='Envoyer le dossier corrigé')", timeout=10000)
             assert page.get_by_text('Envoyer le dossier corrigé', exact=True).count() == 1
             with page.expect_download() as download_info:
                 page.locator('#export-json').click()
@@ -72,24 +72,24 @@ def main():
             page.locator('.task-row [data-action="edit"]').click()
             page.once('dialog', lambda d: d.accept())
             page.locator('#delete-action').click()
-            page.wait_for_function("document.querySelector('#metric-open').textContent==='0'")
+            page.wait_for_function("() => (document.querySelector('#metric-open').textContent==='0')")
             page.once('dialog', lambda d: d.accept())
             page.locator('#import-file').set_input_files({'name': 'backup.json', 'mimeType': 'application/json', 'buffer': json.dumps(saved).encode()})
-            page.wait_for_function("document.querySelector('#metric-open').textContent==='1'")
+            page.wait_for_function("() => (document.querySelector('#metric-open').textContent==='1')")
             assert page.get_by_text('Envoyer le dossier corrigé', exact=True).count() == 1
             with page.expect_download() as calendar_info:
                 page.locator('#export-calendar').click()
             ics = Path(calendar_info.value.path()).read_text()
             assert 'BEGIN:VEVENT' in ics and 'Envoyer le dossier corrig' in ics
             page.locator('.task-row [data-action="toggle"]').click()
-            page.wait_for_function("document.querySelector('#metric-done').textContent==='1'")
+            page.wait_for_function("() => (document.querySelector('#metric-done').textContent==='1')")
             page.locator('[data-view="done"]').click()
             assert page.get_by_text('Envoyer le dossier corrigé', exact=True).count() == 1
             # Verify offline shell: registration should be complete, then reload without network.
-            page.wait_for_function('navigator.serviceWorker.controller !== null', timeout=12000)
+            page.wait_for_function('() => (navigator.serviceWorker.controller !== null)', timeout=12000)
             context.set_offline(True)
             page.reload(wait_until='domcontentloaded')
-            page.wait_for_function("document.querySelector('#metric-done').textContent==='1'", timeout=7000)
+            page.wait_for_function("() => (document.querySelector('#metric-done').textContent==='1')", timeout=7000)
             assert page.title().startswith('SnapAction')
             context.set_offline(False)
             mobile = browser.new_context(viewport={'width': 390, 'height': 844}, device_scale_factor=1, is_mobile=True, has_touch=True)
