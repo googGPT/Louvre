@@ -1,0 +1,78 @@
+# Tests des applis Louvre sur chaque PR : une seule recette (scripts/test_app.sh)
+# appliquée automatiquement à chaque appli modifiée. Une nouvelle appli dans apps/
+# est testée sans rien ajouter ici.
+name: Louvre — tests des applis
+on:
+  pull_request:
+    paths:
+      - 'apps/**'
+      - 'index.html'
+      - 'assets/**'
+      - 'scripts/**'
+      - '.github/workflows/louvre-apps-qa.yml'
+  workflow_dispatch:  # lancement manuel : teste toutes les applis
+permissions:
+  contents: read
+jobs:
+  plan:
+    name: Applis à tester
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      slugs: ${{ steps.pick.outputs.slugs }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - id: pick
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          all=$(for d in apps/*/; do [ -f "$d/index.html" ] && basename "$d"; done)
+          if [ -z "${BASE_REF}" ]; then
+            chosen="$all"                                   # lancement manuel : tout
+          else
+            changed=$(git diff --name-only "origin/${BASE_REF}...HEAD")
+            if echo "$changed" | grep -qE '^(scripts/test_app\.sh|\.github/workflows/louvre-apps-qa\.yml)$'; then
+              chosen="$all"                                 # la recette change : tout retester
+            else
+              chosen=$(echo "$changed" | sed -nE 's#^apps/([^/]+)/.*#\1#p' | sort -u | while read -r s; do [ -f "apps/$s/index.html" ] && echo "$s"; done || true)
+            fi
+          fi
+          json=$(printf '%s\n' $chosen | python3 -c 'import json,sys; print(json.dumps([l.strip() for l in sys.stdin if l.strip()]))')
+          echo "slugs=$json" >> "$GITHUB_OUTPUT"
+          echo "Applis à tester : $json"
+
+  app:
+    name: ${{ matrix.slug }}
+    needs: plan
+    if: needs.plan.outputs.slugs != '[]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        slug: ${{ fromJSON(needs.plan.outputs.slugs) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Outils de test (Playwright, décodeur QR indépendant)
+        run: python -m pip install --disable-pip-version-check 'playwright>=1.45,<2' 'zxing-cpp>=2.2,<4' 'Pillow>=10,<13'
+      - name: Tester ${{ matrix.slug }}
+        run: bash scripts/test_app.sh "${{ matrix.slug }}"
+
+  site:
+    name: Site complet (accueil, catalogue, fichiers hors ligne)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Assembler le site comme en production
+        run: bash scripts/build_site.sh
+      - name: Tests du vérificateur public
+        run: python -m unittest discover -s scripts -p 'test_verify_public_app.py' -v

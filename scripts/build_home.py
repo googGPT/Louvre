@@ -53,6 +53,13 @@ def render(data):
             raise SystemExit(f"Appli introuvable : apps/{a['slug']}/index.html")
         if a["family"] not in data["families"]:  # famille inconnue = faute de frappe
             raise SystemExit(f"Famille inconnue pour {a['slug']} : {a['family']}")
+    listed = {a["slug"] for a in apps}  # applis présentes dans le catalogue
+    on_disk = {  # applis réellement présentes dans apps/
+        d for d in os.listdir(os.path.join(ROOT, "apps"))
+        if os.path.isfile(os.path.join(ROOT, "apps", d, "index.html"))
+    }
+    if on_disk - listed:  # appli publiée mais oubliée dans le catalogue
+        raise SystemExit("Applis absentes de apps/catalogue.json : " + ", ".join(sorted(on_disk - listed)))
     sections = []  # une section par famille
     for fam in data["families"]:  # dans l'ordre choisi dans catalogue.json
         members = sorted((a for a in apps if a["family"] == fam), key=lambda a: a["name"].lower())

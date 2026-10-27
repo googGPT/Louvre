@@ -13,7 +13,7 @@ def run():
     threading.Thread(target=srv.serve_forever,daemon=True).start()
     try:
         with sync_playwright() as p:
-            exe='/usr/bin/chromium' if os.path.exists('/usr/bin/chromium') else None
+            exe=os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium') if os.path.exists(os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium')) else None
             b=p.chromium.launch(headless=True,executable_path=exe,args=['--no-sandbox'])
             ctx=b.new_context(viewport={'width':390,'height':844},accept_downloads=True)
             page=ctx.new_page();errors=[]

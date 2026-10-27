@@ -15,7 +15,7 @@ def run():
     threading.Thread(target=server.serve_forever,daemon=True).start()
     try:
         with sync_playwright() as pw:
-            exe='/usr/bin/chromium' if os.path.isfile('/usr/bin/chromium') else None
+            exe=os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium') if os.path.isfile(os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium')) else None
             browser=pw.chromium.launch(headless=True,executable_path=exe,args=['--no-sandbox'])
             ctx=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True)
             page=ctx.new_page();errors=[]

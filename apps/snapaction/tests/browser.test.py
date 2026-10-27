@@ -32,7 +32,7 @@ def main():
     errors = []
     try:
         with sync_playwright() as p:
-            browser_path = os.environ.get('CHROMIUM_PATH') or shutil.which('chromium')
+            browser_path = os.environ.get('LOUVRE_CHROMIUM') or os.environ.get('CHROMIUM_PATH') or shutil.which('chromium')
             browser = (p.chromium.launch(headless=True, executable_path=browser_path, args=['--no-sandbox', '--disable-dev-shm-usage'])
                        if browser_path else p.chromium.launch(channel='chrome', headless=True, args=['--no-sandbox', '--disable-dev-shm-usage']))
             context = browser.new_context(accept_downloads=True, service_workers='allow')

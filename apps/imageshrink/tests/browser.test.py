@@ -1,4 +1,5 @@
 """ImageShrink: Chromium E2E — real canvas decode, output, privacy and offline."""
+import os
 import base64
 import functools
 import http.server
@@ -19,7 +20,7 @@ def run():
     try:
         with sync_playwright() as p:
             browser=p.chromium.launch(
-                headless=True,executable_path='/usr/bin/chromium',args=['--no-sandbox'])
+                headless=True,executable_path=os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium'),args=['--no-sandbox'])
             context=browser.new_context(
                 viewport={'width':390,'height':844},accept_downloads=True)
             page=context.new_page()

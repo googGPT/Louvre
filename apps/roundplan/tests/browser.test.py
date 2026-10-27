@@ -1,4 +1,5 @@
 """RoundPlan v2 real Chrome test (GitHub Actions). No paid APIs or external requests."""
+import os
 import functools
 import http.server
 import json
@@ -16,7 +17,7 @@ def run():
     try:
         with sync_playwright() as p:
             import shutil
-            chrome=shutil.which('chromium') or shutil.which('google-chrome')
+            chrome=os.environ.get('LOUVRE_CHROMIUM') or shutil.which('chromium') or shutil.which('google-chrome')
             browser=p.chromium.launch(headless=True,executable_path=chrome,args=['--no-sandbox'])
             ctx=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True)
             page=ctx.new_page();errors=[]

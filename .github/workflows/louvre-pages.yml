@@ -1,0 +1,76 @@
+# Publication Louvre sur GitHub Pages : teste toutes les applis, assemble le site
+# automatiquement (scripts/build_site.sh), publie, puis vérifie le site en ligne.
+name: Louvre — publication GitHub Pages
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/**'
+      - 'index.html'
+      - 'assets/**'
+      - 'scripts/**'
+      - '.github/workflows/louvre-pages.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: louvre-pages
+  cancel-in-progress: false  # ne jamais interrompre une publication en cours
+jobs:
+  plan:
+    name: Liste des applis
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      slugs: ${{ steps.list.outputs.slugs }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - id: list
+        run: |
+          json=$(for d in apps/*/; do [ -f "$d/index.html" ] && basename "$d"; done | python3 -c 'import json,sys; print(json.dumps([l.strip() for l in sys.stdin if l.strip()]))')
+          echo "slugs=$json" >> "$GITHUB_OUTPUT"
+
+  app:
+    name: ${{ matrix.slug }}
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        slug: ${{ fromJSON(needs.plan.outputs.slugs) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: python -m pip install --disable-pip-version-check 'playwright>=1.45,<2' 'zxing-cpp>=2.2,<4' 'Pillow>=10,<13'
+      - run: bash scripts/test_app.sh "${{ matrix.slug }}"
+
+  deploy:
+    name: Publier
+    needs: app
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Assembler le site
+        run: bash scripts/build_site.sh
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Vérifier le site en ligne (accueil, applis, fichiers hors ligne)
+        run: python scripts/smoke_site.py "${{ steps.deployment.outputs.page_url }}"

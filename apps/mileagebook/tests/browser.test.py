@@ -11,7 +11,7 @@ server=ThreadingHTTPServer(('127.0.0.1',0),Handler)
 threading.Thread(target=server.serve_forever,daemon=True).start()
 try:
     with sync_playwright() as pw, tempfile.TemporaryDirectory() as temp:
-        exe=next((p for p in ['/usr/bin/chromium','/usr/bin/google-chrome'] if Path(p).exists()),None)
+        exe=next((p for p in [os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium'),'/usr/bin/google-chrome'] if Path(p).exists()),None)
         browser=pw.chromium.launch(executable_path=exe,headless=True,args=['--no-sandbox'])
         page=browser.new_page(viewport={'width':390,'height':844},accept_downloads=True)
         errors=[];page.on('pageerror',lambda e:errors.append(str(e)))

@@ -26,7 +26,7 @@ class Server(socketserver.TCPServer):
 
 
 def main():
-    chrome = shutil.which('google-chrome') or shutil.which('google-chrome-stable') or shutil.which('chromium')
+    chrome = os.environ.get('LOUVRE_CHROMIUM') or shutil.which('google-chrome') or shutil.which('google-chrome-stable') or shutil.which('chromium')
     if not chrome:
         raise RuntimeError('Chrome or Chromium required for browser acceptance check')
     with Server(('127.0.0.1', 0), Handler) as srv:

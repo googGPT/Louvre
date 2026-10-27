@@ -1,4 +1,5 @@
 """TextDiff: Chromium real UI, downloads, XSS, bound checks, mobile and offline."""
+import os
 import functools
 import http.server
 import pathlib
@@ -14,7 +15,7 @@ def run():
     threading.Thread(target=server.serve_forever,daemon=True).start()
     try:
         with sync_playwright() as p:
-            browser=p.chromium.launch(headless=True,executable_path='/usr/bin/chromium',args=['--no-sandbox'])
+            browser=p.chromium.launch(headless=True,executable_path=os.environ.get('LOUVRE_CHROMIUM', '/usr/bin/chromium'),args=['--no-sandbox'])
             context=browser.new_context(viewport={'width':390,'height':844},accept_downloads=True)
             page=context.new_page();errors=[];external=[]
             origin=f'http://127.0.0.1:{server.server_port}/'
