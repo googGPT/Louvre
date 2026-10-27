@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ClassRubric — Grilles de notation critériées</title>
+<meta name="description" content="ClassRubric : créez des grilles de notation (critères, niveaux, pondérations), évaluez les copies en un clic, notez sur 20 ou sur 100 et exportez en CSV. Sans compte, hors ligne.">
+<meta name="theme-color" content="#5f3dc4">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/classrubric/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>ClassRubric</strong><small data-i18n="brand.tagline">Grilles de notation critériées</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Des notes justes, critère par critère.</h1>
+  <p data-i18n="hero.text">Construisez une grille (critères, niveaux décrits, pondérations), cliquez le niveau atteint pour chaque copie : la note est calculée sur le barème choisi.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les données enregistrées sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-rubric">
+  <div class="row between">
+    <h2 id="h-rubric" class="flat" data-i18n="rubric.title">Grille</h2>
+    <div class="row">
+      <label class="visually-hidden" for="rubric-select" data-i18n="rubric.select">Grille affichée</label>
+      <select id="rubric-select" class="auto"></select>
+      <button class="btn" id="new-rubric" type="button" data-i18n="btn.new">Nouvelle</button>
+      <button class="btn" id="rename-rubric" type="button" data-i18n="btn.rename">Renommer</button>
+      <button class="btn" id="dup-rubric" type="button" data-i18n="btn.duplicate">Dupliquer</button>
+      <button class="btn" id="delete-rubric" type="button" data-i18n="btn.delete">Supprimer</button>
+    </div>
+  </div>
+  <div class="settings">
+    <label class="field"><span data-i18n="f.scale">Noter sur</span><input id="scale" data-keep="scale" inputmode="numeric" maxlength="4" aria-describedby="scale-hint"></label>
+    <label class="field"><span data-i18n="f.step">Arrondi de la note</span>
+      <select id="step">
+        <option value="1" data-i18n="step.1">au point</option>
+        <option value="0.5" data-i18n="step.0.5">au demi-point</option>
+        <option value="0.25" data-i18n="step.0.25">au quart de point</option>
+        <option value="0.1" data-i18n="step.0.1">au dixième</option>
+        <option value="0.01" data-i18n="step.0.01">au centième</option>
+      </select></label>
+  </div>
+  <p class="hint" id="scale-hint" data-i18n="hint.formula">Note = barème × Σ (poids × points obtenus ÷ points max du critère) ÷ Σ poids, arrondie une seule fois.</p>
+  <div id="criteria" class="criteria"></div>
+  <div class="row">
+    <button class="btn primary" id="add-criterion" type="button" data-i18n="btn.addCriterion">Ajouter un critère</button>
+    <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+    <button class="btn" id="print-grid" type="button" data-i18n="btn.printGrid">Imprimer la grille</button>
+  </div>
+  <p class="status" id="grid-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-eval">
+  <h2 id="h-eval" data-i18n="eval.title">Évaluer une copie</h2>
+  <form id="eval-form" class="row" novalidate>
+    <label class="field grow"><span data-i18n="f.student">Étudiant ou groupe</span><input id="student" name="student" data-keep="student" maxlength="80" data-i18n-attr="placeholder:f.studentPh"></label>
+    <button class="btn primary" id="new-eval" type="submit" data-i18n="btn.newEval">Nouvelle copie</button>
+  </form>
+  <div class="row">
+    <label class="visually-hidden" for="eval-select" data-i18n="eval.select">Copie affichée</label>
+    <select id="eval-select" class="auto"></select>
+    <button class="btn" id="print-eval" type="button" data-i18n="btn.printEval">Imprimer la copie</button>
+    <button class="btn" id="delete-eval" type="button" data-i18n="btn.deleteEval">Supprimer la copie</button>
+  </div>
+  <div id="score" class="score" aria-live="polite"></div>
+  <div id="eval-grid" class="eval-grid"></div>
+  <label class="field" id="comment-wrap"><span data-i18n="f.comment">Commentaire pour l'étudiant</span><textarea id="comment" data-keep="comment" maxlength="1000"></textarea></label>
+  <p class="status" id="eval-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-results">
+  <h2 id="h-results" data-i18n="results.title">Résultats de la classe</h2>
+  <div id="kpis" class="kpis"></div>
+  <ul id="crit-stats" class="crit-stats"></ul>
+  <div class="scroll"><table class="table" id="results"><thead><tr><th data-i18n="th.student">Étudiant</th><th class="num" data-i18n="th.score">Note</th><th data-i18n="th.status">Statut</th><th><span class="visually-hidden" data-i18n="th.actions">Actions</span></th></tr></thead><tbody></tbody></table></div>
+  <div class="row"><button class="btn" id="export-csv" type="button" data-i18n="btn.csv">Exporter les notes (CSV)</button></div>
+  <p class="status" id="results-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <label class="btn" for="import" data-i18n="btn.import">Restaurer…</label>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">Les critères, poids et points sont ceux que vous saisissez : ClassRubric ne fait que les calculs. Vos données restent sur cet appareil.</footer>
+<section id="print-area" class="print-only" aria-hidden="true"></section>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

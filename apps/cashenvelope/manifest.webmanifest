@@ -1,0 +1,12 @@
+{
+  "name": "CashEnvelope — le budget en enveloppes",
+  "short_name": "CashEnvelope",
+  "description": "Répartit un budget mensuel en enveloppes et suit leurs soldes, reports et dépassements.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#9c4f00",
+  "background_color": "#f8f5f0",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

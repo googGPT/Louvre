@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MoveBox — Cartons de déménagement</title>
+<meta name="description" content="MoveBox : inventoriez les cartons d'un déménagement (pièce, contenu, fragile, poids), retrouvez un objet, imprimez les étiquettes et suivez chaque carton jusqu'à son ouverture. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#8a5a14">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/movebox/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>MoveBox</strong><small data-i18n="brand.tagline">Cartons de déménagement</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Dans quel carton est la bouilloire ?</h1>
+  <p data-i18n="hero.text">Numérotez vos cartons, notez la pièce de destination et le contenu.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les cartons enregistrés sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-search">
+  <h2 id="h-search" data-i18n="search.title">Retrouver un objet</h2>
+  <label class="visually-hidden" for="search" data-i18n="search.label">Objet, pièce ou numéro de carton</label>
+  <input id="search" type="search" autocomplete="off" data-i18n-attr="placeholder:search.ph">
+  <p class="status" id="search-status" role="status" aria-live="polite"></p>
+  <ul class="results" id="results"></ul>
+</section>
+
+<section class="panel" aria-labelledby="h-box">
+  <div class="row between"><h2 id="h-box" class="flush" data-i18n="box.title">Carton</h2><button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button></div>
+  <form id="box-form" novalidate>
+    <div class="form-grid">
+      <label class="field"><span data-i18n="f.number">Numéro</span><input name="number" inputmode="numeric"></label>
+      <label class="field wide"><span data-i18n="f.room">Pièce de destination</span><input name="room" maxlength="40" list="rooms" autocomplete="off" data-i18n-attr="placeholder:f.roomPh"></label>
+      <label class="field"><span data-i18n="f.weight">Poids (kg, facultatif)</span><input name="weight" inputmode="decimal"></label>
+      <label class="check"><input type="checkbox" name="fragile"> <span data-i18n="f.fragile">Fragile</span></label>
+    </div>
+    <datalist id="rooms"></datalist>
+    <label class="field"><span data-i18n="f.items">Contenu (un objet par ligne)</span><textarea name="items" rows="4" dir="auto" data-i18n-attr="placeholder:f.itemsPh"></textarea></label>
+    <label class="field"><span data-i18n="f.notes">Notes (facultatif)</span><input name="notes" maxlength="200" dir="auto"></label>
+    <div class="row">
+      <button class="btn primary" id="save" type="submit" data-i18n="btn.add">Ajouter le carton</button>
+      <button class="btn" id="cancel" type="button" hidden data-i18n="btn.cancel">Annuler</button>
+    </div>
+    <p class="status" id="box-status" role="status" aria-live="polite"></p>
+  </form>
+</section>
+
+<section class="panel" aria-labelledby="h-boxes">
+  <h2 id="h-boxes" data-i18n="boxes.title">Suivi des cartons</h2>
+  <div class="kpis" id="kpis"></div>
+  <div class="progress" id="progress" aria-hidden="true"></div>
+  <p class="hint" id="weight-note"></p>
+  <label class="field max"><span data-i18n="f.maxWeight">Poids maximal par carton (kg) : votre limite, pour être alerté</span><input id="max-weight" inputmode="decimal"></label>
+  <div class="filters">
+    <label class="field"><span data-i18n="filter.status">Statut</span><select id="f-status"></select></label>
+    <label class="field"><span data-i18n="filter.room">Pièce</span><select id="f-room"></select></label>
+    <label class="field"><span data-i18n="bulk.label">Marquer les cartons affichés comme</span><select id="bulk-status"></select></label>
+    <button class="btn" id="bulk-apply" type="button" data-i18n="bulk.apply">Appliquer</button>
+  </div>
+  <p class="status" id="list-status" role="status" aria-live="polite"></p>
+  <ul class="boxes" id="boxes"></ul>
+</section>
+
+<section class="panel" aria-labelledby="h-rooms">
+  <h2 id="h-rooms" data-i18n="rooms.title">Par pièce</h2>
+  <div class="scroll"><table class="data" id="rooms-table"></table></div>
+</section>
+
+<section class="panel" aria-labelledby="h-export">
+  <h2 id="h-export" data-i18n="export.title">Étiquettes, export et sauvegarde</h2>
+  <div class="row">
+    <button class="btn primary" id="print-labels" type="button" data-i18n="btn.labels">Imprimer les étiquettes</button>
+    <button class="btn" id="export-csv" type="button" data-i18n="btn.csv">Exporter l'inventaire (CSV)</button>
+  </div>
+  <p class="hint" data-i18n="labels.hint">Les étiquettes reprennent les cartons affichés (filtres compris), deux par page en largeur.</p>
+  <div class="row top-gap">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <button class="btn" id="pick-backup" type="button" data-i18n="btn.restore">Restaurer…</button>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden" tabindex="-1" aria-hidden="true">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">Vos cartons restent sur cet appareil.</footer>
+<div id="labels" aria-hidden="true"></div>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

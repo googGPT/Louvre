@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SavingsProjection — Projeter son épargne</title>
+<meta name="description" content="SavingsProjection : projetez une épargne avec des versements réguliers et vos propres taux hypothétiques, capitalisés chaque mois ; scénarios comparés et tableau annuel. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#5f3dc4">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/savingsprojection/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>SavingsProjection</strong><small data-i18n="brand.tagline">Projeter son épargne</small></div></div>
+  <div class="tools"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale></div></div>
+</header>
+<main>
+<section class="hero">
+  <h1 data-i18n="hero.title">Et si vous épargniez régulièrement ?</h1>
+  <p data-i18n="hero.text">Indiquez un capital de départ, des versements réguliers et un ou plusieurs taux annuels de votre choix.</p>
+</section>
+<p class="hyp" data-i18n="hyp">Ce sont des calculs sur vos hypothèses, pas une prévision.</p>
+<p id="warning" class="warning" hidden data-i18n="warning">Les données enregistrées sur cet appareil sont illisibles.</p>
+
+<div class="grid">
+<section class="panel" aria-labelledby="h-plan">
+  <h2 id="h-plan" data-i18n="plan.title">Votre plan d'épargne</h2>
+  <form id="plan-form" novalidate>
+    <div class="form-grid">
+      <label class="field"><span><span data-i18n="f.initial">Capital de départ</span> (<span class="cur">€</span>)</span><input name="initial" inputmode="decimal" autocomplete="off" placeholder="1000"></label>
+      <label class="field"><span><span data-i18n="f.contribution">Versement</span> (<span class="cur">€</span>)</span><input name="contribution" inputmode="decimal" autocomplete="off" placeholder="150"></label>
+      <label class="field"><span data-i18n="f.frequency">Fréquence</span><select name="frequency"><option value="monthly" data-i18n="freq.monthly">Chaque mois</option><option value="quarterly" data-i18n="freq.quarterly">Chaque trimestre</option><option value="yearly" data-i18n="freq.yearly">Chaque année</option></select></label>
+      <label class="field"><span data-i18n="f.timing">Moment du versement</span><select name="timing"><option value="end" data-i18n="timing.end">En fin de période</option><option value="start" data-i18n="timing.start">En début de période</option></select></label>
+      <label class="field"><span data-i18n="f.years">Durée (années)</span><input name="years" inputmode="numeric" autocomplete="off" value="10"></label>
+      <label class="field"><span><span data-i18n="f.target">Objectif (facultatif)</span> (<span class="cur">€</span>)</span><input name="target" inputmode="decimal" autocomplete="off" placeholder="20000"></label>
+    </div>
+    <div class="row"><button class="btn primary" type="submit" data-i18n="btn.project">Projeter</button><button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button></div>
+    <p class="status" id="plan-status" role="status" aria-live="polite"></p>
+  </form>
+</section>
+
+<section class="panel" aria-labelledby="h-scen">
+  <h2 id="h-scen" data-i18n="scen.title">Scénarios de taux</h2>
+  <form id="scen-form" novalidate>
+    <div class="form-grid">
+      <label class="field"><span data-i18n="f.scenName">Nom</span><input name="name" maxlength="30" autocomplete="off" data-i18n-attr="placeholder:f.scenNamePh"></label>
+      <label class="field"><span data-i18n="f.rate">Taux annuel supposé (%)</span><input name="rate" inputmode="decimal" autocomplete="off" placeholder="2.5"></label>
+    </div>
+    <div class="row"><button class="btn primary" type="submit" data-i18n="btn.addScen">Ajouter le scénario</button></div>
+    <p class="status" id="scen-status" role="status" aria-live="polite"></p>
+  </form>
+  <p class="note" data-i18n="scen.note">Le taux est capitalisé chaque mois.</p>
+  <ul class="items" id="scen-list"></ul>
+</section>
+</div>
+
+<section class="panel" aria-labelledby="h-result">
+  <h2 id="h-result" data-i18n="result.title">Projection</h2>
+  <div id="cards" class="cards" aria-live="polite"></div>
+  <figure class="chart" id="chart-box" hidden>
+    <div id="chart"></div>
+    <figcaption class="legend" id="legend"></figcaption>
+  </figure>
+</section>
+
+<section class="panel" aria-labelledby="h-years">
+  <h2 id="h-years" data-i18n="years.title">Tableau annuel</h2>
+  <div id="years"></div>
+</section>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Exports et sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="csv" type="button" data-i18n="btn.csv">Tableau annuel (CSV)</button>
+    <button class="btn" id="svg" type="button" data-i18n="btn.svg">Graphique (SVG)</button>
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <label class="btn"><span data-i18n="btn.import">Restaurer…</span><input id="import" type="file" accept="application/json,.json" class="visually-hidden"></label>
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+</main>
+<footer data-i18n="footer">Les taux sont ceux que vous saisissez. Vos données restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TeachingAttendance — Feuille de présence locale</title>
+<meta name="description" content="TeachingAttendance : faites l'appel (présent, absent, retard, excusé), suivez le taux d'assiduité de chaque étudiant avec un seuil d'alerte et exportez les absences en CSV. Sans compte, hors ligne.">
+<meta name="theme-color" content="#1864ab">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/teachingattendance/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>TeachingAttendance</strong><small data-i18n="brand.tagline">Feuille de présence locale</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">L'appel en un geste, l'assiduité en un coup d'œil.</h1>
+  <p data-i18n="hero.text">Importez votre liste, créez les séances, faites l'appel : TeachingAttendance calcule le taux d'assiduité de chaque étudiant selon vos règles et signale ceux qui passent sous votre seuil.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les données enregistrées sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-class">
+  <div class="row between">
+    <h2 id="h-class" class="flat" data-i18n="class.title">Classe</h2>
+    <div class="row">
+      <label class="visually-hidden" for="class-select" data-i18n="class.select">Classe affichée</label>
+      <select id="class-select" class="auto"></select>
+      <button class="btn" id="new-class" type="button" data-i18n="btn.new">Nouvelle</button>
+      <button class="btn" id="rename-class" type="button" data-i18n="btn.rename">Renommer</button>
+      <button class="btn" id="delete-class" type="button" data-i18n="btn.delete">Supprimer</button>
+      <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+    </div>
+  </div>
+  <p class="status" id="class-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-students">
+  <h2 id="h-students" data-i18n="students.title">Étudiants</h2>
+  <form id="student-form" class="student-form" novalidate>
+    <label class="field grow"><span data-i18n="f.name">Nom</span><input name="name" maxlength="80" data-keep="st-name" data-i18n-attr="placeholder:f.namePh"></label>
+    <label class="field"><span data-i18n="f.ref">Numéro (facultatif)</span><input name="ref" maxlength="30" data-keep="st-ref"></label>
+    <button class="btn primary" type="submit" data-i18n="btn.addStudent">Ajouter</button>
+  </form>
+  <details class="import" id="import-box">
+    <summary data-i18n="import.title">Importer une liste (CSV ou copier-coller)</summary>
+    <p class="hint" data-i18n="import.hint">Une ligne par étudiant : « Nom » ou « Nom;Numéro » (séparateur ; , ou tabulation).</p>
+    <label class="field"><span data-i18n="f.roster">Liste</span><textarea id="roster-text" data-keep="roster" rows="5"></textarea></label>
+    <div class="row">
+      <label class="check-label"><input type="checkbox" id="roster-header" data-keep="roster-header"><span data-i18n="f.header">La première ligne contient les en-têtes</span></label>
+      <label class="btn" for="roster-file" data-i18n="btn.file">Choisir un fichier CSV</label>
+      <input id="roster-file" type="file" accept=".csv,.txt,text/csv,text/plain" class="visually-hidden">
+      <button class="btn primary" id="roster-import" type="button" data-i18n="btn.importList">Ajouter la liste</button>
+    </div>
+  </details>
+  <p class="status" id="student-status" role="status" aria-live="polite"></p>
+  <p id="student-count" class="muted"></p>
+  <ul id="students" class="list compact"></ul>
+</section>
+
+<section class="panel" aria-labelledby="h-roll">
+  <h2 id="h-roll" data-i18n="roll.title">Séances et appel</h2>
+  <form id="session-form" class="session-form" novalidate>
+    <label class="field"><span data-i18n="f.date">Date</span><input name="date" type="date" data-keep="se-date"></label>
+    <label class="field grow"><span data-i18n="f.label">Intitulé (facultatif)</span><input name="label" maxlength="80" data-keep="se-label" data-i18n-attr="placeholder:f.labelPh"></label>
+    <button class="btn primary" type="submit" data-i18n="btn.addSession">Ajouter la séance</button>
+  </form>
+  <p class="status" id="session-status" role="status" aria-live="polite"></p>
+  <div class="row">
+    <label class="visually-hidden" for="session-select" data-i18n="roll.select">Séance affichée</label>
+    <select id="session-select" class="auto"></select>
+    <button class="btn" id="all-present" type="button" data-i18n="btn.allPresent">Tous présents</button>
+    <button class="btn" id="clear-marks" type="button" data-i18n="btn.clearMarks">Effacer l'appel</button>
+    <button class="btn" id="delete-session" type="button" data-i18n="btn.deleteSession">Supprimer la séance</button>
+  </div>
+  <p id="session-stats" class="session-stats" aria-live="polite"></p>
+  <ul id="roll" class="roll"></ul>
+  <p class="status" id="roll-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-summary">
+  <h2 id="h-summary" data-i18n="sum.title">Assiduité</h2>
+  <div class="settings">
+    <label class="field"><span data-i18n="f.threshold">Seuil d'alerte (%)</span><input id="threshold" data-keep="threshold" inputmode="decimal" maxlength="6"></label>
+    <div class="field rules">
+      <label class="check-label"><input type="checkbox" id="late-counts"><span data-i18n="f.lateCounts">Un retard compte comme une présence</span></label>
+      <label class="check-label"><input type="checkbox" id="excused-neutral"><span data-i18n="f.excusedNeutral">Une absence excusée ne compte pas dans le taux</span></label>
+    </div>
+  </div>
+  <p class="hint" id="formula"></p>
+  <p class="status" id="settings-status" role="status" aria-live="polite"></p>
+  <div id="kpis" class="kpis"></div>
+  <div class="scroll"><table class="table" id="summary"><thead><tr><th data-i18n="th.student">Étudiant</th><th class="num" data-i18n="th.rate">Assiduité</th><th class="num" data-i18n="th.present">Prés.</th><th class="num" data-i18n="th.late">Ret.</th><th class="num" data-i18n="th.absent">Abs.</th><th class="num" data-i18n="th.excused">Exc.</th></tr></thead><tbody></tbody></table></div>
+  <div class="row">
+    <button class="btn" id="export-absences" type="button" data-i18n="btn.csvAbsences">Exporter les absences (CSV)</button>
+    <button class="btn" id="export-summary" type="button" data-i18n="btn.csvSummary">Exporter le bilan (CSV)</button>
+  </div>
+  <p class="status" id="summary-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <label class="btn" for="import" data-i18n="btn.import">Restaurer…</label>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">Le seuil et les règles de calcul sont ceux que vous choisissez ; ils ne reprennent aucun règlement d'établissement. Les données de présence restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

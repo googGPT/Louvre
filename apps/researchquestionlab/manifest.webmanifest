@@ -1,0 +1,12 @@
+{
+  "name": "ResearchQuestionLab — structurer sa question de recherche",
+  "short_name": "RQLab",
+  "description": "Structure problème, lacune, questions, variables et hypothèses de recherche, avec une liste de contrôle.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#7048e8",
+  "background_color": "#f6f5fb",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

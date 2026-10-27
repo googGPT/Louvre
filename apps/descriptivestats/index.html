@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DescriptiveStats — Statistiques descriptives</title>
+<meta name="description" content="DescriptiveStats : moyenne, médiane, écarts-types, quartiles, asymétrie, aplatissement et histogramme d'une série collée ou importée. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#c2410c">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/descriptivestats/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>DescriptiveStats</strong><small data-i18n="brand.tagline">Statistiques descriptives</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Les statistiques descriptives d'une série, en un collage</h1>
+  <p data-i18n="hero.text">Collez une colonne de nombres.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les séries enregistrées sont illisibles.</p>
+
+<div class="grid">
+<section class="panel" aria-labelledby="h-data">
+  <h2 id="h-data" data-i18n="data.title">Données</h2>
+  <label class="field"><span data-i18n="f.name">Nom de la série</span><input id="series-name" maxlength="80" autocomplete="off" data-i18n-attr="placeholder:f.namePh"></label>
+  <label class="field"><span data-i18n="f.values">Valeurs</span><textarea id="values" rows="10" spellcheck="false" dir="ltr" data-i18n-attr="placeholder:f.valuesPh"></textarea></label>
+  <div class="opts">
+    <label class="field"><span data-i18n="f.decimal">Séparateur décimal</span><select id="decimal"><option value="," data-i18n="dec.comma">virgule (2,5)</option><option value="." data-i18n="dec.point">point (2.5)</option></select></label>
+    <label class="field" id="column-field" hidden><span data-i18n="f.column">Colonne du fichier</span><select id="column"></select></label>
+  </div>
+  <div class="row">
+    <label class="btn" for="csv-file" data-i18n="btn.csv">Importer un CSV…</label>
+    <input id="csv-file" type="file" accept=".csv,.txt,.tsv,text/csv,text/plain" class="visually-hidden">
+    <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+    <button class="btn" id="clear" type="button" data-i18n="btn.clear">Effacer</button>
+    <button class="btn primary" id="save-series" type="button" data-i18n="btn.save">Enregistrer la série</button>
+  </div>
+  <p class="status" id="parse-status" role="status" aria-live="polite"></p>
+  <p class="status" id="data-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-results">
+  <h2 id="h-results" data-i18n="results.title">Résultats</h2>
+  <div class="opts">
+    <label class="field"><span data-i18n="f.method">Méthode des quartiles</span><select id="method"></select></label>
+    <label class="field"><span data-i18n="f.digits">Décimales affichées</span><select id="digits"><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="6">6</option></select></label>
+  </div>
+  <p class="hint" id="method-help"></p>
+  <div id="results"><p class="empty" data-i18n="results.empty">Collez au moins une valeur numérique.</p></div>
+  <p class="hint" data-i18n="results.note">Asymétrie et aplatissement : estimateurs d'échantillon ajustés.</p>
+  <div class="row"><button class="btn" id="export-csv" type="button" data-i18n="btn.exportCsv">Exporter les résultats (CSV)</button></div>
+  <p class="status" id="results-status" role="status" aria-live="polite"></p>
+</section>
+</div>
+
+<section class="panel" aria-labelledby="h-hist" style="margin-top:16px">
+  <div class="row spread">
+    <h2 id="h-hist" class="m0" data-i18n="hist.title">Histogramme</h2>
+    <label class="field inline"><span data-i18n="f.bins">Nombre de classes</span><select id="bins"></select></label>
+  </div>
+  <div id="hist" class="hist"></div>
+  <div class="row"><button class="btn" id="export-svg" type="button" data-i18n="btn.svg">Télécharger (SVG)</button></div>
+</section>
+
+<section class="panel" aria-labelledby="h-saved" style="margin-top:16px">
+  <h2 id="h-saved" data-i18n="saved.title">Séries enregistrées</h2>
+  <ul class="list" id="saved"></ul>
+  <div class="row" style="margin-top:12px">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Sauvegarder (JSON)</button>
+    <label class="btn" for="import" data-i18n="btn.import">Restaurer…</label>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">Calculs faits dans votre navigateur.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

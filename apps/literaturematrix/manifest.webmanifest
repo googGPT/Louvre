@@ -1,0 +1,12 @@
+{
+  "name": "LiteratureMatrix — matrice de revue de littérature",
+  "short_name": "LitMatrix",
+  "description": "Matrice de revue de littérature : articles × question, méthode, données, résultats et limites, avec export CSV et Markdown.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#3b5bdb",
+  "background_color": "#f4f5fb",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

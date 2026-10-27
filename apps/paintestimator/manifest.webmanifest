@@ -1,0 +1,12 @@
+{
+  "name": "PaintEstimator — combien de pots de peinture ?",
+  "short_name": "PaintEstimator",
+  "description": "Calcule la surface à peindre, les litres nécessaires et la combinaison de pots la moins chère.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#b4441a",
+  "background_color": "#f8f5f2",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

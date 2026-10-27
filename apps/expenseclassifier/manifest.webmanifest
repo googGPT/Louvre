@@ -1,0 +1,12 @@
+{
+  "name": "ExpenseClassifier — classez votre relevé bancaire",
+  "short_name": "ExpenseClassifier",
+  "description": "Importe un relevé CSV, classe les opérations avec vos règles locales et totalise par catégorie et par mois.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#4338ca",
+  "background_color": "#f4f4fb",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

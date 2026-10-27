@@ -1,0 +1,12 @@
+{
+  "name": "MarkdownDesk — écrire en Markdown",
+  "short_name": "MarkdownDesk",
+  "description": "Éditeur Markdown local avec aperçu sûr, plusieurs documents, export .md et .html autonome.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#b02358",
+  "background_color": "#f8f4f6",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

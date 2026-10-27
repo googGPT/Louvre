@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CoursePlanner — Plan de cours et calendrier des séances</title>
+<meta name="description" content="CoursePlanner : découpez un cours en séances (objectifs, activités, durées), contrôlez le volume horaire, datez les séances selon votre calendrier et exportez en .ics. Sans compte, hors ligne.">
+<meta name="theme-color" content="#087f5b">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/courseplanner/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>CoursePlanner</strong><small data-i18n="brand.tagline">Plan de cours et calendrier</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">Un cours bien découpé, des séances bien datées.</h1>
+  <p data-i18n="hero.text">Découpez votre cours en séances, vérifiez le volume horaire, et laissez CoursePlanner placer chaque séance sur vos jours de cours en sautant vacances et jours fériés.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les données enregistrées sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-course">
+  <div class="row between">
+    <h2 id="h-course" class="flat" data-i18n="course.title">Cours</h2>
+    <div class="row">
+      <label class="visually-hidden" for="course-select" data-i18n="course.select">Cours affiché</label>
+      <select id="course-select" class="auto"></select>
+      <button class="btn" id="new-course" type="button" data-i18n="btn.new">Nouveau</button>
+      <button class="btn" id="rename-course" type="button" data-i18n="btn.rename">Renommer</button>
+      <button class="btn" id="delete-course" type="button" data-i18n="btn.delete">Supprimer</button>
+    </div>
+  </div>
+  <div class="settings">
+    <label class="field"><span data-i18n="f.volume">Volume horaire prévu</span><input id="volume" data-keep="volume" maxlength="10" aria-describedby="dur-hint" data-i18n-attr="placeholder:f.volumePh"></label>
+    <div id="volume-check" class="check" aria-live="polite"></div>
+  </div>
+  <p class="hint" id="dur-hint" data-i18n="hint.duration">Durées : 1h30, 1:30, 45 min ou 1,5 (heures).</p>
+  <div class="row"><button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button></div>
+  <p class="status" id="course-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-cal">
+  <h2 id="h-cal" data-i18n="cal.title">Calendrier</h2>
+  <div class="settings">
+    <label class="field"><span data-i18n="f.start">Première date possible</span><input id="start" type="date" data-keep="start"></label>
+    <label class="field"><span data-i18n="f.end">Dernière date possible</span><input id="end" type="date" data-keep="end"></label>
+  </div>
+  <fieldset class="slots"><legend data-i18n="cal.slots">Jours de cours et heure de début</legend><div id="slots" class="slot-grid"></div></fieldset>
+  <h3 data-i18n="cal.closures">Vacances et jours fériés</h3>
+  <form id="closure-form" class="closure-form" novalidate>
+    <label class="field"><span data-i18n="f.from">Du</span><input name="from" type="date" data-keep="cl-from"></label>
+    <label class="field"><span data-i18n="f.to">Au (facultatif)</span><input name="to" type="date" data-keep="cl-to"></label>
+    <label class="field grow"><span data-i18n="f.closureLabel">Motif</span><input name="label" maxlength="120" data-keep="cl-label" data-i18n-attr="placeholder:f.closurePh"></label>
+    <button class="btn" type="submit" data-i18n="btn.addClosure">Ajouter</button>
+  </form>
+  <ul id="closures" class="list"></ul>
+  <div id="cal-summary" class="check" aria-live="polite"></div>
+  <p class="status" id="cal-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel" aria-labelledby="h-sessions">
+  <h2 id="h-sessions" data-i18n="sess.title">Séances</h2>
+  <form id="session-form" class="session-form" novalidate>
+    <label class="field grow"><span data-i18n="f.title">Titre de la séance</span><input name="title" maxlength="120" data-keep="s-title" data-i18n-attr="placeholder:f.titlePh"></label>
+    <label class="field"><span data-i18n="f.duration">Durée</span><input name="duration" maxlength="10" data-keep="s-duration" placeholder="3h" aria-describedby="dur-hint"></label>
+    <label class="field full"><span data-i18n="f.objectives">Objectifs (facultatif)</span><textarea name="objectives" maxlength="1000" data-keep="s-objectives" rows="2"></textarea></label>
+    <button class="btn primary" type="submit" data-i18n="btn.addSession">Ajouter la séance</button>
+  </form>
+  <p class="status" id="session-status" role="status" aria-live="polite"></p>
+  <ol id="sessions" class="sessions"></ol>
+</section>
+
+<section class="panel" aria-labelledby="h-export">
+  <h2 id="h-export" data-i18n="export.title">Exports et sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export-ics" type="button" data-i18n="btn.ics">Agenda (.ics)</button>
+    <button class="btn" id="print-plan" type="button" data-i18n="btn.print">Imprimer le plan</button>
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <label class="btn" for="import" data-i18n="btn.import">Restaurer…</label>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="hint" data-i18n="hint.ics">Les heures de l'agenda sont « locales » : elles s'affichent telles quelles dans le fuseau de l'appareil qui importe le fichier.</p>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">Le volume, les jours de cours et les fermetures sont ceux que vous saisissez : CoursePlanner ne connaît aucun calendrier scolaire. Vos données restent sur cet appareil.</footer>
+<section id="print-area" class="print-only" aria-hidden="true"></section>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

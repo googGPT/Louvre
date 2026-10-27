@@ -1,0 +1,12 @@
+{
+  "name": "DebtStrategy — avalanche ou boule de neige",
+  "short_name": "DebtStrategy",
+  "description": "Compare deux ordres de remboursement de plusieurs dettes avec un budget mensuel : échéancier, intérêts, date de fin.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#b0174f",
+  "background_color": "#f8f4f6",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

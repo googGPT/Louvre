@@ -1,0 +1,81 @@
+/* MealCalendar — styles. Thème clair/sombre automatique, mêmes bases que les autres applis Louvre (accent vert). */
+:root{--bg:#f3f8f4;--surface:#fff;--ink:#183324;--muted:#56705f;--line:#d9e7dd;--accent:#2f7d4f;--accent-soft:#e3f3e8;--accent-ink:#fff;--good:#2b8a3e;--good-soft:#e6f4ea;--bad:#c92a2a;--bad-soft:#fdecec;--focus:#5fb383;--radius:16px;
+font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg)}
+@media (prefers-color-scheme:dark){:root{--bg:#0c1510;--surface:#132019;--ink:#e5f1e9;--muted:#9db8a6;--line:#24382c;--accent:#7bd69c;--accent-soft:#183a26;--accent-ink:#0c1510;--good:#69db7c;--good-soft:#14301d;--bad:#ff8787;--bad-soft:#3a1717}}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--bg);line-height:1.45}
+button,input,select,textarea{font:inherit;color:inherit}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.wrap{max-width:1180px;margin:0 auto;padding:0 18px}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:22px 0 8px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}.brand img{width:44px;height:44px;border-radius:12px}
+.brand strong{display:block;font-size:20px;letter-spacing:-.02em}.brand small{color:var(--muted);font-size:13px}
+.badge{font-size:12px;font-weight:700;padding:6px 11px;border-radius:999px;background:var(--good-soft);color:var(--good);white-space:nowrap}
+.hero h1{margin:18px 0 6px;font-size:clamp(26px,4.5vw,38px);line-height:1.1;letter-spacing:-.03em}
+.hero p{margin:0 0 18px;color:var(--muted);max-width:680px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;min-width:0;margin-bottom:16px}
+.panel h2{margin:0 0 12px;font-size:18px;letter-spacing:-.01em}.panel h2.flush{margin:0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.row.tight{gap:8px}.row.between{justify-content:space-between}.row.center{justify-content:center}
+.top-gap{margin-top:14px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 16px;font-weight:650;cursor:pointer;min-height:44px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.icon{min-width:44px;padding:6px 10px;font-size:18px;line-height:1}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+[dir="rtl"] .flip{display:inline-block;transform:scaleX(-1)}
+label.field{display:grid;gap:6px;font-size:14px;font-weight:600;margin-bottom:12px;min-width:0}
+input,select,textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg);min-height:44px;min-width:0}
+.status{min-height:22px;font-size:14px;margin:8px 0 0;color:var(--muted)}.status.error{color:var(--bad)}.status.ok{color:var(--good)}
+.hint{font-size:13px;color:var(--muted);margin:8px 0}
+.warning{background:var(--bad-soft);color:var(--bad);border-radius:12px;padding:12px 14px;font-size:14px}
+.empty{color:var(--muted);text-align:center;padding:18px 10px}
+footer{color:var(--muted);font-size:13px;padding:8px 0 40px}
+/* Semaine */
+.week-nav{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;margin-bottom:10px}
+.week-nav h2{margin:0;text-align:center;font-size:17px}
+.days{display:grid;gap:10px;grid-template-columns:1fr;margin-top:10px}
+@media (min-width:640px){.days{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:1000px){.days{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}}
+.day{border:1px solid var(--line);border-radius:14px;padding:12px;background:var(--bg);min-width:0}
+.day.today{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.day h3{margin:0 0 8px;font-size:15px;text-transform:capitalize}
+.slot{display:grid;grid-template-columns:minmax(0,1fr) 64px auto;gap:6px;align-items:center;margin-top:8px}
+.slot .meal{grid-column:1/-1;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.slot select{grid-column:1/-1}.slot.has-dish select{grid-column:1}
+.slot .ppl{text-align:center;padding:8px 6px}
+.slot .ppl-unit{font-size:12px;color:var(--muted);white-space:nowrap}
+.slot select{background:var(--surface)}.slot .ppl{background:var(--surface)}
+/* Liste de courses */
+.count{font-size:13px;font-weight:700;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:4px 10px}
+.shop{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:6px;grid-template-columns:1fr}
+@media (min-width:760px){.shop{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.shop li label{display:grid;grid-template-columns:24px minmax(0,1fr);gap:10px;align-items:start;border:1px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer;min-height:44px}
+.shop li input{width:22px;height:22px;min-height:0;margin:1px 0 0;accent-color:var(--accent)}
+.shop .txt{min-width:0}.shop .txt b{overflow-wrap:anywhere}.shop .qty{font-weight:750;color:var(--accent);margin-inline-start:8px;white-space:nowrap}
+.shop small{display:block;color:var(--muted);font-size:12px;overflow-wrap:anywhere}
+.shop li.done label{background:var(--accent-soft)}.shop li.done b{text-decoration:line-through;color:var(--muted)}
+.shop li.empty{grid-column:1/-1}
+/* Plats */
+.form-grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:10px}
+.form-grid label.field{margin:0}
+fieldset.ings{border:1px solid var(--line);border-radius:14px;margin:12px 0 0;padding:10px 12px 12px;min-width:0}
+fieldset.ings legend{font-size:14px;font-weight:600;padding:0 6px}
+.ing{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,.8fr) minmax(0,1.2fr) auto;gap:6px;margin-bottom:6px}
+@media (max-width:520px){.ing{grid-template-columns:minmax(0,.8fr) minmax(0,1.4fr) auto}.ing .ing-name{grid-column:1/-1}}
+.list{list-style:none;margin:16px 0 0;padding:0;display:grid;gap:8px}
+.list li{border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
+.list li.empty{display:block;border-style:dashed}
+.list .txt{min-width:0}.list .txt b{display:block;overflow-wrap:anywhere}.list .txt span{display:block;font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.list .acts{display:flex;gap:6px;flex-wrap:wrap}.list .acts .btn{min-height:36px;padding:6px 10px;font-size:13px}
+@media (max-width:480px){.list li{grid-template-columns:1fr}.list .acts{justify-content:flex-end}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* Impression : la semaine et la liste de courses seulement */
+@media print{
+  :root{--bg:#fff;--surface:#fff;--ink:#000;--muted:#444;--line:#bbb;--accent:#000;--accent-soft:#eee}
+  .no-print,.louvre-locale{display:none!important}
+  .panel{border:0;padding:0;margin-bottom:12px}
+  .days{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .day,.shop li label{break-inside:avoid}
+  .slot select{border:0;padding:0;min-height:0;appearance:none}
+  .slot .ppl{border:0;min-height:0}
+}

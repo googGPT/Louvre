@@ -1,0 +1,12 @@
+{
+  "name": "DescriptiveStats — statistiques descriptives",
+  "short_name": "DescStats",
+  "description": "Statistiques descriptives et histogramme d'une série numérique collée ou importée.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#c2410c",
+  "background_color": "#f8f6f4",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

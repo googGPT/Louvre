@@ -1,0 +1,12 @@
+{
+  "name": "CoursePlanner — plan de cours et calendrier des séances",
+  "short_name": "CoursePlanner",
+  "description": "Découpe un cours en séances, contrôle le volume horaire et date les séances selon le calendrier saisi.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#087f5b",
+  "background_color": "#f2f7f5",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

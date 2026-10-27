@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DebtStrategy — Avalanche ou boule de neige</title>
+<meta name="description" content="DebtStrategy : comparez deux ordres de remboursement de vos dettes (avalanche, boule de neige) avec votre budget mensuel : échéancier, intérêts, date de fin. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#b0174f">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/debtstrategy/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>DebtStrategy</strong><small data-i18n="brand.tagline">Avalanche ou boule de neige</small></div></div>
+  <div class="tools"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale></div></div>
+</header>
+<main>
+<section class="hero">
+  <h1 data-i18n="hero.title">Quelle dette rembourser en premier ?</h1>
+  <p data-i18n="hero.text">Saisissez vos dettes et le montant que vous pouvez y consacrer chaque mois.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les données enregistrées sur cet appareil sont illisibles.</p>
+
+<div class="grid">
+<section class="panel" aria-labelledby="h-debts">
+  <h2 id="h-debts" data-i18n="debts.title">Vos dettes</h2>
+  <form id="debt-form" novalidate>
+    <div class="form-grid">
+      <label class="field full"><span data-i18n="f.name">Nom</span><input name="name" maxlength="40" autocomplete="off" data-i18n-attr="placeholder:f.namePh"></label>
+      <label class="field"><span><span data-i18n="f.balance">Solde restant dû</span> (<span class="cur">€</span>)</span><input name="balance" inputmode="decimal" autocomplete="off" placeholder="2400"></label>
+      <label class="field"><span data-i18n="f.rate">Taux annuel (%)</span><input name="rate" inputmode="decimal" autocomplete="off" placeholder="19.9"></label>
+      <label class="field full"><span><span data-i18n="f.min">Paiement minimum par mois</span> (<span class="cur">€</span>)</span><input name="min" inputmode="decimal" autocomplete="off" placeholder="60"></label>
+    </div>
+    <div class="row"><button class="btn primary" type="submit" data-i18n="btn.addDebt">Ajouter la dette</button><button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button></div>
+    <p class="status" id="debt-status" role="status" aria-live="polite"></p>
+  </form>
+  <ul class="items" id="debt-list"></ul>
+</section>
+
+<section class="panel" aria-labelledby="h-plan">
+  <h2 id="h-plan" data-i18n="plan.title">Votre budget</h2>
+  <form id="plan-form" novalidate>
+    <div class="form-grid">
+      <label class="field"><span><span data-i18n="f.budget">Total payé chaque mois</span> (<span class="cur">€</span>)</span><input name="budget" inputmode="decimal" autocomplete="off" placeholder="600"></label>
+      <label class="field"><span data-i18n="f.start">Premier paiement</span><input name="start" type="month" min="2000-01" max="2100-12"></label>
+    </div>
+    <div class="row"><button class="btn primary" type="submit" data-i18n="btn.compute">Comparer</button></div>
+    <p class="status" id="plan-status" role="status" aria-live="polite"></p>
+  </form>
+  <p class="hyp" data-i18n="hyp">Calcul sur vos hypothèses : taux constants, intérêts mensuels égaux au taux annuel divisé par 12, paiements en fin de mois, sans frais ni pénalités. Ce n'est pas un conseil financier : vérifiez les conditions de vos contrats.</p>
+</section>
+</div>
+
+<section class="panel" aria-labelledby="h-compare">
+  <h2 id="h-compare" data-i18n="cmp.title">Comparaison</h2>
+  <div id="compare" aria-live="polite"></div>
+</section>
+
+<section class="panel" aria-labelledby="h-sched">
+  <div class="row between">
+    <h2 id="h-sched" data-i18n="sched.title">Échéancier mois par mois</h2>
+    <label class="row"><span data-i18n="sched.strategy">Stratégie</span>
+      <select id="strategy"><option value="avalanche" data-i18n="s.avalanche">Avalanche</option><option value="snowball" data-i18n="s.snowball">Boule de neige</option></select>
+    </label>
+  </div>
+  <div id="sched"></div>
+</section>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Exports et sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="csv" type="button" data-i18n="btn.csv">Échéancier (CSV)</button>
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <label class="btn"><span data-i18n="btn.import">Restaurer…</span><input id="import" type="file" accept="application/json,.json" class="visually-hidden"></label>
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+</main>
+<footer data-i18n="footer">Les montants et les taux sont ceux que vous saisissez. Vos données restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "GroupAllocator — groupes d'étudiants sous contraintes",
+  "short_name": "GroupAllocator",
+  "description": "Constitue des groupes d'étudiants en respectant les contraintes saisies, avec un tirage reproductible.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#c2410c",
+  "background_color": "#faf6f3",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PaintEstimator — Combien de pots de peinture ?</title>
+<meta name="description" content="PaintEstimator : calculez la surface à peindre, les litres nécessaires et la combinaison de pots la moins chère. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#b4441a">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/paintestimator/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>PaintEstimator</strong><small data-i18n="brand.tagline">Combien de pots de peinture ?</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">La bonne quantité de peinture, au meilleur prix.</h1>
+  <p data-i18n="hero.text">Décrivez vos pièces (périmètre, hauteur, portes et fenêtres), le nombre de couches et le rendement indiqué sur le pot : PaintEstimator calcule les litres et la combinaison de pots la moins chère.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les projets enregistrés sur cet appareil sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-project">
+  <div class="row between">
+    <h2 id="h-project" class="flush" data-i18n="project.title">Projet</h2>
+    <div class="row">
+      <label class="visually-hidden" for="project-select" data-i18n="project.select">Projet affiché</label>
+      <select id="project-select" class="auto"></select>
+      <button class="btn" id="new-project" type="button" data-i18n="btn.new">Nouveau</button>
+      <button class="btn" id="rename-project" type="button" data-i18n="btn.rename">Renommer</button>
+      <button class="btn" id="delete-project" type="button" data-i18n="btn.delete">Supprimer</button>
+      <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+    </div>
+  </div>
+  <p class="status" id="project-status" role="status" aria-live="polite"></p>
+</section>
+
+<div class="grid">
+<div class="col">
+  <section class="panel" aria-labelledby="h-settings">
+    <h2 id="h-settings" data-i18n="settings.title">Peinture</h2>
+    <form id="settings-form" novalidate>
+      <div class="form-grid three">
+        <label class="field"><span data-i18n="f.coats">Couches</span><input name="coats" inputmode="numeric" placeholder="2"></label>
+        <label class="field"><span data-i18n="f.coverage">Rendement (m²/L)</span><input name="coverage" inputmode="decimal" data-i18n-attr="placeholder:f.coveragePh"></label>
+        <label class="field"><span data-i18n="f.margin">Marge (%)</span><input name="margin" inputmode="numeric" placeholder="0"></label>
+      </div>
+      <p class="hint" data-i18n="settings.hint">Le rendement figure sur l'étiquette du pot. La marge couvre les retouches et les supports absorbants.</p>
+      <button class="btn primary" id="save-settings" type="submit" data-i18n="btn.saveSettings">Enregistrer</button>
+      <p class="status" id="settings-status" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <section class="panel" aria-labelledby="h-cans">
+    <h2 id="h-cans" data-i18n="cans.title">Pots disponibles</h2>
+    <form id="can-form" novalidate>
+      <div class="form-grid two-btn">
+        <label class="field"><span data-i18n="f.volume">Contenance (L)</span><input name="volume" inputmode="decimal" placeholder="2.5"></label>
+        <label class="field"><span><span data-i18n="f.price">Prix</span> (<span id="cur-symbol">€</span>)</span><input name="price" inputmode="decimal" placeholder="29.90"></label>
+        <button class="btn primary" id="add-can" type="submit" data-i18n="btn.addCan">Ajouter le pot</button>
+      </div>
+      <p class="status" id="can-status" role="status" aria-live="polite"></p>
+    </form>
+    <ul class="list" id="can-list"></ul>
+  </section>
+
+  <section class="panel" aria-labelledby="h-rooms">
+    <h2 id="h-rooms" data-i18n="rooms.title">Pièces</h2>
+    <form id="room-form" novalidate>
+      <div class="form-grid">
+        <label class="field wide"><span data-i18n="f.roomName">Nom de la pièce</span><input name="name" maxlength="60" data-i18n-attr="placeholder:f.roomNamePh"></label>
+        <label class="field"><span data-i18n="f.perimeter">Périmètre (m)</span><input name="perimeter" inputmode="decimal" placeholder="14.2"></label>
+        <label class="field"><span data-i18n="f.height">Hauteur sous plafond (m)</span><input name="height" inputmode="decimal" placeholder="2.5"></label>
+        <label class="field"><span data-i18n="f.ceiling">Plafond à peindre (m², facultatif)</span><input name="ceiling" inputmode="decimal" placeholder="0"></label>
+      </div>
+      <button class="btn primary" id="add-room" type="submit" data-i18n="btn.addRoom">Ajouter la pièce</button>
+      <p class="status" id="room-status" role="status" aria-live="polite"></p>
+    </form>
+    <form id="opening-form" novalidate class="sub">
+      <h3 data-i18n="openings.title">Portes et fenêtres à déduire</h3>
+      <div class="form-grid">
+        <label class="field wide"><span data-i18n="f.room">Pièce</span><select name="room" id="opening-room"></select></label>
+        <label class="field"><span data-i18n="f.kind">Type</span><select name="kind"><option value="door" data-i18n="kind.door">Porte</option><option value="window" data-i18n="kind.window">Fenêtre</option><option value="other" data-i18n="kind.other">Autre surface non peinte</option></select></label>
+        <label class="field"><span data-i18n="f.width">Largeur (m)</span><input name="width" inputmode="decimal" placeholder="0.83"></label>
+        <label class="field"><span data-i18n="f.oheight">Hauteur (m)</span><input name="height" inputmode="decimal" placeholder="2.04"></label>
+        <label class="field"><span data-i18n="f.count">Nombre</span><input name="count" inputmode="numeric" value="1"></label>
+      </div>
+      <button class="btn" id="add-opening" type="submit" data-i18n="btn.addOpening">Déduire cette ouverture</button>
+      <p class="status" id="opening-status" role="status" aria-live="polite"></p>
+    </form>
+    <ul class="list" id="room-list"></ul>
+  </section>
+</div>
+
+<section class="panel sticky" aria-labelledby="h-result">
+  <h2 id="h-result" data-i18n="result.title">Estimation</h2>
+  <p class="empty" id="result-empty" data-i18n="result.empty">Ajoutez une pièce et saisissez le rendement pour obtenir une estimation.</p>
+  <p class="status error" id="result-error" role="alert" hidden></p>
+  <div id="result" hidden>
+    <div class="kpis">
+      <div class="kpi"><span data-i18n="kpi.area">Surface nette</span><strong id="k-area"></strong></div>
+      <div class="kpi"><span data-i18n="kpi.liters">Peinture nécessaire</span><strong id="k-liters"></strong></div>
+      <div class="kpi"><span data-i18n="kpi.cans">Pots</span><strong id="k-cans"></strong></div>
+      <div class="kpi"><span data-i18n="kpi.cost">Coût total</span><strong id="k-cost"></strong></div>
+    </div>
+    <p class="detail" id="liters-detail"></p>
+    <div class="verdict" id="combo" aria-live="polite"></div>
+    <h3 data-i18n="singles.title">Avec une seule contenance</h3>
+    <ul class="plain" id="singles"></ul>
+    <h3 data-i18n="byRoom.title">Par pièce</h3>
+    <div class="scroll"><table class="tbl" id="room-table"></table></div>
+    <div class="row top-gap"><button class="btn" id="export-csv" type="button" data-i18n="btn.csv">Exporter (CSV)</button><button class="btn" id="print" type="button" data-i18n="btn.print">Imprimer</button></div>
+    <p class="status" id="result-status" role="status" aria-live="polite"></p>
+  </div>
+  <p class="hint" data-i18n="result.assumption">Calcul sur vos hypothèses : le rendement réel dépend du support, de l'outil et de la teinte.</p>
+</section>
+</div>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <label class="btn file" for="import" data-i18n="btn.import">Restaurer…</label>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">Les prix et rendements sont ceux que vous saisissez : PaintEstimator ne consulte aucun magasin.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

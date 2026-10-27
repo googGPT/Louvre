@@ -1,0 +1,12 @@
+{
+  "name": "FreelanceRate — le tarif qu'il vous faut",
+  "short_name": "FreelanceRate",
+  "description": "Estime un tarif journalier ou horaire cible à partir des charges, du revenu visé, des jours facturables et des taux de prélèvement saisis.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#1864ab",
+  "background_color": "#f3f6fa",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

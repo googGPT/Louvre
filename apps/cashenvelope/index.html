@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CashEnvelope — Le budget en enveloppes</title>
+<meta name="description" content="CashEnvelope : répartissez votre budget mensuel en enveloppes, suivez les dépenses, le report d'un mois sur l'autre et les dépassements. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#9c4f00">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/cashenvelope/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>CashEnvelope</strong><small data-i18n="brand.tagline">Le budget en enveloppes</small></div></div>
+  <div class="tools"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale></div></div>
+</header>
+<main>
+<section class="hero">
+  <h1 data-i18n="hero.title">Chaque dépense dans son enveloppe</h1>
+  <p data-i18n="hero.text">Répartissez votre revenu du mois en enveloppes, notez chaque dépense dans la bonne enveloppe et voyez ce qui reste.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les données enregistrées sur cet appareil sont illisibles.</p>
+
+<div class="grid">
+<section class="panel" aria-labelledby="h-settings">
+  <h2 id="h-settings" data-i18n="settings.title">Budget mensuel</h2>
+  <form id="settings-form" novalidate>
+    <div class="form-grid">
+      <label class="field"><span><span data-i18n="f.income">Revenu du mois à répartir</span> (<span class="cur">€</span>)</span><input name="income" inputmode="decimal" autocomplete="off" placeholder="2000"></label>
+      <label class="field"><span data-i18n="f.alertPct">Alerte à partir de (% utilisé)</span><input name="alertPct" inputmode="numeric" value="80"></label>
+    </div>
+    <div class="row"><button class="btn primary" type="submit" data-i18n="btn.saveSettings">Enregistrer</button><button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button></div>
+    <p class="status" id="settings-status" role="status" aria-live="polite"></p>
+  </form>
+</section>
+
+<section class="panel" aria-labelledby="h-envelopes">
+  <h2 id="h-envelopes" data-i18n="env.title">Enveloppes</h2>
+  <form id="env-form" novalidate>
+    <div class="form-grid">
+      <label class="field"><span data-i18n="f.envName">Nom</span><input name="name" maxlength="40" autocomplete="off" data-i18n-attr="placeholder:f.envNamePh"></label>
+      <label class="field"><span><span data-i18n="f.envBudget">Budget par mois</span> (<span class="cur">€</span>)</span><input name="budget" inputmode="decimal" autocomplete="off" placeholder="300"></label>
+      <label class="check full"><input type="checkbox" name="rollover"><span data-i18n="f.rollover">Reporter le reste (ou le dépassement) sur le mois suivant</span></label>
+    </div>
+    <div class="row"><button class="btn primary" type="submit" data-i18n="btn.addEnv">Ajouter l'enveloppe</button></div>
+    <p class="status" id="env-status" role="status" aria-live="polite"></p>
+  </form>
+  <ul class="items" id="env-list"></ul>
+</section>
+</div>
+
+<section class="panel" aria-labelledby="h-month">
+  <div class="row between">
+    <h2 id="h-month" data-i18n="month.title">Situation du mois</h2>
+    <div class="monthnav">
+      <button class="btn small" id="prev" type="button" data-i18n-attr="aria-label:month.prev;title:month.prev"><span class="arrow" aria-hidden="true">←</span></button>
+      <strong id="month-label" aria-live="polite"></strong>
+      <button class="btn small" id="next" type="button" data-i18n-attr="aria-label:month.next;title:month.next"><span class="arrow" aria-hidden="true">→</span></button>
+      <button class="btn small" id="today" type="button" data-i18n="month.today">Ce mois-ci</button>
+    </div>
+  </div>
+  <div class="kpis" id="kpis"></div>
+  <ul class="alerts" id="alerts" aria-live="polite"></ul>
+  <ul class="envs" id="envs"></ul>
+</section>
+
+<div class="grid">
+<section class="panel" aria-labelledby="h-expense">
+  <h2 id="h-expense" data-i18n="exp.title">Nouvelle dépense</h2>
+  <form id="exp-form" novalidate>
+    <div class="form-grid">
+      <label class="field full"><span data-i18n="f.expEnv">Enveloppe</span><select name="envelope"></select></label>
+      <label class="field"><span data-i18n="f.expDay">Date</span><input name="day" type="date"></label>
+      <label class="field"><span><span data-i18n="f.expAmount">Montant</span> (<span class="cur">€</span>)</span><input name="amount" inputmode="decimal" autocomplete="off" placeholder="12.50"></label>
+      <label class="field full"><span data-i18n="f.expNote">Note (facultatif)</span><input name="note" maxlength="80" autocomplete="off" data-i18n-attr="placeholder:f.expNotePh"></label>
+    </div>
+    <div class="row"><button class="btn primary" id="add-exp" type="submit" data-i18n="btn.addExp">Ajouter la dépense</button></div>
+    <p class="status" id="exp-status" role="status" aria-live="polite"></p>
+  </form>
+</section>
+
+<section class="panel" aria-labelledby="h-list">
+  <h2 id="h-list" data-i18n="list.title">Dépenses du mois</h2>
+  <ul class="items" id="exp-list"></ul>
+</section>
+</div>
+
+<section class="panel" aria-labelledby="h-backup">
+  <h2 id="h-backup" data-i18n="backup.title">Exports et sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="csv-summary" type="button" data-i18n="btn.csvSummary">Bilan du mois (CSV)</button>
+    <button class="btn" id="csv-expenses" type="button" data-i18n="btn.csvExpenses">Dépenses du mois (CSV)</button>
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <label class="btn"><span data-i18n="btn.import">Restaurer…</span><input id="import" type="file" accept="application/json,.json" class="visually-hidden"></label>
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+</main>
+<footer data-i18n="footer">Les montants sont ceux que vous saisissez. Vos données restent sur cet appareil.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

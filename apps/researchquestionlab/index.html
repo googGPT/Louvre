@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ResearchQuestionLab — Structurer sa question de recherche</title>
+<meta name="description" content="ResearchQuestionLab : structurez problème, lacune, questions, variables et hypothèses de recherche avec une démarche guidée et une liste de contrôle. Gratuit, sans compte, hors ligne.">
+<meta name="theme-color" content="#7048e8">
+<link rel="canonical" href="https://googgpt.github.io/Louvre/apps/researchquestionlab/">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./louvre-i18n.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><img src="./icon.svg" alt=""><div><strong>ResearchQuestionLab</strong><small data-i18n="brand.tagline">Structurer sa question de recherche</small></div></div>
+  <div class="row tight"><span class="badge" data-i18n="badge">Local · sans compte</span><div data-louvre-locale="lang-only"></div></div>
+</header>
+<section class="hero">
+  <h1 data-i18n="hero.title">De l'intuition à une question de recherche testable</h1>
+  <p data-i18n="hero.text">Avancez étape par étape.</p>
+</section>
+<p id="warning" class="warning" hidden data-i18n="warning">Les projets enregistrés sont illisibles.</p>
+
+<section class="panel" aria-labelledby="h-project">
+  <div class="row spread">
+    <h2 id="h-project" class="m0" data-i18n="project.title">Projet</h2>
+    <div class="row">
+      <label class="visually-hidden" for="project-select" data-i18n="project.select">Projet affiché</label>
+      <select id="project-select" class="auto"></select>
+      <button class="btn" id="new-project" type="button" data-i18n="btn.new">Nouveau</button>
+      <button class="btn" id="rename-project" type="button" data-i18n="btn.rename">Renommer</button>
+      <button class="btn" id="delete-project" type="button" data-i18n="btn.delete">Supprimer</button>
+      <button class="btn" id="sample" type="button" data-i18n="btn.sample">Exemple</button>
+    </div>
+  </div>
+  <div class="progress" aria-hidden="true"><i id="progress-bar"></i></div>
+  <p class="status" id="progress-text"></p>
+  <p class="status" id="project-status" role="status" aria-live="polite"></p>
+</section>
+
+<nav class="steps" data-i18n-attr="aria-label:steps.label">
+  <ol id="steps">
+    <li><button type="button" data-step="1"><b>1</b><span data-i18n="step1.short">Problème</span></button></li>
+    <li><button type="button" data-step="2"><b>2</b><span data-i18n="step2.short">Lacune</span></button></li>
+    <li><button type="button" data-step="3"><b>3</b><span data-i18n="step3.short">Questions</span></button></li>
+    <li><button type="button" data-step="4"><b>4</b><span data-i18n="step4.short">Variables</span></button></li>
+    <li><button type="button" data-step="5"><b>5</b><span data-i18n="step5.short">Hypothèses</span></button></li>
+    <li><button type="button" data-step="6"><b>6</b><span data-i18n="step6.short">Cadre</span></button></li>
+    <li><button type="button" data-step="7"><b>7</b><span data-i18n="step7.short">Contrôle</span></button></li>
+  </ol>
+</nav>
+
+<div id="no-project" class="panel empty" hidden data-i18n="project.none">Créez un projet ou chargez l'exemple pour commencer.</div>
+
+<section class="panel step" id="step-1" aria-labelledby="h-step1">
+  <h2 id="h-step1" data-i18n="step1.title">1. Le problème</h2>
+  <p class="guide" data-i18n="step1.guide">Quel phénomène observez-vous ?</p>
+  <label class="field"><span data-i18n="f.title">Titre provisoire</span><input data-field="title" maxlength="120"></label>
+  <label class="field"><span data-i18n="f.problem">Problème</span><textarea data-field="problem" maxlength="3000" rows="5"></textarea></label>
+  <p class="status fstat" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel step" id="step-2" aria-labelledby="h-step2" hidden>
+  <h2 id="h-step2" data-i18n="step2.title">2. La lacune</h2>
+  <p class="guide" data-i18n="step2.guide">Qu'est-ce que la littérature ne dit pas encore ?</p>
+  <label class="field"><span data-i18n="f.gapType">Type de lacune</span><select data-field="gapType" id="gap-type"></select></label>
+  <p class="hint" id="gap-help"></p>
+  <label class="field"><span data-i18n="f.gap">Lacune</span><textarea data-field="gap" maxlength="3000" rows="5"></textarea></label>
+  <p class="status fstat" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel step" id="step-3" aria-labelledby="h-step3" hidden>
+  <h2 id="h-step3" data-i18n="step3.title">3. Objectif et questions</h2>
+  <p class="guide" data-i18n="step3.guide">Une question précise.</p>
+  <label class="field"><span data-i18n="f.objective">Objectif général</span><textarea data-field="objective" maxlength="3000" rows="3"></textarea></label>
+  <p class="status fstat" role="status" aria-live="polite"></p>
+  <ul class="list" id="questions"></ul>
+  <form id="q-form" class="sub" novalidate>
+    <h3 id="q-form-title" data-i18n="q.add">Ajouter une question</h3>
+    <label class="field"><span data-i18n="f.qText">Question</span><textarea name="text" maxlength="300" rows="2"></textarea></label>
+    <label class="field"><span data-i18n="f.qKind">Type de question</span><select name="kind" id="q-kind"></select></label>
+    <p class="hint" id="kind-help"></p>
+    <div class="row"><button class="btn primary" type="submit" id="q-save" data-i18n="btn.addQ">Ajouter la question</button><button class="btn" type="button" id="q-cancel" hidden data-i18n="btn.cancel">Annuler</button></div>
+    <p class="status" id="q-status" role="status" aria-live="polite"></p>
+  </form>
+</section>
+
+<section class="panel step" id="step-4" aria-labelledby="h-step4" hidden>
+  <h2 id="h-step4" data-i18n="step4.title">4. Variables et mesures</h2>
+  <p class="guide" data-i18n="step4.guide">Chaque concept doit devenir mesurable.</p>
+  <ul class="list" id="variables"></ul>
+  <form id="v-form" class="sub" novalidate>
+    <h3 id="v-form-title" data-i18n="v.add">Ajouter une variable</h3>
+    <div class="two">
+      <label class="field"><span data-i18n="f.vName">Nom</span><input name="name" maxlength="80"></label>
+      <label class="field"><span data-i18n="f.vRole">Rôle</span><select name="role" id="v-role"></select></label>
+    </div>
+    <label class="field"><span data-i18n="f.vMeasure">Mesure (indicateur, unité, échelle)</span><input name="measure" maxlength="300"></label>
+    <label class="field"><span data-i18n="f.vSource">Source des données</span><input name="source" maxlength="300"></label>
+    <div class="row"><button class="btn primary" type="submit" id="v-save" data-i18n="btn.addV">Ajouter la variable</button><button class="btn" type="button" id="v-cancel" hidden data-i18n="btn.cancel">Annuler</button></div>
+    <p class="status" id="v-status" role="status" aria-live="polite"></p>
+  </form>
+</section>
+
+<section class="panel step" id="step-5" aria-labelledby="h-step5" hidden>
+  <h2 id="h-step5" data-i18n="step5.title">5. Hypothèses</h2>
+  <p class="guide" data-i18n="step5.guide">Une hypothèse relie une variable explicative à une variable expliquée.</p>
+  <ul class="list" id="hypotheses"></ul>
+  <form id="h-form" class="sub" novalidate>
+    <h3 id="h-form-title" data-i18n="h.add">Ajouter une hypothèse</h3>
+    <label class="field"><span data-i18n="f.hQuestion">Question concernée</span><select name="questionId" id="h-question"></select></label>
+    <div class="two">
+      <label class="field"><span data-i18n="f.hIv">Variable explicative</span><select name="ivId" id="h-iv"></select></label>
+      <label class="field"><span data-i18n="f.hDv">Variable expliquée</span><select name="dvId" id="h-dv"></select></label>
+    </div>
+    <label class="field"><span data-i18n="f.hDir">Sens attendu</span><select name="direction" id="h-dir"></select></label>
+    <label class="field"><span data-i18n="f.hText">Énoncé de l'hypothèse</span><textarea name="text" maxlength="300" rows="2"></textarea></label>
+    <div class="row"><button class="btn primary" type="submit" id="h-save" data-i18n="btn.addH">Ajouter l'hypothèse</button><button class="btn" type="button" id="h-cancel" hidden data-i18n="btn.cancel">Annuler</button></div>
+    <p class="status" id="h-status" role="status" aria-live="polite"></p>
+  </form>
+</section>
+
+<section class="panel step" id="step-6" aria-labelledby="h-step6" hidden>
+  <h2 id="h-step6" data-i18n="step6.title">6. Cadre de l'étude</h2>
+  <p class="guide" data-i18n="step6.guide">Qui, quand, avec quelles données ?</p>
+  <label class="field"><span data-i18n="f.population">Population étudiée</span><input data-field="population" maxlength="300"></label>
+  <label class="field"><span data-i18n="f.unit">Unité d'analyse</span><input data-field="unit" maxlength="300" data-i18n-attr="placeholder:f.unitPh"></label>
+  <div class="two eq">
+    <label class="field"><span data-i18n="f.periodStart">Début de période (année)</span><input data-field="periodStart" inputmode="numeric" maxlength="4"></label>
+    <label class="field"><span data-i18n="f.periodEnd">Fin de période (année)</span><input data-field="periodEnd" inputmode="numeric" maxlength="4"></label>
+  </div>
+  <label class="field"><span data-i18n="f.dataSource">Source principale des données</span><input data-field="dataSource" maxlength="300"></label>
+  <label class="field"><span data-i18n="f.method">Méthode envisagée</span><input data-field="method" maxlength="300"></label>
+  <fieldset class="checks">
+    <legend data-i18n="f.confirm">À confirmer vous-même</legend>
+    <label><input type="checkbox" data-check="dataAccess"> <span data-i18n="chk.dataAccess">Accès aux données</span></label>
+    <label><input type="checkbox" data-check="ethics"> <span data-i18n="chk.ethics">Éthique</span></label>
+    <label><input type="checkbox" data-check="feasible"> <span data-i18n="chk.feasible">Faisable</span></label>
+  </fieldset>
+  <p class="status fstat" id="field-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="panel step" id="step-7" aria-labelledby="h-step7" hidden>
+  <h2 id="h-step7" data-i18n="step7.title">7. Liste de contrôle</h2>
+  <p class="guide" data-i18n="step7.guide">Vérification de structure.</p>
+  <p class="score" id="score"></p>
+  <ul class="checklist" id="checklist"></ul>
+  <div class="row"><button class="btn primary" id="export-md" type="button" data-i18n="btn.md">Exporter (Markdown)</button></div>
+  <p class="status" id="md-status" role="status" aria-live="polite"></p>
+</section>
+
+<div class="row stepnav" id="stepnav">
+  <button class="btn" id="prev" type="button" data-i18n="btn.prev">Étape précédente</button>
+  <button class="btn" id="next" type="button" data-i18n="btn.next">Étape suivante</button>
+</div>
+
+<section class="panel" aria-labelledby="h-backup" style="margin-top:16px">
+  <h2 id="h-backup" data-i18n="backup.title">Sauvegarde</h2>
+  <div class="row">
+    <button class="btn" id="export" type="button" data-i18n="btn.export">Exporter (JSON)</button>
+    <label class="btn" for="import" data-i18n="btn.import">Restaurer…</label>
+    <input id="import" type="file" accept="application/json,.json" class="visually-hidden">
+    <button class="btn" id="export-raw" type="button" hidden data-i18n="btn.raw">Copie brute</button>
+  </div>
+  <p class="status" id="backup-status" role="status" aria-live="polite"></p>
+</section>
+<footer data-i18n="footer">Aucun contenu n'est généré.</footer>
+</div>
+<script src="./louvre-i18n.js"></script>
+<script src="./messages.js"></script>
+<script src="./core.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>
