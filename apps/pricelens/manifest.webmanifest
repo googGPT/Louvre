@@ -1,0 +1,12 @@
+{
+  "name": "PriceLens — le vrai prix au kilo",
+  "short_name": "PriceLens",
+  "description": "Compare le prix au kilo, au litre ou à la pièce de produits vendus en formats différents.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "theme_color": "#0b7285",
+  "background_color": "#f3f7f8",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

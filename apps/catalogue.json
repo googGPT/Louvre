@@ -259,6 +259,13 @@
       "domain": "Éducation",
       "description": "Planifie les révisions de fiches par répétition espacée (boîtes de Leitner).",
       "family": "Études et recherche"
+    },
+    {
+      "slug": "pricelens",
+      "name": "PriceLens",
+      "domain": "Achats",
+      "description": "Compare le prix au kilo, au litre ou à la pièce de produits vendus en formats différents.",
+      "family": "Argent et achats"
     }
   ]
 }
