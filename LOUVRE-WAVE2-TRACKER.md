@@ -1,5 +1,7 @@
 # Louvre App Factory vague 2 — Registre de reprise
 
+> **Registre historique (état du 26 octobre 2026).** Les statuts ci-dessous ne sont plus à jour. État au 27 octobre : ShiftLedger, ColorContrast, ImageShrink, QRForge, CSVClinic, TextDiff, CitationCraft, InvoiceCanvas, RoomSketch, GradePilot, LoanSim, FileIntegrity et KeyboardCoach sont publiées. La liste officielle des applis est désormais [`apps/catalogue.json`](apps/catalogue.json) ; l'historique des branches est dans [`docs/maintenance/branches.md`](docs/maintenance/branches.md).
+
 Base GitHub auditée : `main` commit `6d5ffbcc14038ce1a257122ef8b166ad8047c874` le 26 octobre 2026.
 
 Statut des PR première vague au début de la mission : #18, #19, #21 fusionnées ; #20 et #22–#37 ouvertes ; PR #38 ouverte avec un titre proche de SplitFair. Ne jamais fusionner automatiquement.
