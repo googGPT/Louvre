@@ -62,6 +62,16 @@ test('grille de 12 semaines : dernière colonne = semaine en cours', () => {
   assert.equal(g[11][3].future, true);
 });
 
+test('régularité future : les périodes de suivi ne peuvent pas être négatives', () => {
+  assert.deepEqual(C.rate(daily([], '2027-01-01'),T),{done:0,total:0,pct:0});
+  assert.deepEqual(C.rate(weekly(2,[], '2027-01-01'),T),{done:0,total:0,pct:0});
+});
+test('sauvegarde : propriétés racine supplémentaires rejetées', () => {
+  const ok={app:'habitsteps',version:1,habits:[]};
+  assert.throws(()=>C.validateBackup({...ok,injected:1}),/err\.backup/);
+  assert.deepEqual(C.validateBackup(ok),[]);
+});
+
 test('saisies refusées et sauvegarde validée', () => {
   assert.throws(() => C.makeHabit({ name: ' ', goal: { type: 'daily' } }, T, 'habit-0003'), /^Error: err\.nameRequired$/);
   assert.throws(() => C.makeHabit({ name: 'X', goal: { type: 'weekly', times: 8 } }, T, 'habit-0003'), /^Error: err\.weeklyTimes\|\{"min":1,"max":7\}$/);

@@ -76,6 +76,12 @@ test('saisies refusées', () => {
   assert.equal(C.parseCents(''), 0);
 });
 
+test('sauvegarde : rejette une propriété racine inattendue', () => {
+  const raw = { app:'giftnest',version:1,...sample(),extra:true };
+  assert.throws(()=>C.validateBackup(raw),/^Error: err\.backup$/);
+  assert.deepEqual(C.validateBackup(JSON.parse(C.backup(sample()))),sample());
+});
+
 test('sauvegarde : aller-retour exact, références croisées vérifiées', () => {
   const data = sample();
   const back = C.validateBackup(JSON.parse(C.backup(data)));

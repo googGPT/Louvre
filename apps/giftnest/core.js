@@ -111,6 +111,7 @@
   function validateBackup(raw) {
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) fail('err.backup');
     if (raw.app !== 'giftnest' || raw.version !== VERSION) fail('err.notBackup');
+    if (Object.keys(raw).sort().join(',') !== 'app,gifts,occasions,people,version') fail('err.backup');
     for (const k of ['people', 'occasions', 'gifts']) if (!Array.isArray(raw[k]) || raw[k].length > LIMITS[k]) fail('err.backup');
     const data = empty();
     for (const p of raw.people) { exact(p, 'budgetCents,id,name'); data.people.push(makePerson(p, p.id)); }

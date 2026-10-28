@@ -82,6 +82,12 @@ test("rotation : même famille sur la même parcelle l'année précédente signa
   assert.deepEqual(C.rotationWarnings([elsewhere, tomato], tomato), []);
 });
 
+test('rotation : une culture commencée en N-2 mais récoltée en N-1 reste signalée en N', () => {
+  const old = crop({sow:'2025-12-01', plant:{mode:'none'}, harvest:{mode:'days',value:'70'}}, 'crop-2015');
+  const future = crop({sow:'2027-01-01', plant:{mode:'none'}, harvest:{mode:'days',value:'70'}}, 'crop-2017');
+  assert.deepEqual(C.rotationWarnings([old],future).map(x=>x.crop.id),['crop-2015']);
+});
+
 test('calendrier : tâches du mois triées, tâches faites marquées', () => {
   const t1 = C.toggleDone(crop(), 'sow');
   const t2 = crop({ name: 'Radis', family: 'brassicaceae', x: '4', w: '1', sow: '2026-04-10', plant: { mode: 'none' }, harvest: { mode: 'days', value: '28' }, harvestEnd: { mode: 'days', value: '35' } }, 'crop-0002');
@@ -113,6 +119,14 @@ test('suppression d\'une parcelle : ses cultures partent avec elle ; limites', (
   assert.deepEqual(C.removeBed(data, bed.id), { beds: [], crops: [] });
   const full = { beds: Array.from({ length: C.MAX_BEDS }, (_, i) => ({ ...bed, id: `bed-x${String(i).padStart(4, '0')}` })), crops: [] };
   assert.throws(() => C.upsertBed(full, { ...bed, id: 'bed-new001' }), /err\.tooManyBeds/);
+});
+
+test('ICS : CR seul, CRLF et LF échappés sans injection de ligne', () => {
+  const c = crop();
+  const {text} = C.toICS([c],beds,2026,'20261028T120000Z',{summary:()=> 'Mot\rInjecté\r\nSuite\nFin',description:()=> 'Note\rNouvelle'});
+  assert.match(text,/SUMMARY:Mot\\nInjecté\\nSuite\\nFin/);
+  assert.match(text,/DESCRIPTION:Note\\nNouvelle/);
+  assert.equal(text.replace(/\r\n/g,'').includes('\r'),false);
 });
 
 test('sauvegarde : aller-retour exact et contenus refusés', () => {

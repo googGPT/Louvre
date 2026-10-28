@@ -87,13 +87,13 @@
   function rate(habit, today) {
     const set = new Set(habit.checks);
     if (habit.goal.type === 'daily') {
-      const span = Math.min(30, diffDays(habit.created, today) + 1);
+      const span = Math.max(0, Math.min(30, diffDays(habit.created, today) + 1));
       let done = 0;
       for (let i = 0; i < span; i += 1) if (set.has(addDays(today, -i))) done += 1;
       return { done, total: span, pct: span ? Math.round(1000 * done / span) / 10 : 0 };
     }
     const thisWeek = weekStart(today), first = weekStart(habit.created);
-    const weeks = Math.min(8, diffDays(first, thisWeek) / 7 + 1);
+    const weeks = Math.max(0, Math.min(8, diffDays(first, thisWeek) / 7 + 1));
     let done = 0;
     for (let i = 0; i < weeks; i += 1) {
       const w = addDays(thisWeek, -7 * i);
@@ -139,6 +139,7 @@
   function validateBackup(data) {
     if (!data || typeof data !== 'object' || Array.isArray(data)) fail('err.backup');
     if (data.app !== 'habitsteps' || data.version !== VERSION || !Array.isArray(data.habits)) fail('err.notBackup');
+    if (Object.keys(data).sort().join(',') !== 'app,habits,version') fail('err.backup');
     if (data.habits.length > MAX_HABITS) fail('err.tooMany', { max: MAX_HABITS });
     const habits = data.habits.map(validateHabit);
     if (new Set(habits.map((h) => h.id)).size !== habits.length) fail('err.duplicate');

@@ -151,7 +151,7 @@
   function rotationWarnings(crops, crop) {
     if (crop.family === 'other') return [];
     const year = cropDates(crop).year;
-    return crops.filter((c) => c.id !== crop.id && c.bedId === crop.bedId && c.family === crop.family && cropDates(c).year === year - 1)
+    return crops.filter((c) => { const d = cropDates(c); return c.id !== crop.id && c.bedId === crop.bedId && c.family === crop.family && yearOf(d.start) <= year - 1 && yearOf(d.end) >= year - 1; })
       .map((c) => ({ crop: c, cells: rectsOverlap(c, crop) }));
   }
   // Calendrier des tâches entre deux jours inclus, triées par date.
@@ -174,7 +174,7 @@
   function addMonth(month, n) { const [y, m] = month.split('-').map(Number); const i = y * 12 + m - 1 + n; return `${Math.floor(i / 12)}-${String(i % 12 + 1).padStart(2, '0')}`; }
 
   // --- Export agenda (.ics) : une journée par tâche non faite de l'année choisie.
-  function icsEscape(s) { return String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
+  function icsEscape(s) { return String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r\n|\r|\n/g, '\\n'); }
   function fold(line) {
     const out = []; let cur = '';
     for (const ch of line) { if (new TextEncoder().encode(cur + ch).length > 75) { out.push(cur); cur = ' ' + ch; } else cur += ch; }
