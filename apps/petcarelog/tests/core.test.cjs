@@ -120,6 +120,17 @@ test('export .ics : occurrences des soins (retard ramené au premier jour) et re
   assert.throws(() => C.toICS({ cares: daily, appts: [] }, TODAY, 365, '20261027T120000Z', { care: String, appt: String }), /err\.icsTooMany/);
 });
 
+test('ICS : les retours chariot seuls sont échappés, pas injectés dans les événements',()=>{
+  const appointment=C.makeAppt({petId:rex.id,date:'2026-11-10',time:'09:30',title:'Visite',place:'Cabinet'},'appt-cr001',pets);
+  const {text}=C.toICS({cares:[],appts:[appointment]},TODAY,40,'20261027T120000Z',{care:()=>'',appt:()=>'Visite\rInjectée'});
+  assert.ok(text.includes('SUMMARY:Visite\\nInjectée'));
+  assert.equal(text.replace(/\r\n/g,'').includes('\r'),false);
+});
+test('rendez-vous à date et heure égales : ordre stable par identifiant',()=>{
+  const a=C.makeAppt({petId:rex.id,date:'2026-11-10',time:'09:30',title:'Visite',place:''},'appt-0001',pets);
+  assert.deepEqual(C.apptsFor([{...a,id:'appt-0002'},a],rex.id,TODAY).upcoming.map(x=>x.id),['appt-0001','appt-0002']);
+});
+
 test('supprimer un animal supprime ses soins, rendez-vous, poids et dépenses ; limites', () => {
   let data = { ...C.emptyData(), pets };
   data = C.upsert(data, 'cares', care());

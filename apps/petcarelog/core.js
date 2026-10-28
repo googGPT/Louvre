@@ -153,7 +153,7 @@
       .sort((a, b) => a.days - b.days || CARE_TYPES.indexOf(a.type) - CARE_TYPES.indexOf(b.type));
   }
   function apptsFor(appts, petId, today) {
-    const list = appts.filter((a) => a.petId === petId).sort((a, b) => (a.date + a.time < b.date + b.time ? -1 : 1));
+    const list = appts.filter((a) => a.petId === petId).sort((a, b) => (a.date + a.time < b.date + b.time ? -1 : a.date + a.time > b.date + b.time ? 1 : a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
     return { upcoming: list.filter((a) => dayDiff(a.date, today) >= 0), past: list.filter((a) => dayDiff(a.date, today) < 0).reverse() };
   }
 
@@ -224,7 +224,7 @@
   }
 
   // --- Agenda .ics : soins (occurrences calculées sur la période, ancrées sur le dernier soin) et rendez-vous.
-  function icsEscape(s) { return String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
+  function icsEscape(s) { return String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r\n|\r|\n/g, '\\n'); }
   function fold(line) {
     const out = []; let cur = '';
     for (const ch of line) { if (new TextEncoder().encode(cur + ch).length > 75) { out.push(cur); cur = ' ' + ch; } else cur += ch; }

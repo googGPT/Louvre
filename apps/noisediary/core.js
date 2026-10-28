@@ -104,7 +104,10 @@
       const d = duration(e), [s, f] = span(e);
       totalMin += d; sumIntensity += e.intensity; maxIntensity = Math.max(maxIntensity, e.intensity);
       for (let h = Math.floor(s / 60); h * 60 < f; h += 1) byHour[h % 24] += overlap(s, f, h * 60, h * 60 + 60);
-      const w = byWeekday[weekday(e.day)]; w.count += 1; w.minutes += d;
+      const firstWeekday = weekday(e.day), firstMinutes = Math.min(d, DAYM - e.start);
+      byWeekday[firstWeekday].count += 1; byWeekday[firstWeekday].minutes += firstMinutes;
+      // Une observation peut durer jusqu'au lendemain : répartir la durée sur les vrais jours civils.
+      if (d > firstMinutes) byWeekday[(firstWeekday + 1) % 7].minutes += d - firstMinutes;
       (byType[e.type] ||= { count: 0, minutes: 0 }); byType[e.type].count += 1; byType[e.type].minutes += d;
       if (e.source) { const key = e.source.toLocaleLowerCase(); const cur = sources.get(key) || { source: e.source, count: 0, minutes: 0 }; cur.count += 1; cur.minutes += d; sources.set(key, cur); }
       for (const n of nightOverlap(e, settings)) { nightMin += n.minutes; const cur = nights.get(n.night) || { night: n.night, count: 0, minutes: 0 }; cur.count += 1; cur.minutes += n.minutes; nights.set(n.night, cur); }

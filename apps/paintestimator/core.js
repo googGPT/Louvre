@@ -144,6 +144,7 @@
         return makeOpening({ kind: o.kind, width: dec(o.widthCm, 2), height: dec(o.heightCm, 2), count: String(o.count) }, o.id);
       });
       const room = makeRoom({ name: r.name, perimeter: dec(r.perimeterCm, 2), height: dec(r.heightCm, 2), ceiling: dec(r.ceilingCm2 / 100, 2) }, r.id, openings);
+      roomAreas(room); // refuser immédiatement une sauvegarde géométriquement impossible
       return room;
     });
     const ids = [p.id, ...cans.map((c) => c.id), ...rooms.map((r) => r.id), ...rooms.flatMap((r) => r.openings.map((o) => o.id))];

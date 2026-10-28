@@ -122,6 +122,16 @@ test('sauvegarde : aller-retour exact et contenus refusés', () => {
   assert.throws(() => C.validateBackup(null), /err\.backup/);
 });
 
+test('restauration : refuse des ouvertures impossibles avant toute estimation',()=>{
+  const opening=C.makeOpening({kind:'window',width:'3',height:'2',count:'3'},'opening-0001');
+  const room=C.makeRoom({name:'Salon',perimeter:'6',height:'2'},'room-0001',[opening]);
+  const project={...C.makeProject('Projet','project-0001'),rooms:[room],coverage10:100};
+  assert.throws(()=>C.validateBackup({app:'paintestimator',version:1,projects:[project]}),/err\.openingsTooBig/);
+  const tooTall={...opening,count:1,heightCm:201};
+  const tall={...room,openings:[tooTall]};
+  assert.throws(()=>C.validateBackup({app:'paintestimator',version:1,projects:[{...project,rooms:[tall]}]}),/err\.openingTooHigh/);
+});
+
 test('CSV : BOM, séparateur point-virgule, formules neutralisées', () => {
   const csv = C.toCsv([['Pièce', 'Surface'], ['=SOMME(A1)', '12,5'], ['Salon "nord"', '3']]);
   assert.ok(csv.startsWith('﻿"Pièce";"Surface"\r\n'));

@@ -71,6 +71,16 @@ test('statistiques : nombre, durée, plages horaires, jours, nuits, types, sourc
   assert.equal(empty.count, 0); assert.equal(empty.avgIntensity, 0); assert.equal(empty.firstDay, null);
 });
 
+test('statistiques hebdomadaires : nuisance passant minuit répartie sur deux jours',()=>{
+  const night=entry('2026-10-10','23:30','00:30');
+  const values=C.stats([night],S,'','').byWeekday;
+  assert.equal(values[5].count,1); // samedi : observation créée
+  assert.equal(values[5].minutes,30);
+  assert.equal(values[6].count,0); // dimanche : durée après minuit sans nouvelle observation
+  assert.equal(values[6].minutes,30);
+  assert.equal(values.reduce((sum,d)=>sum+d.minutes,0),60);
+});
+
 test('saisies refusées', () => {
   assert.throws(() => entry('2026-02-30', '10:00', '11:00'), /err\.date/);
   assert.throws(() => entry('2026-10-10', '', '11:00'), /err\.start/);
