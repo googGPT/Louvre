@@ -32,7 +32,7 @@
   // Contenance positive, 3 décimales au plus.
   function parseQty(value) {
     const s = str(value).replace(/[\s  ]/g, '').replace(',', '.');
-    if (!/^\d{1,6}(\.\d{1,3})?$/.test(s) || !(Number(s) > 0)) fail('err.qty');
+    if (!/^\d{1,6}(\.\d{1,3})?$/.test(s) || !(Number(s) > 0) || Number(s) > 999999) fail('err.qty');
     return Number(s);
   }
   function parseCount(value) {
@@ -72,11 +72,17 @@
   }
 
   // Quantité totale en unités de base, arrondie au millième.
-  const baseQty = (e) => Math.round(e.qty * UNITS[e.unit].factor * e.count * 1000) / 1000;
+  // La quantité de base en millièmes reste un entier sûr dans les bornes de saisie.
+  const baseQtyMilli = (e) => Math.round(e.qty * 1000) * UNITS[e.unit].factor * e.count;
+  const baseQty = (e) => baseQtyMilli(e) / 1000;
   const dimOf = (e) => UNITS[e.unit].dim;
   function unitPriceCents(e) { return Math.round(e.priceCents * PER[dimOf(e)].size / baseQty(e)); }
   // Comparaison exacte des prix unitaires : a.prix/a.qté − b.prix/b.qté (signe seulement).
-  const cmpUnit = (a, b) => a.priceCents * baseQty(b) - b.priceCents * baseQty(a);
+  const cmpUnit = (a, b) => {
+    const left = BigInt(a.priceCents) * BigInt(baseQtyMilli(b));
+    const right = BigInt(b.priceCents) * BigInt(baseQtyMilli(a));
+    return left < right ? -1 : left > right ? 1 : 0;
+  };
   const byDate = (a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
 
   // Ajout d'un relevé : la dimension doit rester celle des relevés existants du même produit.

@@ -66,6 +66,21 @@ test('variation exacte (sans arrondi intermédiaire) et relevé unique', () => {
   assert.equal(down.best.priceCents, 150);
 });
 
+test('comparaison exacte de grands lots : meilleur prix préservé malgré arrondis flottants', () => {
+  const a = entry('Lot', 'A', '2026-01-01', '999999.89', '405555.511', 'piece', '999');
+  const b = entry('Lot', 'B', '2026-01-02', '999999.71', '405555.438', 'piece', '999');
+  const first = C.analyze(build([a, b]), 'lot');
+  const reversed = C.analyze(build([b, a]), 'lot');
+  assert.equal(first.best.store, 'B');
+  assert.equal(reversed.best.store, 'B');
+  assert.deepEqual(first.byStore.map((x) => x.store), ['B', 'A']);
+});
+
+test('la quantité maximale est cohérente avec la validation des sauvegardes', () => {
+  assert.throws(() => C.parseQty('999999.001'), /err\.qty/);
+  assert.equal(C.parseQty('999999'), 999999);
+});
+
 test('CSV : tous les relevés, en-têtes et unités traduits, pas de formule', () => {
   const list = build([entry('=Café', 'A', '2024-02-01', '3', '250', 'g'), entry('Lait', 'B', '2024-01-01', '6,30', '1', 'l', '6')]);
   const labels = Object.fromEntries(C.COLUMNS.map((c) => [c, c.toUpperCase()]));

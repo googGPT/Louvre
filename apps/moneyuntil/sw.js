@@ -2,7 +2,7 @@
 // Généré par scripts/build_sw.py : ne pas modifier à la main (relancer le script).
 // Le nom du cache contient une empreinte du contenu : toute modification de l'appli
 // produit un nouveau nom, donc une mise à jour automatique chez les visiteurs.
-const CACHE = "louvre-moneyuntil-36ac32074ebf";
+const CACHE = "louvre-moneyuntil-6f1fff4bddd5";
 const ASSETS = ["./", "./icon.svg", "./index.htm", "./index.html", "./louvre-i18n.css", "./louvre-i18n.js", "./manifest.webmanifest", "./messages.js"];
 const OLD_PREFIXES = ["louvre-moneyuntil-"];
 

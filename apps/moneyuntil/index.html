@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-fn9AzU4vu11qNVPqtyCgAhLaiYnrKaEECWPlIRK+NzM='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-Cc1MNhl8I5AQ8moMR5chFBziv2MfBptujJHOMT5bZb0='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#101c26">
   <meta name="description" content="MoneyUntil : calculez combien vous pouvez dépenser chaque jour jusqu'à votre prochaine paie. Budget, dépenses et factures, sans inscription et avec données conservées sur votre appareil.">
@@ -87,11 +87,12 @@
     const toCents=n=>Math.round(n*100);
     const fromCents=n=>n/100;
     const centAmount=(n,zero=false)=>validAmount(n,zero)&&Math.abs(n*100-Math.round(n*100))<0.000001;
+    const signedCentAmount=n=>Number.isFinite(n)&&Math.abs(n)<100000000&&Math.abs(n*100-Math.round(n*100))<0.000001;
     const onlyKeys=(obj,keys)=>obj&&typeof obj==='object'&&!Array.isArray(obj)&&Object.keys(obj).length===keys.length&&Object.keys(obj).every(k=>keys.includes(k));
     function validateBackup(data){
       if(!onlyKeys(data,['version','configured','balance','payday','reserve','currency','expenses','bills'])||
         data.version!==1||typeof data.configured!=='boolean'||
-        !(centAmount(data.balance,true)||(Number.isFinite(data.balance)&&data.balance<0&&data.balance>-100000000&&Math.abs(data.balance*100-Math.round(data.balance*100))<0.000001))||
+        !signedCentAmount(data.balance)||
         !centAmount(data.reserve,true)||!dateValid(data.payday)||!CURRENCIES.has(data.currency)||
         !Array.isArray(data.expenses)||!Array.isArray(data.bills)||data.expenses.length>10000||data.bills.length>10000)return false;
       const unique=new Set();
@@ -185,12 +186,12 @@
     function readMoney(value){if(value.trim()==='')return NaN;return Number(value)}
     function settingsOpen(){fillCurrencies();byId('start-balance').value=String(state.balance);byId('payday').value=state.payday;byId('reserve').value=String(state.reserve);byId('currency').value=state.currency;setMsg(byId('settings-error'),'');showModal('settings-modal')}
     byId('nav-settings').addEventListener('click',settingsOpen);byId('top-settings').addEventListener('click',settingsOpen);
-    byId('settings-form').addEventListener('submit',event=>{event.preventDefault();const balance=readMoney(byId('start-balance').value),reserve=readMoney(byId('reserve').value),payday=byId('payday').value,currency=byId('currency').value;const err=byId('settings-error');if(!Number.isFinite(balance)||Math.abs(balance)>=100000000||!validAmount(reserve,true)||!dateValid(payday)||!CURRENCIES.has(currency)){setMsg(err,'err.settings');return}if(payday<=today()){setMsg(err,'err.paydayFuture');return}const changed=state.configured&&currency!==state.currency;if(changed&&!confirm(t('confirm.currency')))return;state={...state,configured:true,balance,payday,reserve,currency};persist();render();closeModal('settings-modal');showToast(t('toast.updated'))});
+    byId('settings-form').addEventListener('submit',event=>{event.preventDefault();const balance=readMoney(byId('start-balance').value),reserve=readMoney(byId('reserve').value),payday=byId('payday').value,currency=byId('currency').value;const err=byId('settings-error');if(!signedCentAmount(balance)||!centAmount(reserve,true)||!dateValid(payday)||!CURRENCIES.has(currency)){setMsg(err,'err.settings');return}if(payday<=today()){setMsg(err,'err.paydayFuture');return}const changed=state.configured&&currency!==state.currency;if(changed&&!confirm(t('confirm.currency')))return;state={...state,configured:true,balance,payday,reserve,currency};persist();render();closeModal('settings-modal');showToast(t('toast.updated'))});
     const expenseOpen=()=>{if(!state.configured){settingsOpen();return}byId('expense-form').reset();byId('expense-date').value=today();setMsg(byId('expense-error'),'');showModal('expense-modal')};
     byId('add-expense').addEventListener('click',expenseOpen);byId('add-expense-hero').addEventListener('click',expenseOpen);
-    byId('expense-form').addEventListener('submit',event=>{event.preventDefault();const label=byId('expense-name').value.trim(),amount=readMoney(byId('expense-amount').value),date=byId('expense-date').value,category=byId('expense-cat').value;if(!label||label.length>70||!validAmount(amount)||!dateValid(date)||date>today()||!Object.hasOwn(CATEGORIES,category)){setMsg(byId('expense-error'),'err.expense');return}state.expenses.unshift({id:crypto.randomUUID(),label,amount:Math.round(amount*100)/100,date,category});persist();render();closeModal('expense-modal');showToast(t('toast.expense'))});
+    byId('expense-form').addEventListener('submit',event=>{event.preventDefault();const label=byId('expense-name').value.trim(),amount=readMoney(byId('expense-amount').value),date=byId('expense-date').value,category=byId('expense-cat').value;if(!label||label.length>70||!centAmount(amount)||!dateValid(date)||date>today()||!Object.hasOwn(CATEGORIES,category)){setMsg(byId('expense-error'),'err.expense');return}state.expenses.unshift({id:crypto.randomUUID(),label,amount:Math.round(amount*100)/100,date,category});persist();render();closeModal('expense-modal');showToast(t('toast.expense'))});
     byId('add-bill').addEventListener('click',()=>{if(!state.configured){settingsOpen();return}byId('bill-form').reset();byId('bill-date').value=today();setMsg(byId('bill-error'),'');showModal('bill-modal')});
-    byId('bill-form').addEventListener('submit',event=>{event.preventDefault();const label=byId('bill-name').value.trim(),amount=readMoney(byId('bill-amount').value),date=byId('bill-date').value;if(!label||label.length>70||!validAmount(amount)||!dateValid(date)){setMsg(byId('bill-error'),'err.bill');return}state.bills.unshift({id:crypto.randomUUID(),label,amount:Math.round(amount*100)/100,date,paid:false});persist();render();closeModal('bill-modal');showToast(t('toast.bill'))});
+    byId('bill-form').addEventListener('submit',event=>{event.preventDefault();const label=byId('bill-name').value.trim(),amount=readMoney(byId('bill-amount').value),date=byId('bill-date').value;if(!label||label.length>70||!centAmount(amount)||!dateValid(date)){setMsg(byId('bill-error'),'err.bill');return}state.bills.unshift({id:crypto.randomUUID(),label,amount:Math.round(amount*100)/100,date,paid:false});persist();render();closeModal('bill-modal');showToast(t('toast.bill'))});
     document.querySelectorAll('[data-close]').forEach(btn=>btn.addEventListener('click',()=>closeModal(btn.dataset.close)));
     for(const d of document.querySelectorAll('dialog'))d.addEventListener('click',event=>{if(event.target===d)closeModal(d.id)});
     byId('erase-data').addEventListener('click',()=>{if(!confirm(t('confirm.erase')))return;state=defaultState();persist(true);closeModal('settings-modal');render();showToast(t('toast.erased'))});
