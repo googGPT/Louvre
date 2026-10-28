@@ -89,7 +89,7 @@
           items.push({ recordId: record.id, item: record.item, merchant: record.merchant, kind, due, days });
       }
     }
-    return items.sort((a, b) => a.days - b.days || (a.kind === 'return' ? -1 : 1) || a.item.localeCompare(b.item, locale));
+    return items.sort((a, b) => a.days - b.days || (a.kind === b.kind ? 0 : a.kind === 'return' ? -1 : 1) || a.item.localeCompare(b.item, locale));
   }
   function categoryBreakdown(records, month) {
     if (typeof month !== 'string' || !/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) return [];
@@ -102,7 +102,7 @@
       .sort((a, b) => b.cents - a.cents || a.category.localeCompare(b.category, 'fr'));
   }
   function icsEscape(s) {
-    return String(s).replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/;/g, '\\;').replace(/,/g, '\\,');
+    return String(s).replace(/\\/g, '\\\\').replace(/\r\n|\r|\n/g, '\\n').replace(/;/g, '\\;').replace(/,/g, '\\,');
   }
   // Export de dates saisies par l'utilisateur. Aucun serveur, aucune notification implicite.
   // text : libellés traduits fournis par l'interface, { summary(kind, item), description(merchant) } avec kind 'return' ou 'warranty'.

@@ -90,9 +90,10 @@
   // Mensualité constante d'un prêt amortissable (taux mensuel = taux annuel / 12).
   function monthlyPayment(principal, rateBp, months) {
     if (principal <= 0) return 0;
-    if (rateBp === 0) return Math.round(principal / months);
+    if (rateBp === 0) return Math.max(1, Math.round(principal / months));
     const r = rateBp / 120000;
-    return Math.round(principal * r / (1 - Math.pow(1 + r, -months)));
+    // Même pour les très petits prêts, rembourser au moins un centime de capital par mois.
+    return Math.max(Math.round(principal * r / (1 - Math.pow(1 + r, -months))), Math.round(principal * r) + 1);
   }
   // Valeur indexée d'une année sur l'autre : prev × (1 + taux), arrondie au centime.
   const grow = (prev, bp) => prev + roundSym(prev * bp / 10000);

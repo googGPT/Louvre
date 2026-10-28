@@ -44,6 +44,19 @@ test('le classement utilise le prix exact, pas le prix arrondi', () => {
   assert.deepEqual(C.compare([a, b]).groups[0].rows.map((r) => r.name), ['B', 'A']);
 });
 
+test('très grands lots : classement exact, indépendant du nom', () => {
+  const a = item('A', '999999.89', '405555.511', 'piece', '999');
+  const b = item('B', '999999.71', '405555.438', 'piece', '999');
+  assert.deepEqual(C.compare([a, b]).groups[0].rows.map(x => x.name), ['B', 'A']);
+  assert.deepEqual(C.compare([b, a]).groups[0].rows.map(x => x.name), ['B', 'A']);
+  assert.ok(C.compare([a, b]).groups[0].rows[0].ratio > 0);
+});
+
+test('quantité hors limite et champ supplémentaire de sauvegarde refusés', () => {
+  assert.throws(() => C.parseQty('999999.999'), /err\.qty/);
+  assert.throws(() => C.validateBackup({ app: 'pricelens', version: 1, lists: [], unexpected: true }), /err\.backup/);
+});
+
 test('masses, volumes et pièces sont classés séparément', () => {
   const { groups, mixed } = C.compare([item('Lait', '1,10', '1', 'l'), item('Farine', '0,95', '1', 'kg'), item('Lait 6×', '5,94', '1', 'l', '6')]);
   assert.equal(mixed, true);

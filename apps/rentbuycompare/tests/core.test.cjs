@@ -38,6 +38,24 @@ test('prêt amortissable : mensualité classique et solde nul à l\'échéance',
   assert.equal(r.final.paidCum - r.final.interestCum, 21800000); // le capital remboursé est exactement l'emprunt
 });
 
+test('petit prêt à taux zéro amortissable malgré un arrondi à zéro de la mensualité', () => {
+  const p = params({ price: '100000', down: '99999.99', loanYears: '40', horizon: '40', loanRate: '0' });
+  const r = C.simulate(p);
+  assert.equal(r.loanCents, 1);
+  assert.equal(r.paymentCents, 1);
+  assert.equal(r.final.balanceCents, 0);
+  assert.equal(r.final.paidCum - r.final.interestCum, r.loanCents);
+});
+
+test('très petit prêt : la mensualité doit couvrir intérêts et amortissement', () => {
+  const p = params({ price: '100000', down: '99999.70', loanRate: '20', loanYears: '40', horizon: '40' });
+  const r = C.simulate(p);
+  assert.equal(r.loanCents, 30);
+  assert.equal(r.paymentCents, 2);
+  assert.equal(r.final.balanceCents, 0);
+  assert.equal(r.final.paidCum - r.final.interestCum, r.loanCents);
+});
+
 test('à taux nuls et sans frais, acheter ne coûte rien : la location est plus chère dès la 1re année', () => {
   const r = C.simulate(params({}));
   assert.equal(r.paymentCents, 66667); // 80 000 / 120 mois, dernière échéance ajustée

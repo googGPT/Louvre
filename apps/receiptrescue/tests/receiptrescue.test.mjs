@@ -53,6 +53,20 @@ test('export calendrier ICS correctement échappé et sans dates inventées',()=
   assert.match(result.content,/UID:sample-1234-retour-20261101@receiptrescue.local/); // identifiant stable, indépendant de la langue
   assert.equal(core.calendarIcs([record({returnBy:'',warrantyUntil:''})],text).count,0);
 });
+test('échéances de même type à même date sont triées alphabétiquement',()=>{
+  const a=record({id:'receipt-1001',item:'Zoo',returnBy:'2026-11-01',warrantyUntil:''});
+  const b=record({id:'receipt-1002',item:'Apple',returnBy:'2026-11-01',warrantyUntil:''});
+  const c=record({id:'receipt-1003',item:'Banana',returnBy:'2026-11-01',warrantyUntil:''});
+  assert.deepEqual(core.upcomingDeadlines([a,b,c],'2026-10-25',30).map(x=>x.item),['Apple','Banana','Zoo']);
+});
+
+test('export ICS : tous les retours à la ligne des champs sont échappés',()=>{
+  const x=record({item:'Reçu\rInjection\nLigne\r\nFin',returnBy:'2026-11-01',warrantyUntil:''});
+  const ics=core.calendarIcs([x],{summary:(k,s)=>s,description:()=>''}).content;
+  assert.match(ics,/SUMMARY:Reçu\\nInjection\\nLigne\\nFin/);
+  assert.equal(ics.replace(/\r\n/g,'').includes('\r'),false);
+});
+
 test('échéances : tri alphabétique selon la langue fournie',()=>{
   const a=record({id:'abcde-2001',item:'Zèbre',returnBy:'2026-10-27',warrantyUntil:''});
   const b=record({id:'abcde-2002',item:'Ábaco',returnBy:'2026-10-27',warrantyUntil:''});

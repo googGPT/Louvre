@@ -32,7 +32,7 @@
   // Quantité décimale positive (ex. 1,5), au plus 3 décimales.
   function parseQty(value, label = 'err.qty') {
     const s = String(value).trim().replace(',', '.');
-    if (!/^\d{1,6}(\.\d{1,3})?$/.test(s) || Number(s) <= 0) fail(label);
+    if (!/^\d{1,6}(\.\d{1,3})?$/.test(s) || Number(s) <= 0 || Number(s) > 999999) fail(label);
     return Number(s);
   }
 
@@ -53,7 +53,13 @@
   }
 
   // Quantité totale en unités de base (g, ml ou pièces), arrondie au millième pour éviter les flottants.
-  function baseQty(item) { return Math.round(item.qty * UNITS[item.unit].factor * item.count * 1000) / 1000; }
+  function baseQtyMilli(item) { return Math.round(item.qty * 1000) * UNITS[item.unit].factor * item.count; }
+  function baseQty(item) { return baseQtyMilli(item) / 1000; }
+  function compareExact(a, b) {
+    const left = BigInt(a.priceCents) * BigInt(baseQtyMilli(b));
+    const right = BigInt(b.priceCents) * BigInt(baseQtyMilli(a));
+    return left < right ? -1 : left > right ? 1 : 0;
+  }
 
   // Prix unitaire affiché (€/kg, €/L, €/pièce) en centimes, arrondi au centime le plus proche.
   function unitPriceCents(item) {
@@ -70,8 +76,8 @@
       const list = groups[dim];
       if (!list) continue;
       // Comparaison exacte a.prix/a.qté < b.prix/b.qté  <=>  a.prix*b.qté < b.prix*a.qté
-      const sorted = [...list].sort((a, b) => (a.priceCents * baseQty(b) - b.priceCents * baseQty(a)) || a.name.localeCompare(b.name, 'fr'));
-      const best = unitPriceCents(sorted[0]), worst = unitPriceCents(sorted[sorted.length - 1]);
+      const sorted = [...list].sort((a, b) => compareExact(a, b) || a.name.localeCompare(b.name, 'fr'));
+      const cheapest = sorted[0], priciest = sorted[sorted.length - 1];
       result.push({
         dim,
         per: PER[dim].unit,
@@ -81,11 +87,11 @@
             ...item,
             rank: rank + 1,
             unitPriceCents: up,
-            vsBest: best ? Math.round(1000 * (up - best) / best) / 10 : 0, // % plus cher que le meilleur
-            ratio: worst ? up / worst : 1, // pour la barre visuelle
+            vsBest: Math.round(1000 * ((item.priceCents * baseQty(cheapest)) / (cheapest.priceCents * baseQty(item)) - 1)) / 10, // % avec prix unitaires non arrondis
+            ratio: (item.priceCents * baseQty(priciest)) / (priciest.priceCents * baseQty(item)), // barre basée sur les prix non arrondis
           };
         }),
-        savingPct: worst ? Math.round(1000 * (worst - best) / worst) / 10 : 0, // gain du meilleur sur le plus cher
+        savingPct: Math.round(1000 * (1 - (cheapest.priceCents * baseQty(priciest)) / (priciest.priceCents * baseQty(cheapest)))) / 10, // gain calculé sur les prix exacts
       });
     }
     return { groups: result, mixed: result.length > 1 };
@@ -107,6 +113,7 @@
   function validateBackup(data) {
     if (!data || typeof data !== 'object' || Array.isArray(data)) fail('err.backup');
     if (data.app !== 'pricelens' || data.version !== VERSION || !Array.isArray(data.lists)) fail('err.notBackup');
+    if (Object.keys(data).sort().join(',') !== 'app,lists,version') fail('err.backup');
     if (data.lists.length > MAX_LISTS) fail('err.backup');
     const lists = data.lists.map((l) => {
       if (!l || typeof l !== 'object' || Object.keys(l).sort().join(',') !== 'id,items,name' || !Array.isArray(l.items)) fail('err.backup');
