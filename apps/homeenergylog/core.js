@@ -61,14 +61,14 @@
   // Contrôle d'un nouveau relevé par rapport à ses voisins (date unique, index croissant sauf compteur remplacé).
   function checkReading(meter, r) {
     if (meter.readings.some((x) => x.day === r.day && x.id !== r.id)) fail('err.duplicateDay');
-    if (meter.readings.length >= MAX.readings) fail('err.tooManyReadings', { max: MAX.readings });
+    if (meter.readings.length >= MAX.readings && !meter.readings.some((x) => x.id === r.id)) fail('err.tooManyReadings', { max: MAX.readings });
     const others = sortReadings(meter.readings.filter((x) => x.id !== r.id));
     const prev = [...others].reverse().find((x) => x.day < r.day), next = others.find((x) => x.day > r.day);
     if (prev && !r.reset && r.valueMilli < prev.valueMilli) fail('err.decrease', { day: prev.day, value: prev.valueMilli / 1000 });
     if (next && !next.reset && next.valueMilli < r.valueMilli) fail('err.decreaseNext', { day: next.day, value: next.valueMilli / 1000 });
     return r;
   }
-  function addReading(meter, r) { checkReading(meter, r); return { ...meter, readings: sortReadings([...meter.readings, r]) }; }
+  function addReading(meter, r) { checkReading(meter, r); return { ...meter, readings: sortReadings([...meter.readings.filter((x) => x.id !== r.id), r]) }; }
 
   // Coût en centimes, arrondi au plus proche : milli/1000 unités × price1e4/10 000 × 100 = milli × price1e4 / 100 000.
   function costCents(milli, price1e4) {

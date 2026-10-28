@@ -182,7 +182,7 @@
     if (!has(id)) fail('err.symbol');
     return `<svg xmlns="${NS}" viewBox="0 0 48 48" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${shapes(id)}</svg>`;
   }
-  const xml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const xml = (s) => [...String(s)].map(ch => { const n=ch.codePointAt(0); return n<9||(n>10&&n<13)||(n>13&&n<32)||(n>=0xD800&&n<=0xDFFF)||n===0xFFFE||n===0xFFFF ? '\uFFFD' : ch; }).join('').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   // Étiquette complète en SVG autonome (export) : titre, pictogrammes alignés, lignes de consignes.
   function labelSvg(ids, title, lines = [], rtl = false) {
     const list = cleanSymbols(ids);

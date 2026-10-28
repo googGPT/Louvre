@@ -40,6 +40,23 @@ const ICS_FR={summary:n=>'Entretien : '+n,description:'HomePulse — échéance 
 test('ICS contient VEVENT et date',()=>{const text=C.makeICS([mk()],ICS_FR);assert.match(text,/BEGIN:VEVENT/);assert.match(text,/DTSTART;VALUE=DATE:20261115/)});
 test('ICS échappe titres pour éviter injection lignes',()=>{const s=C.makeICS([mk({name:'A\nBEGIN:VALARM'})],ICS_FR);assert.match(s,/SUMMARY:Entretien : A\\nBEGIN:VALARM/)});
 test('entrées historique non attendues rejetées',()=>assert.throws(()=>C.cleanEvent({...ev(),admin:true})));test('ICS dans la langue choisie ; textes obligatoires',()=>{const s=C.makeICS([mk()],{summary:n=>'Maintenance: '+n,description:'Personal due date'});assert.match(s,/SUMMARY:Maintenance: Hotte/);assert.match(s,/DESCRIPTION:Personal due date/);assert.throws(()=>C.makeICS([mk()]),/err\.icsText/)});
+test('montants : fractions de centime refusées et centimes conservés',()=>{
+  for(const amount of ['1.005','2.999','0.001'])assert.throws(()=>C.moneyCents(amount),/err\.amount/);
+  assert.equal(C.moneyCents('12.29'),1229);
+});
+test('photo : Base64 doit avoir une longueur et un rembourrage valides',()=>{
+  for(const photo of ['data:image/png;base64,A','data:image/jpeg;base64,AAAAA','data:image/webp;base64,'])assert.throws(()=>C.cleanEquipment(mk({photo})),/err\.photo/);
+  assert.equal(C.cleanEquipment(mk({photo:'data:image/jpeg;base64,AQID'})).photo,'data:image/jpeg;base64,AQID');
+});
+test('ICS : CR isolé échappé et lignes repliées à 75 octets UTF-8',()=>{
+  const value='Électricité '.repeat(12)+'\rInjection';
+  const output=C.makeICS([mk()],{summary:()=>value,description:'Note\rExtra'});
+  assert.ok(output.split('\r\n').every(s=>Buffer.byteLength(s,'utf8')<=75));
+  assert.ok(output.replace(/\r\n[ \t]/g,'').includes('SUMMARY:'+value.replace('\r','\\n')));
+  assert.ok(output.includes('DESCRIPTION:Note\\nExtra'));
+  assert.equal(output.replace(/\r\n/g,'').includes('\r'),false);
+});
+
 test('erreurs sous forme de clés de traduction',()=>{assert.throws(()=>C.moneyCents('hello'),/^Error: err\.amount$/);assert.throws(()=>C.cleanEquipment(mk({name:'  '})),/^Error: err\.nameRequired$/);assert.throws(()=>C.validBackupText('{err'),/^Error: err\.json$/);assert.throws(()=>C.cleanState({version:2,equipment:[],history:[]}),/^Error: err\.backup$/)});
 test('statut sans texte figé : jours et nature seulement',()=>assert.deepEqual(C.status(mk({nextDue:'2026-10-20'}),'2026-10-25'),{days:-5,kind:'late'}));
 test('idées : clé de traduction et catégorie enregistrée valide',()=>{for(const s of C.SUGGESTIONS){assert.match(s.key,/^[a-z]+$/);assert.ok(C.CATEGORIES.includes(s.category))}});

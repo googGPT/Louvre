@@ -98,6 +98,16 @@ test('pictogrammes SVG : un par symbole, barré pour les interdictions, export a
   assert.throws(() => C.labelSvg([], 'X'), /err\.noSymbols/);
 });
 
+test('export SVG : caractères de contrôle XML interdits remplacés, accents préservés',()=>{
+  const title='Chemise\u0000 à l’été';
+  const lines=['Lavage\u0001 doux','Emojis 🧺 et contrôle \uD800'];
+  const svg=C.labelSvg(['w40'],title,lines);
+  assert.equal(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uD800-\uDFFF]/u.test(svg),false);
+  assert.ok(svg.includes('Chemise� à l’été'));
+  assert.ok(svg.includes('Lavage� doux'));
+  assert.ok(svg.includes('Emojis 🧺'));
+});
+
 test('étiquettes et sauvegarde : aller-retour exact et contenus refusés', () => {
   const l = C.makeLabel({ name: '  Chemise   bleue ', symbols: ['dP', 'w40'] }, 'label-0001');
   assert.deepEqual(l, { id: 'label-0001', name: 'Chemise bleue', symbols: ['w40', 'dP'] });

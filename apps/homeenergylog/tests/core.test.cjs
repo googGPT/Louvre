@@ -96,6 +96,19 @@ test('sauvegarde : aller-retour exact et contenus refusés', () => {
   assert.throws(() => C.validateBackup({ ...ok, meters: Array(11).fill(meters[1]) }), /err\.tooManyMeters/);
 });
 
+test('un relevé existant reste modifiable après 2000 relevés',()=>{
+  const start=C.dayNum('2020-01-01');
+  const rows=Array.from({length:C.MAX.readings},(_,i)=>({
+    id:'read-'+String(i).padStart(5,'0'),day:C.numDay(start+i),valueMilli:i*1000,reset:false
+  }));
+  const meter={...C.makeMeter({name:'Linky',kind:'electricity',unit:'kWh'},'meter-0001'),readings:rows};
+  const updated=C.addReading(meter,{...rows[1000],valueMilli:1000500});
+  assert.equal(updated.readings.length,2000);
+  assert.equal(updated.readings.find(r=>r.id===rows[1000].id).valueMilli,1000500);
+  assert.equal(updated.readings.filter(r=>r.id===rows[1000].id).length,1);
+  assert.throws(()=>C.addReading(meter,{id:'read-new01',day:C.numDay(start+2000),valueMilli:2000000,reset:false}),/err\.tooManyReadings/);
+});
+
 test('CSV protégé contre les formules', () => {
   const csv = C.toCsv([['Date', 'Index'], ['-12', '+3']]);
   assert.ok(csv.startsWith('﻿"Date";"Index"'));
