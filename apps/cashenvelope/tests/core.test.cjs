@@ -65,6 +65,15 @@ test('report : le reste (ou le dépassement) passe au mois suivant seulement si 
   assert.equal(C.monthSummary(state(envs, xs), '2027-01').rows.find((r) => r.id === food.id).carryCents, -5000 + 40000 + 40000);
 });
 
+test('report sur plus de 50 ans : aucun budget ni dépense historique perdus', () => {
+  const old = env('Long terme', '100', true, '2000-01');
+  const st = state([old], [spend([old], old.id, '2000-01-10', '15')], '0');
+  const row = C.monthSummary(st, '2051-02').rows[0];
+  assert.equal(row.carryCents, 6128500); // 613 mois écoulés × 100 € − 15 €.
+  assert.equal(row.availableCents, 6138500); // + 100 € pour février 2051.
+  assert.equal(row.balanceCents, 6138500);
+});
+
 test('alertes : seuil saisi, dépassement, enveloppe pas encore ouverte', () => {
   const a = env('Transport', '100', false, '2026-10'), b = env('Cadeaux', '50', false, '2026-11');
   const envs = [a, b];

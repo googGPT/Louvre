@@ -6,7 +6,6 @@
   const APP = 'cashenvelope', VERSION = 1;
   const MAX_ENVELOPES = 30, MAX_EXPENSES = 5000, MAX_NAME = 40, MAX_NOTE = 80;
   const MAX_CENTS = 99999999; // 999 999,99 dans la devise choisie
-  const MAX_MONTHS = 600; // report calculé sur 50 ans au plus
   const ID = /^[a-z0-9-]{6,64}$/i;
 
   // Erreurs = clés de traduction (paramètres JSON après « | »), traduites par l'interface.
@@ -107,7 +106,12 @@
       if (target < start) continue; // l'enveloppe n'existe pas encore ce mois-là
       const per = spent.get(env.id) || new Map();
       let carry = 0;
-      if (env.rollover) for (let i = Math.max(start, target - MAX_MONTHS); i < target; i++) carry = env.budgetCents + carry - (per.get(i) || 0);
+      if (env.rollover) {
+        // Le solde reporté est le cumul des budgets moins toutes les dépenses passées.
+        // Pas de fenêtre glissante de 600 mois : elle perdait des montants historiques.
+        carry = (target - start) * env.budgetCents;
+        for (const [i, cents] of per) if (i >= start && i < target) carry -= cents;
+      }
       const available = env.budgetCents + carry, used = per.get(target) || 0, balance = available - used;
       let status = 'ok';
       if (balance < 0) status = 'over';

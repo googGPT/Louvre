@@ -123,7 +123,7 @@
   }
 
   // --- Export agenda (.ics, RFC 5545) : une série récurrente par facture active.
-  function icsEscape(s) { return s.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n'); }
+  function icsEscape(s) { return s.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r\n|\r|\n/g, '\\n'); }
   function fold(line) { // lignes de 75 octets au plus
     const out = []; let cur = '';
     for (const ch of line) { if (new TextEncoder().encode(cur + ch).length > 75) { out.push(cur); cur = ' ' + ch; } else cur += ch; }
@@ -167,6 +167,7 @@
   function validateBackup(data) {
     if (!data || typeof data !== 'object' || Array.isArray(data)) fail('err.backup');
     if (data.app !== 'billcalendar' || data.version !== VERSION || !Array.isArray(data.bills)) fail('err.notBackup');
+    if (Object.keys(data).sort().join(',') !== 'app,bills,version') fail('err.backup');
     if (data.bills.length > MAX_BILLS) fail('err.tooMany', { max: MAX_BILLS });
     const bills = data.bills.map((b) => {
       if (!b || typeof b !== 'object' || Array.isArray(b)) fail('err.backup');

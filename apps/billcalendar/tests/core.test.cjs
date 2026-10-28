@@ -68,6 +68,13 @@ test('export agenda .ics : règles de récurrence et échappement', () => {
   assert.ok(ics.split('\r\n').every((l) => new TextEncoder().encode(l).length <= 75));
 });
 
+test('export ICS : retours chariot CR, LF et CRLF échappés', () => {
+  const b = bill({ name: 'Ligne 1\rLigne 2\nLigne 3\r\nLigne 4' });
+  const ics = C.toICS([b], '20261028T000000Z');
+  assert.ok(ics.includes('SUMMARY:Ligne 1\\nLigne 2\\nLigne 3\\nLigne 4 — 12\\,99 €'));
+  assert.equal(/[\r\n]/.test(ics.replace(/\r\n/g, '')), false);
+});
+
 test('saisies refusées et sauvegarde validée', () => {
   assert.throws(() => bill({ amount: '0' }), /err\.amountPositive/);
   assert.throws(() => bill({ amount: '12,999' }), /err\.amount/);
@@ -77,6 +84,7 @@ test('saisies refusées et sauvegarde validée', () => {
   const bills = [bill(), { ...bill({ frequency: 'yearly' }), active: false }];
   assert.deepEqual(C.validateBackup(JSON.parse(C.backup(bills))), bills);
   const ok = { app: 'billcalendar', version: 1, bills };
+  assert.throws(() => C.validateBackup({ ...ok, unknown: 'x' }), /err\.backup/);
   assert.throws(() => C.validateBackup({ ...ok, app: 'autre' }), /err\.notBackup/);
   assert.throws(() => C.validateBackup({ ...ok, bills: [{ ...bills[0], hack: 1 }] }), /err\.backup/);
   assert.throws(() => C.validateBackup({ ...ok, bills: [{ ...bills[0], active: 'oui' }] }), /err\.backup/);
