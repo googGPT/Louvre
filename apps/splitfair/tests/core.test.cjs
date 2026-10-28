@@ -12,5 +12,17 @@ test('calcul stable et source intacte',()=>{const before=JSON.stringify(base),a=
 test('dates réelles et changement d’heure',()=>{assert.equal(L.diffDays('2026-03-30','2026-03-29'),1);assert.equal(L.addDays('2026-03-28',2),'2026-03-30')});
 test('entrée non fiable ne peut générer HTML dans les vues',()=>{assert.equal(typeof L.normalizeRecord(mk({[L.SPEC.fields.find(f=>f.type==='text')?.key || 'id']:'<script>alert(1)</script>'})).id,'string')});
 
+test('noms réservés JavaScript : les comptes __proto__, constructor et toString restent distincts',()=>{
+  for(const name of ['__proto__','constructor','toString']){
+    const out=L.compute([mk({payer:name,people:'Alice, Bob',amount:10})],today);
+    assert.equal(out.rows.length,2);
+    assert.deepEqual(out.rows.map(r=>r.to),[name,name]);
+    assert.equal(out.rows.reduce((s,r)=>s+r.cents,0),1000);
+  }
+});
+test('montants : fractions de centime rejetées plutôt que silencieusement arrondies',()=>{
+  for(const amount of [0.001,1.005,2.999])assert.throws(()=>L.normalizeRecord(mk({amount})),/err\.number/);
+  assert.equal(L.normalizeRecord(mk({amount:0.01})).amount,0.01);
+});
 test('résultat métier concret',()=>{const m=L.compute([base],today);assert.equal(m.kpis[0].value,4200);assert.equal(m.kpis[0].money,true);assert.deepEqual(m.rows[0],{from:'Bob',to:'Alice',cents:2100})});
 test('erreurs sous forme de clés traduisibles',()=>{assert.throws(()=>L.normalizeRecord(mk({amount:-1})),/^Error: err\.number\|\{"field":"amount"\}$/);assert.throws(()=>L.normalizeRecord(mk({payer:' '})),/^Error: err\.text\|\{"field":"payer","max":160\}$/);assert.throws(()=>L.normalizeRecord(mk({amount:0})),/^Error: err\.domain$/)});

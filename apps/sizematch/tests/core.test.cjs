@@ -10,6 +10,15 @@ test('export JSON v1 restaurable',()=>{const raw=L.backup([base]);assert.equal(J
 test('sauvegarde appli différente rejetée',()=>assert.throws(()=>L.validateBackup({app:'other',version:1,records:[base]})));
 test('sauvegarde future rejetée',()=>assert.throws(()=>L.validateBackup({app:'sizematch',version:2,records:[base]})));
 test('objet sauvegarde manquant rejeté',()=>assert.throws(()=>L.validateBackup(null)));
+test('sauvegarde JSON v1 refuse les champs top-level supplémentaires mais conserve exportedAt',()=>{
+  const saved=JSON.parse(L.backup([base]));
+  assert.deepEqual(L.validateBackup(saved),[base]);
+  assert.throws(()=>L.validateBackup({...saved,unexpected:true}),/err\.backup/);
+  assert.throws(()=>L.validateBackup({...saved,exportedAt:12345}),/err\.backup/);
+});
+test('un enregistrement restauré ne doit pas contenir de propriété supplémentaire',()=>{
+  assert.throws(()=>L.validateBackup({app:'sizematch',version:1,records:[{...base,unknown:1}]}),/err\.backup/);
+});
 test('doublons id rejetés',()=>assert.throws(()=>L.validateBackup({app:'sizematch',version:1,records:[base,base]})));
 test('limite 500 enregistrements',()=>assert.throws(()=>L.validateBackup({app:'sizematch',version:1,records:Array.from({length:501},(_,i)=>r({id:'id'+String(i).padStart(5,'0')}))})));
 test('identifiant malformé rejeté',()=>assert.throws(()=>L.normalizeRecord(r({id:'a'}))));

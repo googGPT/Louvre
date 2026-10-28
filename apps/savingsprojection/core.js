@@ -80,6 +80,8 @@
       const i = monthlyInterest(balance, scenario.rateBp);
       balance += i; interest += i; yearInterest += i;
       if (pays && plan.timing === 'end') { balance += plan.contributionCents; contributed += plan.contributionCents; }
+      // Les calculs financiers doivent conserver des centimes entiers exacts.
+      if (![balance, contributed, interest, yearInterest].every(Number.isSafeInteger)) fail('err.amountBig');
       reached(m);
       if (m % 12 === 0) { years.push({ year: m / 12, contributedCents: contributed, interestCents: interest, yearInterestCents: yearInterest, balanceCents: balance }); yearInterest = 0; }
     }

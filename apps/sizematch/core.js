@@ -93,8 +93,13 @@ const AppLogic = (() => {
   }
   function validateBackup(json){
     if(!json||typeof json!=='object'||Array.isArray(json)||json.app!=='sizematch'||json.version!==1||!Array.isArray(json.records)||json.records.length>MAX)throw Error('err.backup');
+    // exportedAt est facultatif pour préserver les sauvegardes v1 historiques.
+    if(Object.keys(json).some(k=>!['app','version','records','exportedAt'].includes(k))||
+      (Object.hasOwn(json,'exportedAt')&&typeof json.exportedAt!=='string'))throw Error('err.backup');
     if(JSON.stringify(json).length>STORAGE_LIMIT)throw Error('err.backupBig');
-    const used=new Set();return json.records.map(o=>{const n=normalizeRecord(o);if(used.has(n.id))throw Error('err.duplicate');used.add(n.id);return n;});
+    const used=new Set();return json.records.map(o=>{
+      if(!o||typeof o!=='object'||Array.isArray(o)||Object.keys(o).sort().join(',')!=='from,id,name,to,value')throw Error('err.backup');
+      const n=normalizeRecord(o);if(used.has(n.id))throw Error('err.duplicate');used.add(n.id);return n;});
   }
   function backup(records){const r=validateBackup({app:'sizematch',version:1,records});return JSON.stringify({app:'sizematch',version:1,exportedAt:new Date().toISOString(),records:r},null,2);}
   function compute(records,today=dayKey()){

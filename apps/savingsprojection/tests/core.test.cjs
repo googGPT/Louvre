@@ -78,6 +78,11 @@ test('scénarios comparés du plus prudent au plus optimiste', () => {
   assert.throws(() => C.compare(p, []), /err\.noScenario/);
 });
 
+test('scénario extrême : refuser une projection au-delà des entiers sûrs en centimes', () => {
+  const extreme = plan({ initial: '9999999.99', contribution: '9999999.99', years: '60', timing: 'start' });
+  assert.throws(() => C.project(extreme, sc('Extrême', '30')), /err\.amountBig/);
+});
+
 test('CSV annuel : une colonne par scénario', () => {
   const rs = C.compare(plan({ initial: '100', years: '2' }), [sc('+Haute', '12'), sc('Nulle', '0')]);
   const csv = C.yearlyCsv(rs, { year: 'Année', contributed: 'Versé', scenario: (r) => `${r.name} (${r.rateBp / 100} %)` });
