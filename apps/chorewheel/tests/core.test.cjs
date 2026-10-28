@@ -46,6 +46,18 @@ test('export UTF-8 CSV suitable for Excel',()=>{const data=L.csv([rec()],date);a
 test('CSV neutralizes spreadsheet formula',()=>{const data=L.csv([rec({chore:'=FORMULA("x")'})]);assert.ok(data.includes("'=FORMULA"));assert.ok(data.includes('""x""'))});
 test('ICS contains recurring rule and exact date',()=>{const v=L.ics([rec()],date);assert.match(v,/DTSTART;VALUE=DATE:20261026/);assert.match(v,/RRULE:FREQ=DAILY;INTERVAL=7/);assert.match(v,/UID:old00001@chorewheel.local/)});
 test('ICS escapes user content',()=>{const v=L.ics([rec({chore:'Laver; cuisine, vite'})]);assert.ok(v.includes('Laver\\; cuisine\\, vite'))});
+test('ICS ligne max 75 octets UTF-8, accents et récurrence conservés',()=>{
+  const long=('Été à la maison : '+'fenêtres '.repeat(7)).trim();
+  const v=L.ics([rec({chore:long,person:'Étienne'})],date);
+  assert.ok(v.trimEnd().split('\r\n').every(s=>Buffer.byteLength(s,'utf8')<=75));
+  const unfolded=v.replace(/\r\n[ \t]/g,'');
+  assert.ok(unfolded.includes('SUMMARY:'+long+' — Étienne'));
+  assert.ok(unfolded.includes('RRULE:FREQ=DAILY;INTERVAL=7'));
+});
+test('sauvegarde refuse propriétés inconnues tout en acceptant exportedAt historique',()=>{
+  assert.throws(()=>L.validateBackup({app:'chorewheel',version:1,records:[],unexpected:true}),/err\.backup/);
+  assert.equal(L.validateBackup({app:'chorewheel',version:1,records:[legacy],exportedAt:'2026-10-28T12:00:00.000Z'}).length,1);
+});
 test('summary empty is valid',()=>{const v=L.summary([],date);assert.equal(v.count,0);assert.equal(v.due,0);assert.deepEqual(v.people,[]) });
 test('date reference validated',()=>assert.throws(()=>L.compute([rec()],'bad')));
 test('errors are translation keys',()=>{assert.throws(()=>rec({every:0}),/^Error: err\.every\|\{"max":3650\}$/);assert.throws(()=>rec({chore:' '}),/^Error: err\.text\|\{"field":"chore","max":100\}$/);assert.throws(()=>L.markDone(rec({last:'2026-11-01'}),date),/err\.before/)});

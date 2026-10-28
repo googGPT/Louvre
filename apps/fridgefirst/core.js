@@ -66,8 +66,8 @@
   function daysTo(expiry, today) {return dayNumber(expiry)-dayNumber(today);}
   function todayLocal(now=new Date()){return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;}
   function addDays(date,days){if(!strictDate(date)||!Number.isInteger(days))throw Error('err.date');const d=new Date(date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+days);return d.toISOString().slice(0,10);}
-  function status(item,today){const d=daysTo(item.expiry,today);return d<0?'passé':d<=2?'urgent':d<=5?'bientôt':'ok';}
-  function stringField(v,max=80){return typeof v==='string' && v.trim().length>0 && v.trim().length<=max && !/[\u0000-\u0008\u000e-\u001f]/.test(v);}
+  function status(item,today){const d=daysTo(item.expiry,today);if(!Number.isFinite(d))throw Error('err.date');return d<0?'passé':d<=2?'urgent':d<=5?'bientôt':'ok';}
+  function stringField(v,max=80){return typeof v==='string' && v.length<=max && v.trim().length>0 && !/[\u0000-\u0008\u000e-\u001f]/.test(v);}
   function isPlainObject(x){return typeof x==='object' && x!==null && !Array.isArray(x) && Object.getPrototypeOf(x)===Object.prototype;}
   function isExact(x,fields){return isPlainObject(x)&& Object.keys(x).length===fields.length && fields.every(k=>Object.hasOwn(x,k));}
   function validItem(i){return isExact(i,['id','name','quantity','unit','category','place','expiry','createdAt']) && stringField(i.id,70) && stringField(i.name,72) && Number.isFinite(i.quantity) && i.quantity>0 && i.quantity<=100000 && UNITS.includes(i.unit) && CATEGORIES.includes(i.category) && PLACES.includes(i.place) && strictDate(i.expiry) && strictDate(i.createdAt);}

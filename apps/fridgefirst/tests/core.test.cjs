@@ -24,6 +24,16 @@ test('exclure les produits dont la date est dépassée des recettes',()=>{const 
 test('score des recettes favorise moins de manquants',()=>{const r=C.recipeSuggestions([item(),item({id:'egg',name:'œuf',category:'protéine'}),item({id:'onion',name:'Oignon'})],today);assert.equal(r[0].id,'omelette');});
 test('score peut utiliser une date proche',()=>{const r=C.recipeSuggestions([item({expiry:'2026-10-31'}),item({id:'egg',name:'œuf',category:'protéine',expiry:'2026-10-31'})],today);assert.equal(r.find(x=>x.id==='omelette').have.length,2);});
 test('aucune recette sans produit',()=>assert.deepEqual(C.recipeSuggestions([],today),[]));
+test('refuse les chaînes trop longues même entourées de nombreux espaces',()=>{
+  const raw=' '.repeat(8000)+'Tomate';
+  assert.equal(C.validItem(item({name:raw})),false);
+  assert.throws(()=>C.validateBackup(data({items:[item({name:raw})]})),/err\.invalid/);
+  assert.throws(()=>C.validateBackup(data({shopping:[{id:'shop-1',name:raw,checked:false}]})),/err\.invalid/);
+});
+test('statut ne doit pas présenter une date impossible comme normale',()=>{
+  assert.throws(()=>C.status(item({expiry:'2026-02-30'}),today),/err\.date/);
+  assert.throws(()=>C.status(item(),'not-a-date'),/err\.date/);
+});
 test('validation objet conforme',()=>assert.deepEqual(C.validateBackup(data()),data()));
 test('validation refuse nouvelle version',()=>assert.throws(()=>C.validateBackup(data({version:2})),/err\.format/));
 test('validation refuse doublon ID entre historiques',()=>assert.throws(()=>C.validateBackup(data({shopping:[{id:'abc',name:'riz',checked:false}]})),/err\.duplicate/));

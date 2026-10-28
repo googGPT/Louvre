@@ -32,6 +32,7 @@ const AppLogic = (() => {
   }
   function validateBackup(data){
     if(!data||typeof data!=='object'||Array.isArray(data)||data.app!==SPEC.slug||data.version!==1||!Array.isArray(data.records)||data.records.length>MAX)fail('err.backup');
+    if(Object.keys(data).some(k=>!['app','version','records','exportedAt'].includes(k))||(owns(data,'exportedAt')&&typeof data.exportedAt!=='string'))fail('err.backup');
     const seen=new Set();const result=data.records.map(r=>{const o=normalizeRecord(r);if(seen.has(o.id))fail('err.dupId');seen.add(o.id);return o;});
     if(JSON.stringify(data).length>STORAGE_LIMIT)fail('err.tooBig');return result;
   }
@@ -58,10 +59,20 @@ const AppLogic = (() => {
   const ICS_FR={desc:r=>'Pièce : '+(r.room||'non précisée')+' ; '+r.minutes+' min estimées',lang:'FR'};
   function ics(records,today=dayKey(),texts=ICS_FR){
     const a=summary(records,today).entries;
-    function esc(v){return String(v).replace(/\\/g,'\\\\').replace(/\n/g,'\\n').replace(/;/g,'\\;').replace(/,/g,'\\,');}
+    function esc(v){return String(v).replace(/\\/g,'\\\\').replace(/\r\n|\r|\n/g,'\\n').replace(/;/g,'\\;').replace(/,/g,'\\,');}
     const stamp=dayKey().replace(/-/g,'')+'T120000Z';const lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//ChoreWheel//Local Chores//'+(texts.lang||'FR'),'CALSCALE:GREGORIAN'];
     for(const r of a){const start=r.next.replace(/-/g,'');lines.push('BEGIN:VEVENT','UID:'+r.id+'@chorewheel.local','DTSTAMP:'+stamp,'DTSTART;VALUE=DATE:'+start,'SUMMARY:'+esc(r.chore+' — '+r.person),'DESCRIPTION:'+esc(texts.desc(r)),'RRULE:FREQ=DAILY;INTERVAL='+r.every,'END:VEVENT');}
-    lines.push('END:VCALENDAR');return lines.join('\r\n')+'\r\n';
+    // RFC 5545: repli des lignes à 75 octets UTF-8, sans couper un caractère.
+    const fold=line=>{
+      let part='',bytes=0;const out=[];
+      for(const ch of line){
+        const cp=ch.codePointAt(0),len=cp<128?1:cp<2048?2:cp<65536?3:4;
+        if(bytes+len>75){out.push(part);part=' ';bytes=1;}
+        part+=ch;bytes+=len;
+      }
+      out.push(part);return out;
+    };
+    lines.push('END:VCALENDAR');return lines.flatMap(fold).join('\r\n')+'\r\n';
   }
   return Object.freeze({SPEC,MAX,STORAGE_LIMIT,MAX_HISTORY,validDate,dayKey,diffDays,addDays,norm,normalizeRecord,validateBackup,backup,statusOf,markDone,workload,summary,compute,csv,ics});
 })();

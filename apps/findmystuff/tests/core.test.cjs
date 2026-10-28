@@ -17,6 +17,16 @@ test('refuse identifiant absent',()=>assert.throws(()=>create({},'abc')));
 test('refuse dates impossibles',()=>{assert.equal(C.iso('2026-02-29'),false);assert.equal(C.iso('2026-02-28'),true);assert.equal(C.iso('2024-02-29'),true)});
 test('refuse un identifiant avec code HTML',()=>assert.throws(()=>create({},'id<script>')));
 test('refuse une photo SVG en base64',()=>assert.throws(()=>create({photo:'data:image/svg+xml;base64,PHN2Zz4='})));
+test('refuse une photo base64 incomplète même sous le seuil de taille',()=>{
+  for(const data of ['data:image/jpeg;base64,A','data:image/png;base64,AAAAA','data:image/webp;base64,AAAA===','data:image/jpeg;base64,']){
+    assert.equal(C.photoOk(data),false);
+    assert.throws(()=>create({photo:data}),/err\.misc/);
+  }
+});
+test('import JSON refuse une photo à encodage Base64 malformé',()=>{
+  const a=create(), backup={app:'FindMyStuff',version:1,exportedAt:d,items:[{...a,photo:'data:image/jpeg;base64,A'}]};
+  assert.throws(()=>C.parseBackup(JSON.stringify(backup)),/err\.misc/);
+});
 test('accepte une petite photo JPEG base64',()=>assert.equal(create({photo:'data:image/jpeg;base64,/9j/2Q=='}).photo,'data:image/jpeg;base64,/9j/2Q=='));
 test('refuse photo dépassant maximum',()=>assert.equal(C.photoOk('data:image/jpeg;base64,'+'A'.repeat(C.MAX_PHOTO)),false));
 test('accepte un prêt valide',()=>{let a=create({loan:{borrower:'Camille',lentOn:d,dueOn:'2026-11-01'}});assert.equal(a.loan.borrower,'Camille');});

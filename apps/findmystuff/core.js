@@ -11,7 +11,7 @@
   const exact = (v, keys) => !!v && typeof v === 'object' && !Array.isArray(v) && Object.keys(v).length === keys.length && keys.every(k => Object.prototype.hasOwnProperty.call(v, k));
   const str = (v, max, min = 0) => typeof v === 'string' && v.trim().length >= min && v.length <= max && !/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/.test(v);
   const iso = v => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) && (() => { const d = new Date(v + 'T12:00:00Z'); return !Number.isNaN(d.valueOf()) && d.toISOString().slice(0, 10) === v && v >= '2000-01-01' && v <= '2100-12-31'; })();
-  const photoOk = v => v === null || (typeof v === 'string' && v.length <= MAX_PHOTO && /^data:image\/(?:jpeg|png|webp);base64,[a-zA-Z0-9+/]+={0,2}$/.test(v));
+  const photoOk = v => v === null || (typeof v === 'string' && v.length <= MAX_PHOTO && /^data:image\/(?:jpeg|png|webp);base64,(?:(?:[A-Za-z0-9+/]{4})+(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?|[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)$/.test(v));
   function validateItem(item) {
     if (!exact(item, ['id','name','category','location','container','quantity','tags','notes','photo','createdAt','updatedAt','loan'])) throw new Error('err.format');
     if (!str(item.id, 80, 8) || !/^[a-zA-Z0-9-]+$/.test(item.id)) throw new Error('err.id');
