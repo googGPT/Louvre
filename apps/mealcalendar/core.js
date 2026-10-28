@@ -96,7 +96,10 @@
   // Les quantités sont ramenées au nombre de personnes de chaque repas (règle de trois sur les portions du plat).
   function ingredientKey(name, unit) { return `${norm(name)}|${UNITS[unit].dim}`; }
   function shoppingList(plan, dishes) {
-    const map = new Map();
+    const map = new Map(), amounts = new Map();
+    // Accumuler exactement les fractions de portion avant l'arrondi final :
+    // sinon plusieurs petites portions peuvent se perdre une à une.
+    const gcd = (a,b) => { while(b){ const t=a%b; a=b; b=t; } return a; };
     for (const slot of plan.slots) {
       const dish = dishes.find((d) => d.id === slot.dishId);
       if (!dish) continue;
@@ -104,12 +107,20 @@
         const key = ingredientKey(ing.name, ing.unit);
         if (!map.has(key)) map.set(key, { key, name: ing.name, dim: UNITS[ing.unit].dim, milli: 0, units: [], dishes: [] });
         const item = map.get(key);
-        item.milli += Math.round(baseMilli(ing.qty, ing.unit) * slot.people / dish.servings);
+        const current = amounts.get(key) || { num:0n, den:1n };
+        const numerator = current.num * BigInt(dish.servings) + BigInt(baseMilli(ing.qty, ing.unit)) * BigInt(slot.people) * current.den;
+        const denominator = current.den * BigInt(dish.servings);
+        const common = gcd(numerator, denominator);
+        amounts.set(key, { num:numerator/common, den:denominator/common });
         if (!item.units.includes(ing.unit)) item.units.push(ing.unit);
         if (!item.dishes.includes(dish.name)) item.dishes.push(dish.name);
       }
     }
-    return [...map.values()];
+    return [...map.values()].map((item) => {
+      const {num,den} = amounts.get(item.key);
+      item.milli = Number((2n*num+den)/(2n*den)); // arrondi une seule fois, au millième d'unité de base
+      return item;
+    });
   }
   // Quantité lisible : l'unité d'origine si elle est unique, sinon g/kg ou ml/L selon la grandeur.
   function displayQty(item) {
@@ -120,7 +131,7 @@
     else unit = 'piece';
     if ((unit === 'g' || unit === 'ml') && item.milli >= 1000000) unit = unit === 'g' ? 'kg' : 'l'; // 1 200 g -> 1,2 kg
     const value = item.milli / 1000 / UNITS[unit].factor;
-    const digits = unit === 'kg' || unit === 'l' ? 3 : 2;
+    const digits = Math.min(6, 3 + Math.ceil(Math.log10(UNITS[unit].factor)));
     return { value: Math.round(value * 10 ** digits) / 10 ** digits, unit };
   }
 

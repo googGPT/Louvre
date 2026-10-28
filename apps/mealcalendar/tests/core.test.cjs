@@ -93,6 +93,23 @@ test('mêmes apostrophes : huile additionnée sur une seule ligne', () => {
   assert.deepEqual(items[0].dishes, ['A', 'B']);
 });
 
+test('liste de courses : les portions sub-millièmes sont cumulées avant arrondi',()=>{
+  const dish=C.makeDish({name:'Vanille',servings:3,ingredients:[{name:'Vanille',qty:'0.001',unit:'g'}]},'dish-tiny1');
+  let plan=C.emptyPlan('2026-10-26');
+  for(let day=0;day<3;day++)plan=C.setSlot(plan,day,'breakfast',dish.id,1,[dish]);
+  const rows=C.shoppingList(plan,[dish]);
+  assert.equal(rows.length,1);
+  assert.equal(rows[0].milli,1);
+  assert.deepEqual(C.displayQty(rows[0]),{value:0.001,unit:'g'});
+  const one=C.shoppingList(C.setSlot(C.emptyPlan('2026-10-26'),0,'breakfast',dish.id,1,[dish]),[dish]);
+  assert.equal(one[0].milli,0);
+});
+
+test('affichage : une petite mesure en cuillères reste visible au lieu de zéro',()=>{
+  assert.deepEqual(C.displayQty({dim:'volume',milli:1,units:['tsp']}),{value:0.0002,unit:'tsp'});
+  assert.deepEqual(C.displayQty({dim:'volume',milli:1,units:['tbsp']}),{value:0.00007,unit:'tbsp'});
+});
+
 test('export CSV : en-têtes et unités traduits, décimale choisie, case cochée', () => {
   let plan = C.setSlot(C.emptyPlan('2026-10-26'), 0, 'lunch', 'dish-0001', 2, dishes);
   const items = C.shoppingList(plan, dishes);

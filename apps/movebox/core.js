@@ -36,7 +36,13 @@
     if (!/^\d{1,4}$/.test(s) || Number(s) < 1 || Number(s) > MAX_NUMBER) fail('err.number', { max: MAX_NUMBER });
     return Number(s);
   }
-  function nextNumber(boxes) { return Math.min(MAX_NUMBER, boxes.reduce((m, b) => Math.max(m, b.number), 0) + 1); }
+  function nextNumber(boxes) {
+    const used = new Set(boxes.map((b) => b.number));
+    const next = boxes.reduce((m, b) => Math.max(m, b.number), 0) + 1;
+    if (next <= MAX_NUMBER && !used.has(next)) return next;
+    for (let n = 1; n <= MAX_NUMBER; n += 1) if (!used.has(n)) return n;
+    fail('err.number', { max: MAX_NUMBER });
+  }
 
   function makeBox(input, id, boxes = []) {
     if (typeof id !== 'string' || !ID_RE.test(id)) fail('err.id');
@@ -58,7 +64,7 @@
   function matchRoom(room, boxes) { const r = boxes.find((b) => norm(b.room) === norm(room)); return r ? r.room : clean(room); }
 
   // --- Suivi
-  function nextStatus(status) { const i = STATUSES.indexOf(status); return STATUSES[Math.min(i + 1, STATUSES.length - 1)]; }
+  function nextStatus(status) { const i = STATUSES.indexOf(status); if (i === -1) fail('err.status'); return STATUSES[Math.min(i + 1, STATUSES.length - 1)]; }
   function setStatus(boxes, ids, status) {
     if (!STATUSES.includes(status)) fail('err.status');
     const set = new Set(ids);

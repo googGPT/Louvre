@@ -145,7 +145,7 @@
     result.loads.forEach((l, k) => {
       for (const id of l.items) {
         const g = byId.get(id);
-        lines.push([k + 1, csvCell(colorLabel(l.color)), csvCell(programLabel(l.program)), l.maxC, csvCell(g.name), kg(g.weightG), g.tumble ? yes : no].join(';'));
+        lines.push([k + 1, csvCell(colorLabel(l.color)), csvCell(programLabel(l.program)), l.maxC, csvCell(g.name), kg(g.weightG), csvCell(g.tumble ? yes : no)].join(';'));
       }
     });
     return '﻿' + lines.join('\r\n') + '\r\n';

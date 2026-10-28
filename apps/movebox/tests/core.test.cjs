@@ -31,6 +31,18 @@ test('saisie : numéro, pièce, contenu, poids en grammes entiers', () => {
   assert.equal(C.matchRoom('Bureau', boxes), 'Bureau');
 });
 
+test('numérotation : numéro 9999 occupé ne doit jamais être proposé deux fois',()=>{
+  const entries=[{id:'box-one01',number:1},{id:'box-max01',number:9999}];
+  assert.equal(C.nextNumber(entries),2);
+  const n=C.nextNumber(entries);
+  assert.equal(C.makeBox({number:String(n),room:'Garage',items:'Vêtements'},'box-new01',entries).number,2);
+  assert.equal(C.nextNumber([{number:9999}]),1);
+  assert.equal(C.nextNumber([{number:1},{number:2}]),3);
+});
+test('statut inconnu : ne pas convertir silencieusement un carton en emballé',()=>{
+  assert.throws(()=>C.nextStatus('lost'),/err\.status/);
+});
+
 test('recherche : sans accents ni casse, plusieurs mots, numéro', () => {
   const ids = (q) => C.search(boxes, q).map((r) => r.box.number);
   assert.deepEqual(ids('verre'), [1]);

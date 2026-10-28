@@ -100,6 +100,16 @@ test('export CSV : une ligne par vêtement, libellés fournis, cellules protég�
   assert.throws(() => C.toCSV(r, all, { headers: [] }), /err\.headers/);
 });
 
+test('export CSV : libellé traduit comportant un point-virgule et des guillemets ne crée pas de colonnes supplémentaires',()=>{
+  const article=g('Chemise','white',40,'0.5',{tumble:true});
+  const planned=C.plan([article],S());
+  const csv=C.toCSV(planned,[article],{
+    headers:['Charge','Couleur','Programme','Temp','Vêtement','Poids','Sèche-linge'],
+    colorLabel:c=>c,programLabel:p=>p,yes:'Oui; "confirmé"',no:'Non',decimal:'comma'
+  });
+  assert.ok(csv.includes(';"Oui; ""confirmé"""\r\n'));
+});
+
 test('sauvegarde : aller-retour exact et contenus refusés', () => {
   const data = { settings: S({ tempGapC: 10 }), garments: [g('Draps', 'white', 60, '1.2'), g('Gilet', 'light', 40, '0.4', { care: 'hand' })] };
   assert.deepEqual(C.validateData(JSON.parse(C.backup(data))), data);
