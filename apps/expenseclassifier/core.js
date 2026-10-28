@@ -227,6 +227,7 @@
         else {
           const d = idx('debit') >= 0 ? String(r[idx('debit')]).trim() : '', c = idx('credit') >= 0 ? String(r[idx('credit')]).trim() : '';
           if (!d && !c) throw new Error('empty');
+          if (d && c) throw new Error('ambiguous debit and credit');
           cents = (c ? Math.abs(parseAmount(c, decimal)) : 0) - (d ? Math.abs(parseAmount(d, decimal)) : 0);
         }
       } catch (e) { report(line, 'err.rowAmount'); continue; }

@@ -128,6 +128,14 @@ test('export CSV : en-têtes fournis, décimale choisie, formules neutralisées'
   assert.ok(C.toCSV(rows, { headers: ['a', 'b', 'c', 'd', 'e'], decimal: 'dot', categoryName: () => '' }).includes('2026-10-01,"\'=HYPERLINK(""x"")",-3.50,,2026-10'));
 });
 
+test('import à colonnes débit/crédit : une ligne portant les deux montants est refusée', () => {
+  const rows = [['Date', 'Libellé', 'Débit', 'Crédit'], ['01/10/2026', 'Correction ambiguë', '10,00', '20,00'], ['02/10/2026', 'Loyer', '100,00', '']];
+  const r = C.buildTransactions(rows, { decimal: 'comma', dateFormat: 'dmy', hasHeader: true, map: { date: 0, label: 1, debit: 2, credit: 3 } });
+  assert.equal(r.errorCount, 1);
+  assert.deepEqual(r.errors, [{ line: 2, key: 'err.rowAmount' }]);
+  assert.deepEqual(r.transactions.map((t) => t.cents), [-10000]);
+});
+
 test('sauvegarde : aller-retour exact et contenus refusés', () => {
   const data = { categories: cats, rules: [rule('rule-0001', 'cat-0001', 'keyword', 'loyer', 'out')], transactions: [{ date: '2026-10-01', label: 'LOYER', cents: -70000 }] };
   const back = C.validateData(JSON.parse(C.backup(data)));
