@@ -124,6 +124,23 @@ test("l'historique est plafonné : les soins les plus anciens sont oubliés", ()
   assert.ok(!data.history.some((h) => h.id === 'event-00000'));
 });
 
+test('historique : un identifiant déjà présent ne peut pas être réutilisé',()=>{
+  const p=plant();
+  const e=ev('water',TODAY,'event-existing');
+  const state={plants:[p],history:[e]};
+  assert.throws(()=>C.recordCare(state,{plantId:p.id,kind:'water',date:TODAY,note:''},e.id,TODAY),/err\.backup/);
+  assert.equal(state.history.length,1);
+});
+test('export ICS : retour chariot isolé échappé, aucune ligne injectée',()=>{
+  const p=plant();
+  const result=C.toICS([p],[],TODAY,30,'20261027T120000Z',{
+    summary:()=> 'Arroser\rInjection',description:()=> 'Note\r\nLigne suivante'
+  });
+  assert.ok(result.text.includes('SUMMARY:Arroser\\nInjection'));
+  assert.ok(result.text.includes('DESCRIPTION:Note\\nLigne suivante'));
+  assert.equal(result.text.replace(/\r\n/g,'').includes('\r'),false);
+});
+
 test('sauvegarde : aller-retour exact et contenus refusés', () => {
   const p = plant({ season: { months: [12, 1], pct: '150' } });
   const data = { plants: [p], history: [ev('water', '2026-10-25', 'event-0001')] };

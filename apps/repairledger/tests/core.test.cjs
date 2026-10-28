@@ -102,6 +102,22 @@ test('exports : CSV protégé et agenda .ics avec alarme', () => {
   assert.throws(() => C.toCSV(objects, repairs, { headers: [] }), /err\.headers/);
 });
 
+test('calendrier : retour chariot isolé échappé dans les événements et les alarmes',()=>{
+  const o=obj('Vélo','500','50','2026-01-01'), objects=[o];
+  const r=rep(objects,o.id,'2026-02-01','20',{warrantyDate:'2026-12-01'});
+  const text=C.toICS(objects,[r],'2026-10-27','20261027T120000Z',{
+    summary:()=> 'Garantie\rInjection',describe:()=> 'Ligne\r\nSuite'
+  },7);
+  assert.ok(text.includes('SUMMARY:Garantie\\nInjection'));
+  assert.ok(text.includes('DESCRIPTION:Ligne\\nSuite'));
+  assert.equal(text.replace(/\r\n/g,'').includes('\r'),false);
+});
+test('calendrier : rejette les durées d’alarme invalides hors de 0 à 365 jours',()=>{
+  const opts={summary:()=> 'Garantie',describe:()=> 'Description'};
+  for(const n of [-1,366,400,1.5,'7',NaN])assert.throws(()=>C.toICS([],[],'2026-10-27','20261027T120000Z',opts,n),/err\.remind/);
+  assert.ok(C.toICS([],[],'2026-10-27','20261027T120000Z',opts,365).includes('END:VCALENDAR'));
+});
+
 test('sauvegarde : aller-retour exact et contenus refusés', () => {
   const o = obj('Vélo', '650', '60', '2023-05-01'), objects = [o];
   const data = { settings: C.makeSettings({ reminderDays: '15' }), objects, repairs: [rep(objects, o.id, '2026-09-01', '85', { warrantyMonths: '2' })] };

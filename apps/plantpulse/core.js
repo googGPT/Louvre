@@ -169,6 +169,7 @@
     if (!plant) fail('err.plantUnknown');
     if (!plant.tasks[input.kind]) fail('err.task');
     const ev = makeEvent(input, id);
+    if (data.history.some((h) => h.id === ev.id)) fail('err.backup'); // identifiant d'historique unique
     if (isDay(today) && dayDiff(ev.date, today) > 0) fail('err.dateFuture');
     let history = [...data.history, ev].sort(byDateDesc);
     if (history.length > MAX_HISTORY) history = history.slice(0, MAX_HISTORY);
@@ -186,7 +187,7 @@
   }
 
   // --- Export agenda (.ics, RFC 5545) : une occurrence par échéance calculée (les saisons rendent une RRULE inexacte).
-  function icsEscape(s) { return String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
+  function icsEscape(s) { return String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r\n|\r|\n/g, '\\n'); }
   function fold(line) {
     const out = []; let cur = '';
     for (const ch of line) { if (new TextEncoder().encode(cur + ch).length > 75) { out.push(cur); cur = ' ' + ch; } else cur += ch; }

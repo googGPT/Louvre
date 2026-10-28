@@ -25,7 +25,7 @@
       const whole = Math.floor(value), frac = Math.round((value - whole) * 100) / 100;
       if (FRACTIONS[frac]) return whole ? `${L.number(whole)} ${FRACTIONS[frac]}` : FRACTIONS[frac];
     }
-    return L.number(value, { maximumFractionDigits: 2 });
+    return L.number(value, { maximumFractionDigits: value > 0 && value < 0.01 ? 8 : 2 });
   }
   const unitName = (u) => t('unit.' + u);
   function qtyText(q) {

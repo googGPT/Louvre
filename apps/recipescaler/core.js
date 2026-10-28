@@ -66,16 +66,18 @@
 
   // --- Arrondis lisibles
   const roundTo = (v, step) => Math.round(v / step) * step;
-  const clean = (v) => Math.round(v * 1000) / 1000; // supprime les résidus flottants (0,30000000004)
+  const clean = (v) => Math.round(v * 1000) / 1000; // arrondi usuel des quantités affichées
+  const nonzero = (raw, rounded) => rounded === 0 && raw > 0 ? Number(raw.toPrecision(8)) : clean(rounded);
   function stepFor(v) { return v < 1 ? 0.1 : v < 10 ? 0.5 : v < 100 ? 1 : 5; }
   // Masse ou volume « métrique » : unité la plus lisible, pas d'arrondi selon la grandeur.
   function metric(base, small, big, origin) {
-    if (base >= 1000) { const v = base / 1000; return { value: clean(roundTo(v, v < 10 ? 0.01 : 0.1)), unit: big }; }
-    if (origin === 'cl') { const v = base / 10; return { value: clean(roundTo(v, v < 10 ? 0.5 : 1)), unit: 'cl' }; }
-    return { value: clean(roundTo(base, stepFor(base))), unit: small };
+    if (base >= 1000) { const v = base / 1000; return { value: nonzero(v, roundTo(v, v < 10 ? 0.01 : 0.1)), unit: big }; }
+    if (origin === 'cl') { const v = base / 10; return { value: nonzero(v, roundTo(v, v < 10 ? 0.5 : 1)), unit: 'cl' }; }
+    return { value: nonzero(base, roundTo(base, stepFor(base))), unit: small };
   }
   // Cuillères : moins d'une c. à soupe -> c. à café au quart près ; jusqu'à 4 c. à soupe -> « 1 c. à soupe + 1 c. à café » ; au-delà -> ml.
   function spoons(ml) {
+    if (ml < 0.1) return metric(ml, 'ml', 'l', 'ml'); // une fraction infime ne doit pas devenir ¼ de cuillère
     if (ml < 15) { const v = Math.max(0.25, roundTo(ml / 5, 0.25)); return v >= 3 ? { value: 1, unit: 'tbsp' } : { value: clean(v), unit: 'tsp' }; }
     if (ml <= 60) {
       let tb = Math.floor(ml / 15), rest = roundTo((ml - tb * 15) / 5, 0.25);
@@ -99,7 +101,7 @@
     else if (dim === 'count') q = { value: exact < 1 ? Math.max(0.5, roundTo(exact, 0.5)) : Math.round(exact), unit: 'piece' }; // œufs : entiers, ou ½ en dessous de 1
     else q = { value: Math.max(1, Math.round(exact)), unit: 'pinch' };
     const shown = toBase(q);
-    return { name: ing.name, ...q, approx: Math.abs(shown - exact) > 1e-6 * Math.max(1, exact), exact: clean(exact), origin: ing };
+    return { name: ing.name, ...q, approx: Math.abs(shown - exact) > 1e-6 * Math.max(1, exact), exact: Number(exact.toPrecision(12)), origin: ing };
   }
   function scaleRecipe(recipe, factor) { return recipe.ingredients.map((i) => scaleIngredient(i, factor)); }
   function factorForServings(recipe, target) { return servings(target) / recipe.servings; }

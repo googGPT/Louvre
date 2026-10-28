@@ -153,7 +153,7 @@
     }
     return '\ufeff' + lines.join('\r\n') + '\r\n';
   }
-  function icsEscape(s) { return String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n'); }
+  function icsEscape(s) { return String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r\n|\r|\n/g, '\\n'); }
   function fold(line) { // lignes de 75 octets au plus (RFC 5545)
     const out = []; let cur = '';
     for (const ch of line) { if (new TextEncoder().encode(cur + ch).length > 75) { out.push(cur); cur = ' ' + ch; } else cur += ch; }
@@ -162,6 +162,7 @@
   // Un événement « journée entière » par garantie encore active, avec alarme N jours avant (si N > 0).
   function toICS(objects, repairs, today, stamp, text, remindDays) {
     if (!/^\d{8}T\d{6}Z$/.test(stamp)) fail('err.stamp');
+    if (!Number.isInteger(remindDays) || remindDays < 0 || remindDays > MAX_REMIND) fail('err.remind', { max: MAX_REMIND });
     const by = new Map(objects.map((o) => [o.id, o]));
     const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Louvre//RepairLedger//FR', 'CALSCALE:GREGORIAN'];
     for (const r of repairs.filter((x) => x.warrantyEnd && x.warrantyEnd >= today).sort((a, b) => cmpText(a.warrantyEnd, b.warrantyEnd) || cmpText(a.id, b.id))) {

@@ -77,6 +77,19 @@ test('facteur d\'après un ingrédient disponible', () => {
   assert.throws(() => C.factorForServings(crepes, 0), /err\.servings/);
 });
 
+test('quantités minimes : ni la valeur affichée ni la valeur exacte ne deviennent zéro',()=>{
+  const item=C.scaleIngredient({name:'Safran',qty:0.001,unit:'g'},0.05);
+  assert.equal(item.exact,0.00005);
+  assert.equal(item.value,0.00005);
+  assert.equal(item.unit,'g');
+  assert.equal(item.approx,false);
+});
+test('fraction infime de cuillère : pas de surestimation à un quart de cuillère',()=>{
+  const item=C.scaleIngredient({name:'Arôme',qty:0.001,unit:'tsp'},0.05);
+  assert.equal(item.exact,0.00025);
+  assert.deepEqual({value:item.value,unit:item.unit,approx:item.approx},{value:0.00025,unit:'ml',approx:false});
+});
+
 test('sauvegarde : aller-retour exact et contenus refusés', () => {
   const data = { recipes: [crepes] };
   assert.deepEqual(C.validateData(JSON.parse(C.backup(data))), data);
