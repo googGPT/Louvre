@@ -115,6 +115,19 @@ test('export CSV : haut ou pièce unique, bas, chaussures, couleurs', () => {
   assert.throws(() => C.toCSV(r.list, items, { headers: ['a'] }), /err\.headers/);
 });
 
+test('bilan : palette vive ne présente jamais le rouge comme couleur neutre',()=>{
+ const r=rules({palette:['red'],maxAccents:1});
+ const clothes=[
+  C.makeItem({name:'Haut rouge',category:'top',color:'red',seasons:['summer'],occasions:['casual']},'piece-top01'),
+  C.makeItem({name:'Bas rouge',category:'bottom',color:'red',seasons:['summer'],occasions:['casual']},'piece-bot01'),
+  C.makeItem({name:'Souliers rouges',category:'shoes',color:'red',seasons:['summer'],occasions:['casual']},'piece-shoe1')
+ ];
+ const a=C.analyze(clothes,r,{season:'summer',occasion:'casual'});
+ assert.equal(a.neutral,'black');
+ assert.equal(C.COLORS[a.neutral].neutral,true);
+ assert.ok(a.gains.some(g=>g.gain>0));
+});
+
 test('sauvegarde : aller-retour exact et contenus refusés', () => {
   const data = { rules: rules({ palette: ['navy'], maxAccents: 2 }), items: sample().slice(0, 3) };
   assert.deepEqual(C.validateData(JSON.parse(C.backup(data))), data);

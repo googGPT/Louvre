@@ -87,6 +87,22 @@ test('format JSON import/export invariant',()=>{
  const p=C.add(initial(),'desk','obj-0000001');a.deepEqual(C.validate(JSON.parse(JSON.stringify(p))),p);
 });
 test('60 meubles n’altèrent pas l’ancien plan',()=>{const p=initial();C.add(p,'table','obj-0000001');a.equal(p.objects.length,0);});
+test('placement auto : un espace exact de 50 cm hors grille de 10 cm reste utilisable',()=>{
+ const r=C.validate({version:1,room:{width:200,depth:200},objects:[
+  o('obj-left001',{kind:'custom',label:'left',x:0,y:0,width:21,depth:200}),
+  o('obj-right01',{kind:'custom',label:'right',x:71,y:0,width:129,depth:200})
+ ]});
+ const added=C.add(r,'chair','obj-added01');
+ const chair=added.objects.find(x=>x.id==='obj-added01');
+ a.equal(chair.x,21);a.equal(chair.y,0);
+ a.equal(added.objects.length,3);
+});
+test('SVG : caractères de contrôle XML invalides ne sont pas exportés',()=>{
+ const svg=C.svg(C.empty(),{title:'Pièce\u0000 test',desc:()=> 'Détails\u0001'});
+ a.ok(!/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(svg));
+ a.ok(svg.includes('Pièce� test'));
+});
+
 test('SVG exporté avec textes traduits fournis par l’interface',()=>{
  const x=C.svg(plan([o()]),{title:'Room plan',desc:(r,n)=>r.width+' by '+r.depth+' cm, '+n+' item',label:()=>'Table EN'});
  a.ok(x.includes('<title>Room plan</title><desc>500 by 400 cm, 1 item</desc>'));a.ok(x.includes('>Table EN</text>'));

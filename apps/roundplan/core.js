@@ -28,6 +28,11 @@ const AppLogic = (() => {
   function validateBackup(obj){
     if(!obj||typeof obj!=='object'||Array.isArray(obj)||obj.app!==SPEC.slug||obj.version!==1||!Array.isArray(obj.records)||obj.records.length>MAX)fail('err.backup');
     if(Object.keys(obj).some(k=>!['app','version','exportedAt','records'].includes(k)))fail('err.backupField');
+    // Les anciennes sauvegardes sans exportedAt restent compatibles.
+    if(Object.prototype.hasOwnProperty.call(obj,'exportedAt')){
+      const t=obj.exportedAt;
+      if(typeof t!=='string'||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}Z$/.test(t)||!Number.isFinite(Date.parse(t))||new Date(Date.parse(t)).toISOString()!==t)fail('err.backup');
+    }
     const ids=new Set(),records=obj.records.map(row=>{const x=normalizeRecord(row);if(ids.has(x.id))fail('err.dup');ids.add(x.id);return x});
     if(JSON.stringify(obj).length>STORAGE_LIMIT)fail('err.fileBig');
     return records;

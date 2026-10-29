@@ -37,6 +37,14 @@ test('indicateurs v1 compatibles',()=>{const p=L.compute([base],'2026-11-01');as
 test('indicateurs complémentaires',()=>{const p=L.compute([base]);assert.equal(L.formatSeconds(p.kpis[3][1]),'4:00');assert.equal(L.formatSeconds(p.kpis[4][1]),'1:40')});
 test('programme déterministe, sans mutation',()=>{const original=JSON.stringify([base,second]);assert.deepEqual(L.compute([base,second]),L.compute([base,second]));assert.equal(JSON.stringify([base,second]),original)});
 test('sauvegarde JSON v1 conservée',()=>{const data=JSON.parse(L.backup([base,second]));assert.equal(data.version,1);assert.equal(data.app,'roundplan');assert.deepEqual(L.validateBackup(data),[base,second]);});
+test('horodatage de sauvegarde : absent en v1 accepté, valeurs malformées rejetées',()=>{
+ const raw={app:'roundplan',version:1,records:[]};
+ assert.deepEqual(L.validateBackup(raw),[]);
+ for(const exportedAt of [1234,null,'','yesterday','2026-02-30T12:00:00.000Z','2026-13-01T12:00:00.000Z'])
+   assert.throws(()=>L.validateBackup({...raw,exportedAt}),/err\.backup/);
+ assert.deepEqual(L.validateBackup({...raw,exportedAt:'2026-10-29T12:00:00.000Z'}),[]);
+});
+
 test('restauration au vieux format sans exportedAt',()=>assert.deepEqual(L.validateBackup({app:'roundplan',version:1,records:[base]}),[base]));
 test('rejet doublons',()=>assert.throws(()=>L.validateBackup({app:'roundplan',version:1,records:[base,base]})));
 test('rejet sauvegarde de mauvaise application',()=>assert.throws(()=>L.validateBackup({app:'other',version:1,records:[base]})));

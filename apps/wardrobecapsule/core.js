@@ -133,7 +133,7 @@
     const orphans = items.filter((i) => OUTFIT_CATS.includes(i.category) && fits(i, filter) && res.uses[i.id] === 0).sort(byName).map((i) => i.id);
     const unfit = items.filter((i) => OUTFIT_CATS.includes(i.category) && !fits(i, filter)).map((i) => i.id);
     // Pièce hypothétique : première couleur neutre de la palette (sinon noir), pour la saison et l'occasion du filtre.
-    const neutral = rules.palette.find((c) => COLORS[c].neutral) || (rules.palette.length ? rules.palette[0] : 'black');
+    const neutral = rules.palette.find((c) => COLORS[c].neutral) || 'black'; // couleur réellement neutre, même si aucune n'a encore été choisie
     const ghost = (category) => ({ id: 'ghost-item', name: '￿', category, color: neutral,
       seasons: filter.season === 'all' ? SEASONS.slice() : [filter.season], occasions: filter.occasion === 'all' ? OCCASIONS.slice() : [filter.occasion] });
     const gains = OUTFIT_CATS.map((c) => ({ category: c, gain: outfits([...items, ghost(c)], rules, filter).count - res.count })).sort((a, b) => b.gain - a.gain || OUTFIT_CATS.indexOf(a.category) - OUTFIT_CATS.indexOf(b.category));

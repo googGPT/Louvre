@@ -82,6 +82,19 @@ function add(plan,kind,id){
    if(!old.objects.some(o=>intersects(item,o)))return validate({...old,objects:[...old.objects,item]});
   }
  }
+ // When the 10-cm grid misses a narrow but valid opening, try exact edge-aligned positions.
+ const others=old.objects.map(bounds);
+ const xs=new Set([0]),ys=new Set([0]);
+ for(const b of others){
+  xs.add(b.x+b.width);xs.add(b.x-p.width);
+  ys.add(b.y+b.depth);ys.add(b.y-p.depth);
+ }
+ const xx=[...xs].filter(x=>x>=0&&x+p.width<=old.room.width).sort((a,b)=>a-b);
+ const yy=[...ys].filter(y=>y>=0&&y+p.depth<=old.room.depth).sort((a,b)=>a-b);
+ for(const y of yy)for(const x of xx){
+  const item={id,kind,label:p.label,x,y,width:p.width,depth:p.depth,rotation:0};
+  if(!old.objects.some(o=>intersects(item,o)))return validate({...old,objects:[...old.objects,item]});
+ }
  fail('err.noSpace');
 }
 function resizeRoom(plan,width,depth){
@@ -107,7 +120,7 @@ function area(plan){
  return {roomCm2:p.room.width*p.room.depth,occupiedCm2:taken,freeCm2:p.room.width*p.room.depth-taken,
    occupiedPercent:Math.round(taken*10000/(p.room.width*p.room.depth))/100};
 }
-function xml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');}
+function xml(s){return [...String(s)].map(c=>{const n=c.codePointAt(0);return n<9||(n>10&&n<13)||(n>13&&n<32)||(n>=0xd800&&n<=0xdfff)||n===0xfffe||n===0xffff?'\uFFFD':c;}).join('').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');}
 // Exported SVG; the interface passes translated texts (French by default): {title, desc(room, count), label(object)}.
 function svg(plan,texts={}){
  const p=validate(plan),r=p.room;
