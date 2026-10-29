@@ -128,13 +128,15 @@
       });
     }
     const air = segs.reduce((s, x) => s + x.durationMin, 0);
-    const journey = segs.length ? Math.round((segs[segs.length - 1].arrMs - segs[0].depMs) / MIN) : 0;
+    // En présence de vols chevauchants, le dernier départ n'est pas toujours la dernière arrivée.
+    const finalArrival = segs.reduce((latest, s) => !latest || s.arrMs > latest.arrMs ? s : latest, null);
+    const journey = segs.length ? Math.round((finalArrival.arrMs - segs[0].depMs) / MIN) : 0;
     return {
       segments: segs, connections,
       totals: {
         count: segs.length, journeyMin: journey, airMin: air, groundMin: connections.reduce((s, c) => s + Math.max(0, c.minutes), 0),
-        dayShift: segs.length ? daysBetween(segs[0].dep.date, segs[segs.length - 1].arr.date) : 0,
-        zoneShiftMin: segs.length ? segs[segs.length - 1].arr.offset - segs[0].dep.offset : 0,
+        dayShift: segs.length ? daysBetween(segs[0].dep.date, finalArrival.arr.date) : 0,
+        zoneShiftMin: segs.length ? finalArrival.arr.offset - segs[0].dep.offset : 0,
         short: connections.filter((c) => c.status === 'short').length, overlap: connections.filter((c) => c.status === 'overlap').length,
         placeChange: connections.filter((c) => c.placeChange).length,
       },
@@ -143,7 +145,7 @@
   const splitMinutes = (m) => ({ h: Math.floor(Math.abs(m) / 60), m: Math.abs(m) % 60, neg: m < 0 });
 
   // --- Export agenda (.ics, RFC 5545) : un événement par vol, horaires en UTC (aucune ambiguïté de fuseau).
-  function icsEscape(s) { return String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
+  function icsEscape(s) { return String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r\n|\r|\n/g, '\\n'); }
   function fold(line) { // lignes de 75 octets au plus
     const out = []; let cur = '';
     const enc = new TextEncoder();

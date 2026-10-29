@@ -123,6 +123,29 @@ test('export .ics : un événement par vol, horaires UTC, texte échappé et rep
   assert.throws(() => C.toICS(trip(60, a), 'hier'), /err\.stamp/);
 });
 
+test('vols chevauchants : durée du voyage jusqu’à la dernière arrivée réelle',()=>{
+  const mk=(id,depart,arrive)=>C.makeSegment({
+    flight:id,from:'A',fromZone:'UTC',to:'B',toZone:'UTC',depart,arrive
+  },id);
+  const first=mk('seg-long01','2026-12-01T08:00','2026-12-02T08:00');
+  const second=mk('seg-short1','2026-12-01T12:00','2026-12-01T13:00');
+  const tr=C.makeTrip('Chevauchement','trip-overlap1');
+  tr.segments=[first,second];
+  const r=C.analyze(tr);
+  assert.equal(r.totals.journeyMin,1440);
+  assert.equal(r.totals.dayShift,1);
+  assert.equal(r.totals.airMin,1500);
+  assert.equal(r.totals.overlap,1);
+});
+test('export ICS : un retour chariot isolé est échappé',()=>{
+  const a=C.makeSegment({flight:'AB12',from:'Paris',fromZone:'UTC',depart:'2026-12-01T08:00',to:'Rome',toZone:'UTC',arrive:'2026-12-01T10:00'},'seg-cr001');
+  const trip=C.makeTrip('Europe','trip-cr001');trip.segments=[a];
+  const text=C.toICS(trip,'20261029T120000Z',{summary:()=> 'Vol\rInjection',describe:()=> 'Note\rLigne'});
+  assert.ok(text.includes('SUMMARY:Vol\\nInjection'));
+  assert.ok(text.includes('DESCRIPTION:Note\\nLigne'));
+  assert.equal(text.replace(/\r\n/g,'').includes('\r'),false);
+});
+
 test('sauvegarde : aller-retour exact et contenus refusés', () => {
   const t = trip(60, seg('Paris', 'Europe/Paris', '2026-11-10T21:30', 'Dubaï', 'Asia/Dubai', '2026-11-11T06:35', 'XY 101'));
   t.name = 'Voyage';

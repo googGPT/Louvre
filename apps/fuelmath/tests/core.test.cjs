@@ -70,4 +70,17 @@ test('erreurs sous forme de clés, avec le champ concerné',()=>{
  assert.throws(()=>L.normalizeRecord(mk({km:-1})),/err\.number\|\{"field":"km"\}/);
  assert.throws(()=>L.validateBackup({app:'x'}),/err\.backup/);
 });
+test('sauvegarde : champs supplémentaires rejetés même si leur valeur paraît valide',()=>{
+ const raw={app:'fuelmath',version:1,records:[base]};
+ assert.throws(()=>L.validateBackup({...raw,inject:42}),/err\.backup/);
+ assert.throws(()=>L.validateBackup({...raw,records:[{...base,inject:42}]}),/err\.backup/);
+ assert.equal(L.validateBackup(raw).length,1);
+});
+test('sauvegarde : horodatage exporté ISO réel et anciens fichiers sans horodatage',()=>{
+ const raw={app:'fuelmath',version:1,records:[base]};
+ assert.equal(L.validateBackup(raw).length,1);
+ assert.equal(L.validateBackup({...raw,exportedAt:'2026-10-29T12:00:00.000Z'}).length,1);
+ for(const exportedAt of [42,null,'2026-02-30T12:00:00.000Z','2026-10-29T12:00:00Z',''])assert.throws(()=>L.validateBackup({...raw,exportedAt}),/err\.backup/);
+});
+
 test('notes et indicateurs désignés par des clés',()=>{const m=L.compute([base],today);assert.deepEqual(m.notes,['note.people','note.estimate','note.cents']);assert.deepEqual(m.kpis.map(k=>k.type),['money','money','liters','km','moneyPerKm']);assert.equal(m.kpis[4].value,11)});

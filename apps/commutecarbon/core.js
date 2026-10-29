@@ -111,17 +111,41 @@
     const p = weeklyParts(trip, factor);
     return { weekMg: Math.round(p.num / p.den), yearMg: Math.round(p.num * weeksPerYear / p.den), metersWeek: p.metersWeek };
   }
+  // Addition exacte de fractions non négatives, puis arrondi unique au mg.
+  // BigInt évite toute perte de précision avant l'arrondi final.
+  function sumParts(parts, weeks = 1) {
+    let numerator = 0n, denominator = 1n;
+    const gcd = (a, b) => { while (b) { const t = a % b; a = b; b = t; } return a; };
+    for (const part of parts) {
+      const n = BigInt(part.num), d = BigInt(part.den);
+      const g = gcd(denominator, d);
+      const nextDen = denominator / g * d;
+      numerator = numerator * (d / g) + n * (denominator / g);
+      denominator = nextDen;
+      const common = gcd(numerator, denominator);
+      numerator /= common; denominator /= common;
+    }
+    const x = Number((2n * numerator * BigInt(weeks) + denominator) / (2n * denominator));
+    if (!Number.isSafeInteger(x)) fail('err.backup');
+    return x;
+  }
   // Totaux d'un scénario : semaine, mois (= année / 12), année ; détail par trajet et par mode.
   function scenarioTotals(scenario, factors) {
     const byId = new Map(factors.map((f) => [f.id, f]));
     const trips = scenario.trips.map((trip) => ({ trip, factor: byId.get(trip.factorId), ...tripEmissions(trip, byId.get(trip.factorId), scenario.weeksPerYear) }));
-    const yearMg = trips.reduce((a, r) => a + r.yearMg, 0);
+    const parts = scenario.trips.map((trip) => weeklyParts(trip, byId.get(trip.factorId)));
+    const yearMg = sumParts(parts, scenario.weeksPerYear);
     const modes = new Map();
-    for (const r of trips) modes.set(r.factor.id, (modes.get(r.factor.id) || 0) + r.yearMg);
+    for (let i = 0; i < trips.length; i++) {
+      const id = trips[i].factor.id;
+      if (!modes.has(id)) modes.set(id, []);
+      modes.get(id).push(parts[i]);
+    }
     return {
-      weekMg: trips.reduce((a, r) => a + r.weekMg, 0), monthMg: Math.round(yearMg / 12), yearMg,
+      weekMg: sumParts(parts), monthMg: Math.round(yearMg / 12), yearMg,
       metersWeek: trips.reduce((a, r) => a + r.metersWeek, 0), trips,
-      byMode: [...modes].map(([factorId, mg]) => ({ factorId, yearMg: mg })).sort((a, b) => b.yearMg - a.yearMg),
+      byMode: [...modes].map(([factorId, group]) => ({ factorId, yearMg: sumParts(group, scenario.weeksPerYear) }))
+        .sort((a, b) => b.yearMg - a.yearMg),
     };
   }
   // Comparaison de scénarios par rapport à une référence : écart annuel en mg et en % (1 décimale ; null si référence nulle).

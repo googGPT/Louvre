@@ -108,6 +108,19 @@ test('CSV : en-têtes fournis, séparateur selon la décimale, kg à 3 décimale
   assert.equal(C.kg(0, '.'), '0.000');
 });
 
+test('totaux : plusieurs demi-milligrammes sont additionnés avant arrondi final',()=>{
+  const tiny=C.makeFactor({name:'Très faible',gPerKm:'0.001',basis:'passenger'},'fac-tiny1');
+  const t=(id)=>C.makeTrip({name:'Petite distance',distance:'0.5',unit:'km',factorId:tiny.id,passengers:'1',roundTrip:false,daysPerWeek:'1'},id,[tiny]);
+  const s=C.makeScenario({name:'Petites distances',weeksPerYear:'1',trips:[t('trip-tiny1'),t('trip-tiny2')]},'sce-tiny1');
+  const total=C.scenarioTotals(s,[tiny]);
+  assert.deepEqual(total.trips.map(x=>x.yearMg),[1,1]); // arrondis individuels
+  assert.equal(total.weekMg,1);
+  assert.equal(total.yearMg,1);
+  assert.deepEqual(total.byMode,[{factorId:tiny.id,yearMg:1}]);
+  const year=C.scenarioTotals({...s,weeksPerYear:53},[tiny]);
+  assert.equal(year.yearMg,53);
+});
+
 test('sauvegarde : aller-retour exact et contenus refusés', () => {
   const s = C.makeScenario({ name: 'Actuel', weeksPerYear: '47', trips: [trip({}), trip({ unit: 'mi', distance: '7.5' }, 'trip-0002')] }, 'sce-0001');
   const data = { factors: FACTORS, scenarios: [s] };
