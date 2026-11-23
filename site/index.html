@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas Journaux</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Plan : une salle de lecture de bibliothèque — papier chaud, encre bleu nuit, or des cotes de classement.
+   En-tête bleu nuit, grande barre de recherche, fiches aérées avec un liseré de couleur selon le rang. */
+:root{
+  --paper:#f5f3ee; --card:#ffffff; --ink:#14202f; --muted:#5d6878; --line:#e3e0d8; --line2:#d3cfc4;
+  --accent:#1f4e8c; --accent-soft:#e6eef8; --gold:#a8741a; --gold-soft:#f7eedc;
+  --good:#1d7a4f; --good-soft:#e2f3e9; --warn:#9a5b00; --warn-soft:#fbefda; --bad:#a3322b; --bad-soft:#f8e4e2;
+  --hdr:#13233b; --hdr2:#1b3254; --hdr-ink:#eef2f8; --hdr-muted:#a9b7cc;
+  --shadow:0 1px 2px rgba(20,32,47,.06),0 4px 14px rgba(20,32,47,.06);
+  --shadow-hi:0 2px 4px rgba(20,32,47,.08),0 10px 28px rgba(20,32,47,.12);
+  --r:14px;
+  --display:"Newsreader", Georgia, "Times New Roman", serif;
+  --body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0e131a; --card:#161d27; --ink:#e8edf4; --muted:#9ba7b8; --line:#253041; --line2:#33405a;
+    --accent:#86b5f2; --accent-soft:#1b2b42; --gold:#e2b55e; --gold-soft:#33291a;
+    --good:#62cc98; --good-soft:#15301f; --warn:#f2b65c; --warn-soft:#33270f; --bad:#f28b81; --bad-soft:#3a1d1b;
+    --hdr:#0a1220; --hdr2:#122038; --shadow:0 1px 2px rgba(0,0,0,.3); --shadow-hi:0 6px 24px rgba(0,0,0,.45);
+    color-scheme: dark;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 var(--body)}
+a{color:var(--accent);text-underline-offset:2px}
+h1,h2,h3{font-family:var(--display);font-weight:600;text-wrap:balance;margin:0;letter-spacing:-.01em}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---- en-tête ---- */
+header{position:sticky;top:0;z-index:5;background:linear-gradient(180deg,var(--hdr),var(--hdr2));color:var(--hdr-ink);box-shadow:0 2px 12px rgba(10,18,32,.25)}
+.top{display:flex;align-items:center;gap:6px 22px;padding:10px 24px 0;flex-wrap:wrap;max-width:1440px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
+.mark{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#d9a649,#a8741a);display:grid;place-items:center;font-family:var(--display);font-weight:600;font-size:18px;color:#14202f;box-shadow:inset 0 -2px 0 rgba(0,0,0,.15)}
+.brand h1{font-size:22px;line-height:1.1;color:var(--hdr-ink)}
+.brand small{display:block;color:var(--hdr-muted);font-size:12px}
+nav{display:flex;gap:2px;flex-wrap:nowrap;order:3;width:100%;overflow-x:auto;scrollbar-width:none;margin:0 -4px}
+nav a{border-radius:9px 9px 0 0 !important;padding-bottom:10px !important}
+.brand small{white-space:nowrap}
+nav a{white-space:nowrap;padding:8px 12px;border-radius:9px;text-decoration:none;color:var(--hdr-muted);font-weight:500;font-size:14px;transition:background .15s,color .15s}
+nav a:hover{color:var(--hdr-ink);background:rgba(255,255,255,.06)}
+nav a.on{background:rgba(255,255,255,.10);color:#fff;box-shadow:inset 0 -3px 0 #d9a649}
+.langbox{margin-left:auto;display:flex;gap:6px;align-items:center}
+.langbox select{width:auto;padding:6px 10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:var(--hdr-ink);border-radius:8px}
+.langbox select option{color:#14202f}
+
+main{padding:24px;max-width:1440px;margin:0 auto}
+.view{display:none}.view.on{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.view.on{animation:none}}
+
+/* ---- bandeau d'accueil ---- */
+.hero{background:radial-gradient(1200px 300px at 85% -40%,rgba(217,166,73,.22),transparent 60%),linear-gradient(135deg,var(--card),var(--accent-soft));border:1px solid var(--line);border-radius:20px;padding:28px 30px 24px;margin-bottom:18px;box-shadow:var(--shadow)}
+.hero h2{font-size:clamp(24px,3.2vw,34px);line-height:1.15;max-width:22ch}
+.hero p{color:var(--muted);margin:8px 0 16px;max-width:70ch}
+.searchbig{position:relative;max-width:760px}
+.searchbig input[type=search]{width:100%;padding:14px 16px 14px 46px;font-size:16px;border-radius:12px;border:1px solid var(--line2);background:var(--card);box-shadow:var(--shadow)}
+.searchbig svg{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.quick{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.quick button{border:1px solid var(--line2);background:var(--card);border-radius:99px;padding:5px 12px;font-size:13px;cursor:pointer;color:var(--ink)}
+.quick button:hover{border-color:var(--accent);color:var(--accent)}
+
+.layout{display:grid;grid-template-columns:290px 1fr;gap:22px;align-items:start}
+.layout>*{min-width:0}
+#ftoggle{display:none}
+.warn-box{background:var(--warn-soft);border:1px solid var(--warn);color:var(--ink);border-radius:10px;padding:9px 12px;font-size:13px}
+@media (max-width:900px){.layout{grid-template-columns:1fr}}
+aside.filters{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:16px;position:sticky;top:118px;max-height:calc(100vh - 138px);overflow:auto;box-shadow:var(--shadow)}
+@media (max-width:900px){aside.filters{position:static;max-height:none} #ftoggle{display:inline-block;width:100%;margin-bottom:10px} #filters.closed{display:none}}
+@media (max-width:700px){header{position:static} .top{padding:8px 12px;gap:8px} .brand h1{font-size:19px} .brand small{display:none} .mark{width:32px;height:32px;font-size:15px}
+  nav{flex-wrap:nowrap;overflow-x:auto;width:100%;order:3;-webkit-overflow-scrolling:touch} nav a{padding:6px 9px;font-size:13px;white-space:nowrap} main{padding:12px} .hero{padding:18px;border-radius:14px}}
+.fgroup{display:flex;flex-direction:column;gap:7px}
+.fgroup>label,.fgroup>span{font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{border:1px solid var(--line2);background:var(--paper);padding:4px 10px;border-radius:99px;cursor:pointer;font-size:13px;transition:all .12s}
+.chip:hover{border-color:var(--accent)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--card)}
+input[type=search],input[type=text],input[type=number],select,textarea{width:100%;padding:9px 11px;border:1px solid var(--line2);border-radius:9px;background:var(--paper)}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+input[type=range]{accent-color:var(--accent)}
+textarea{min-height:140px;resize:vertical}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--card);padding:9px 16px;border-radius:10px;cursor:pointer;font-weight:600;transition:filter .12s,transform .12s}
+.btn:hover{filter:brightness(1.08)}
+.btn:active{transform:translateY(1px)}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:default}
+
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.tile::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent)}
+.tile:nth-child(2n)::before{background:var(--gold)}
+.tile b{display:block;font-size:24px;font-family:var(--display);font-variant-numeric:tabular-nums}
+.tile span{font-size:12px;color:var(--muted)}
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;color:var(--muted);font-size:13px}
+.bar #count{font-weight:600;color:var(--ink);margin-right:auto}
+.bar select{width:auto}
+.list{display:flex;flex-direction:column;gap:10px}
+.row{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--line2);border-radius:var(--r);padding:14px 16px;display:grid;grid-template-columns:1fr auto;gap:6px 16px;cursor:pointer;box-shadow:var(--shadow);transition:box-shadow .15s,transform .15s,border-color .15s}
+.row.t-top{border-left-color:var(--gold)}
+.row.t-hi{border-left-color:var(--accent)}
+.row:hover{box-shadow:var(--shadow-hi);transform:translateY(-1px);border-color:var(--line2)}
+.row.t-top:hover{border-left-color:var(--gold)}.row.t-hi:hover{border-left-color:var(--accent)}
+.row:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.row h3{font-size:18px;line-height:1.25}
+.row .sub{color:var(--muted);font-size:13px;margin-top:2px}
+.badges{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.b{font-size:12px;font-weight:600;padding:2px 8px;border-radius:6px;border:1px solid var(--line2);background:var(--paper);white-space:nowrap;font-variant-numeric:tabular-nums}
+.b.gold{background:var(--gold-soft);border-color:var(--gold);color:var(--gold)}
+.b.acc{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
+.b.good{background:var(--good-soft);border-color:transparent;color:var(--good)}
+.b.warn{background:var(--warn-soft);border-color:transparent;color:var(--warn)}
+.b.bad{background:var(--bad-soft);border-color:transparent;color:var(--bad)}
+.star{background:none;border:none;cursor:pointer;font-size:22px;color:var(--line2);line-height:1;transition:transform .12s,color .12s}
+.star:hover{transform:scale(1.15);color:var(--gold)}
+.star.on{color:var(--gold)}
+.mono{font-family:var(--mono);font-size:12.5px}
+.more{color:var(--muted);text-align:center;padding:14px}
+dialog{border:none;border-radius:18px;padding:0;max-width:860px;width:calc(100% - 32px);background:var(--card);color:var(--ink);box-shadow:0 20px 60px rgba(10,18,32,.35)}
+dialog::backdrop{background:rgba(10,15,25,.5);backdrop-filter:blur(2px)}
+.dlg{padding:22px 26px;display:flex;flex-direction:column;gap:14px;max-height:86vh;overflow:auto}
+.dlg h2{font-size:26px;line-height:1.2}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.kv{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+.kv span{display:block;font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.kv b{font-variant-numeric:tabular-nums}
+.note{font-size:13px;color:var(--muted)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow)}
+.panel h2{font-size:24px}
+.prose{max-width:820px}
+.prose p,.prose li{line-height:1.65}
+.prose h3{margin-top:10px;font-size:19px}
+.res{display:flex;flex-direction:column;gap:10px}
+.meter{height:7px;background:var(--line);border-radius:4px;overflow:hidden;width:120px}
+.meter i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#d9a649)}
+table{border-collapse:collapse;width:100%;font-size:13px}
+td,th{border-bottom:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{font-weight:600}
+.tablewrap{overflow-x:auto}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:10px;font-size:14px;display:none;z-index:20;box-shadow:var(--shadow-hi)}
+.srcgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.src{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--paper)}
+.src h4{margin:0 0 4px;font-size:15px}
+.src p{margin:0;font-size:13.5px;color:var(--muted)}
+@media (max-width:700px){.summary{grid-template-columns:repeat(3,1fr);gap:8px}.tile{padding:8px 10px}.tile b{font-size:18px}.tile span{font-size:11px}.hero p{font-size:14px}}
+#v-sources .prose{max-width:1100px}
+footer{max-width:1440px;margin:10px auto 0;padding:22px 24px 34px;color:var(--muted);font-size:13px;display:flex;gap:14px;flex-wrap:wrap;border-top:1px solid var(--line)}
+footer a{color:var(--muted)}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <a class="brand" href="#journaux"><span class="mark" aria-hidden="true">AJ</span><span><h1>Atlas Journaux</h1><small id="stamp" class="noi18n">chargement…</small></span></a>
+    <nav id="nav">
+      <a href="#journaux" data-v="journaux">Journaux</a>
+      <a href="#ciblage" data-v="ciblage">Trouver mon journal</a>
+      <a href="#favoris" data-v="favoris">Mes favoris et soumissions</a>
+      <a href="#actualiser" data-v="actualiser">Actualiser les classements</a>
+      <a href="#guide" data-v="guide">Mode d'emploi</a>
+      <a href="#sources" data-v="sources">Sources et mentions</a>
+    </nav>
+    <div class="langbox"><label for="lang" aria-hidden="true">🌐</label>
+    <select id="lang" aria-label="Langue / Language / Idioma"><option value="0">Français</option><option value="1">English</option><option value="2">Español</option></select></div>
+  </div>
+</header>
+
+<main>
+<!-- ================= CATALOGUE ================= -->
+<section class="view" id="v-journaux">
+  <div class="hero">
+    <h2>Trouvez la bonne revue pour votre article</h2>
+    <p>Classements FNEGE, AJG/ABS, ABDC et FT50, indicateurs Scopus et OpenAlex, frais de soumission et accès ouvert, réunis sur une seule fiche par revue.</p>
+    <div class="searchbig"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input type="search" id="q" placeholder="Titre, ISSN, éditeur, thème…" aria-label="Recherche"></div>
+    <div class="quick"><button data-quick="ft">FT50</button><button data-quick="fn1">FNEGE 1* et 1</button><button data-quick="ajg4">AJG 4* et 4</button><button data-quick="diam">Accès ouvert sans frais</button><button data-quick="fr">Revues francophones</button><a class="btn ghost" href="#ciblage" style="padding:5px 12px;font-size:13px;border-radius:99px;text-decoration:none">Trouver mon journal à partir de mon résumé →</a></div>
+  </div>
+  <div class="summary" id="tiles"></div>
+  <div class="layout">
+    <button class="btn ghost" id="ftoggle" aria-controls="filters" aria-expanded="false">Filtres</button>
+    <aside class="filters closed" id="filters">
+      <div class="fgroup"><span>FNEGE 2025</span><div class="chips" data-f="fn"></div></div>
+      <div class="fgroup"><span>AJG / ABS 2024</span><div class="chips" data-f="ajg"></div></div>
+      <div class="fgroup"><span>ABDC 2025</span><div class="chips" data-f="abdc"></div></div>
+      <div class="fgroup"><span>Quartile Scopus (SJR)</span><div class="chips" data-f="q"></div></div>
+      <div class="fgroup"><span>Listes</span><div class="chips" data-f="lists"></div></div>
+      <div class="fgroup"><span>Modèle économique</span><div class="chips" data-f="oa"></div></div>
+      <div class="fgroup"><span>Frais de soumission</span><div class="chips" data-f="fee"></div></div>
+      <div class="fgroup"><label for="apcmax">APC maximum (USD)</label><input type="number" id="apcmax" min="0" step="500" placeholder="sans limite"></div>
+      <div class="fgroup"><label for="fnd">Domaine FNEGE</label><select id="fnd"><option value="">Tous</option></select></div>
+      <div class="fgroup"><label for="ajgf">Champ AJG</label><select id="ajgf"><option value="">Tous</option></select></div>
+      <button class="btn ghost" id="reset">Effacer les filtres</button>
+    </aside>
+    <div>
+      <div class="bar"><span id="count"></span>
+        <label for="sort">Trier par</label>
+        <select id="sort">
+          <option value="prest">Prestige (classements)</option>
+          <option value="sjr">SJR</option>
+          <option value="cit2">Citations moyennes à 2 ans</option>
+          <option value="h">h-index</option>
+          <option value="apc">APC croissant</option>
+          <option value="fee">Frais de soumission croissants</option>
+          <option value="t1">Délai de 1re décision (saisi)</option>
+          <option value="frp">Part d'auteurs en France</option>
+          <option value="gr">Croissance du volume publié</option>
+          <option value="oap">Part en accès ouvert</option>
+          <option value="t">Titre A–Z</option>
+        </select>
+      </div>
+      <div class="list" id="list"></div>
+      <div class="more" id="morewrap"><button class="btn ghost" id="more">Afficher 50 de plus</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CIBLAGE ================= -->
+<section class="view" id="v-ciblage">
+  <div class="layout">
+    <aside class="filters">
+      <div class="fgroup"><label for="ct">Titre de mon article</label><input type="text" id="ct" placeholder="Titre de votre article (en anglais)"></div>
+      <div class="fgroup"><label for="ca">Résumé</label><textarea id="ca" placeholder="Collez le résumé de votre article (en anglais)"></textarea></div>
+      <div class="fgroup"><label for="ck">Mots-clés</label><input type="text" id="ck" placeholder="mot-clé 1; mot-clé 2; …"></div>
+      <div class="fgroup"><span>Garder seulement</span><div class="chips" data-c="keep"></div></div>
+      <div class="fgroup"><label for="capc">APC maximum (USD)</label><input type="number" id="capc" min="0" step="500" placeholder="sans limite"></div>
+      <div class="fgroup"><label for="cw">Pertinence ← → prestige : <b id="cwv">30 %</b> prestige</label><input type="range" id="cw" min="0" max="80" value="30"></div>
+      <button class="btn" id="go">Trouver les journaux</button>
+      <button class="btn ghost" id="demo" type="button">Essayer avec un exemple</button>
+      <p class="note">Le texte est analysé dans votre navigateur ; il n'est ni enregistré ni envoyé, sauf si vous cliquez sur « Affiner avec Claude ».</p>
+    </aside>
+    <div class="res">
+      <div class="panel" id="cstatus"><p class="note">Le corpus de comparaison (articles 2021 et après, environ 100 par journal) se charge à la première recherche.</p></div>
+      <div id="cout"></div>
+      <div class="panel prose noi18n" style="margin-top:14px"><div data-lang="fr"><h3>Autres outils pour choisir une revue</h3>
+<p class="note">Ces outils complètent l'atlas ; aucun ne réunit à la fois les classements français et anglais, les frais et la recherche par résumé.</p>
+<ul>
+<li><a href="https://harzing.com/resources/journal-quality-list" target="_blank" rel="noopener">Journal Quality List (Anne-Wil Harzing)</a> : 11 classements pour plus de 840 revues de gestion et d'économie, dont des listes absentes de l'atlas (HCERES 2021, CNRS 2020, VHB 2024, EJL 2024, liste danoise, META). 72e et dernière édition (mars 2026), en PDF, réservée à un usage personnel : l'atlas n'en reprend pas le contenu.</li>
+<li><a href="https://scirev.org/" target="_blank" rel="noopener">SciRev</a> : expériences de relecture déclarées par des chercheurs (durée du 1er tour, durée totale, délai de rejet immédiat, qualité des rapports). Chaque fiche de l'atlas propose un lien de recherche vers SciRev.</li>
+<li>Outils des éditeurs (titre et résumé, revues de l'éditeur seulement) : <a href="https://journalfinder.elsevier.com/" target="_blank" rel="noopener">Elsevier Journal Finder</a>, <a href="https://journalsuggester.springer.com/" target="_blank" rel="noopener">Springer Nature Journal Suggester</a>, <a href="https://journalfinder.wiley.com/search?type=match" target="_blank" rel="noopener">Wiley Journal Finder</a>, <a href="https://authorservices.taylorandfrancis.com/publishing-your-research/choosing-a-journal/journal-suggester/" target="_blank" rel="noopener">Taylor &amp; Francis Journal Suggester</a>.</li>
+<li><a href="https://mjl.clarivate.com/home?mm=" target="_blank" rel="noopener">Clarivate Manuscript Matcher</a> : plusieurs éditeurs, revues de Web of Science seulement, avec facteur d'impact.</li>
+<li>Services commerciaux (payants) annonçant facteur d'impact, APC et délais, par exemple Researcher.Life Journal Finder ; ils ne couvrent pas FNEGE ni les listes françaises.</li>
+</ul></div><div data-lang="en" hidden><h3>Other tools for choosing a journal</h3>
+<p class="note">These tools complement the atlas; none combines French and English rankings, fees and abstract-based search.</p>
+<ul>
+<li><a href="https://harzing.com/resources/journal-quality-list" target="_blank" rel="noopener">Journal Quality List (Anne-Wil Harzing)</a>: 11 rankings for more than 840 business and economics journals, including lists not in the atlas (HCERES 2021, CNRS 2020, VHB 2024, EJL 2024, Danish list, META). 72nd and final edition (March 2026), PDF, for personal use only: the atlas does not reproduce its content.</li>
+<li><a href="https://scirev.org/" target="_blank" rel="noopener">SciRev</a>: review experiences reported by researchers (first-round duration, total handling time, immediate rejection time, report quality). Each journal card links to a SciRev search.</li>
+<li>Publisher tools (title and abstract, own journals only): <a href="https://journalfinder.elsevier.com/" target="_blank" rel="noopener">Elsevier Journal Finder</a>, <a href="https://journalsuggester.springer.com/" target="_blank" rel="noopener">Springer Nature Journal Suggester</a>, <a href="https://journalfinder.wiley.com/search?type=match" target="_blank" rel="noopener">Wiley Journal Finder</a>, <a href="https://authorservices.taylorandfrancis.com/publishing-your-research/choosing-a-journal/journal-suggester/" target="_blank" rel="noopener">Taylor &amp; Francis Journal Suggester</a>.</li>
+<li><a href="https://mjl.clarivate.com/home?mm=" target="_blank" rel="noopener">Clarivate Manuscript Matcher</a>: several publishers, Web of Science journals only, with impact factor.</li>
+<li>Paid commercial services listing impact factor, APC and turnaround, e.g. Researcher.Life Journal Finder; they do not cover FNEGE or French lists.</li>
+</ul></div><div data-lang="es" hidden><h3>Otras herramientas para elegir revista</h3>
+<p class="note">Estas herramientas complementan el atlas; ninguna combina clasificaciones francesas e inglesas, tasas y búsqueda por resumen.</p>
+<ul>
+<li><a href="https://harzing.com/resources/journal-quality-list" target="_blank" rel="noopener">Journal Quality List (Anne-Wil Harzing)</a>: 11 clasificaciones para más de 840 revistas de gestión y economía, incluidas listas ausentes del atlas (HCERES 2021, CNRS 2020, VHB 2024, EJL 2024, lista danesa, META). 72.ª y última edición (marzo de 2026), en PDF, solo para uso personal: el atlas no reproduce su contenido.</li>
+<li><a href="https://scirev.org/" target="_blank" rel="noopener">SciRev</a>: experiencias de evaluación declaradas por investigadores (duración de la 1.ª ronda, duración total, plazo de rechazo inmediato, calidad de los informes). Cada ficha enlaza con una búsqueda en SciRev.</li>
+<li>Herramientas de las editoriales (título y resumen, solo sus revistas): <a href="https://journalfinder.elsevier.com/" target="_blank" rel="noopener">Elsevier Journal Finder</a>, <a href="https://journalsuggester.springer.com/" target="_blank" rel="noopener">Springer Nature Journal Suggester</a>, <a href="https://journalfinder.wiley.com/search?type=match" target="_blank" rel="noopener">Wiley Journal Finder</a>, <a href="https://authorservices.taylorandfrancis.com/publishing-your-research/choosing-a-journal/journal-suggester/" target="_blank" rel="noopener">Taylor &amp; Francis Journal Suggester</a>.</li>
+<li><a href="https://mjl.clarivate.com/home?mm=" target="_blank" rel="noopener">Clarivate Manuscript Matcher</a>: varias editoriales, solo revistas de Web of Science, con factor de impacto.</li>
+<li>Servicios comerciales de pago con factor de impacto, APC y plazos, p. ej. Researcher.Life Journal Finder; no cubren FNEGE ni las listas francesas.</li>
+</ul></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FAVORIS ================= -->
+<section class="view" id="v-favoris">
+  <div class="panel"><h2>Mes soumissions en cours</h2><div class="tablewrap" id="subtable"></div></div>
+  <div class="panel" style="margin-top:14px"><h2>Mes favoris</h2><p class="note" id="favnote"></p><div class="list" id="favlist"></div></div>
+</section>
+
+<!-- ================= ACTUALISER ================= -->
+<section class="view" id="v-actualiser">
+  <div class="panel prose">
+    <h2>Actualiser un classement</h2>
+    <p>Les classements changent : FNEGE et AJG sont révisés tous les trois ans environ (FNEGE 2019, 2022, 2025 ; AJG 2018, 2021, 2024), l'ABDC a publié sa liste 2025 et le FT50 a été révisé en avril 2026. Quand une nouvelle liste sort, importez le fichier ici : l'atlas l'applique aussitôt dans votre navigateur.</p>
+    <div class="grid2">
+      <div class="fgroup"><label for="ulist">Quel classement ?</label>
+        <select id="ulist"><option value="fn">FNEGE</option><option value="ajg">AJG / ABS</option><option value="abdc">ABDC</option><option value="ft">FT50 (liste de titres)</option><option value="custom">Autre liste (nouvelle colonne)</option></select></div>
+      <div class="fgroup"><label for="uname">Nom affiché (ex. FNEGE 2028)</label><input type="text" id="uname" placeholder="FNEGE 2028"></div>
+    </div>
+    <div class="fgroup"><label for="ufile">Fichier Excel ou CSV</label><input type="file" id="ufile" accept=".xlsx,.xls,.csv"></div>
+    <div id="umap"></div>
+    <div id="ulog" class="note"></div>
+    <h3>Classements importés</h3>
+    <div id="uimported" class="note">Aucun pour l'instant.</div>
+    <h3>Sources de cette version</h3>
+    <div id="srcs" class="tablewrap"></div>
+  </div>
+</section>
+
+<!-- ================= SOURCES ET MENTIONS ================= -->
+<section class="view" id="v-sources">
+  <div class="panel prose noi18n">
+<div data-lang="fr">
+  <h2>Sources et mentions</h2>
+  <p>Atlas Journaux rassemble, pour 3 204 revues, des classements et des indicateurs publiés par d'autres organisations. Chaque donnée reste la propriété de sa source. Dernière mise à jour des données : 23 novembre 2026.</p>
+  <h3>Classements</h3>
+  <div class="srcgrid">
+    <div class="src"><h4>FNEGE 2025</h4><p>Classement des revues scientifiques en sciences de gestion, Fondation nationale pour l'enseignement de la gestion des entreprises (FNEGE), éditions 2019, 2022 et 2025. Reproduit avec l'accord de la FNEGE.</p></div>
+    <div class="src"><h4>AJG / ABS 2024</h4><p>Academic Journal Guide 2024, © Chartered Association of Business Schools, avec les éditions 2018 et 2021. Reproduit avec l'accord de la Chartered ABS. <a href="https://charteredabs.org/academic-journal-guide" target="_blank" rel="noopener">Site officiel</a></p></div>
+    <div class="src"><h4>ABDC 2025</h4><p>Journal Quality List 2025 (version de mai 2026) et liste 2022, Australian Business Deans Council. <a href="https://abdc.edu.au/abdc-journal-quality-list/" target="_blank" rel="noopener">Site officiel</a></p></div>
+    <div class="src"><h4>FT50</h4><p>Liste des 50 revues utilisées par le Financial Times pour son classement de la recherche, version révisée en avril 2026.</p></div>
+  </div>
+  <h3>Indicateurs</h3>
+  <div class="srcgrid">
+    <div class="src"><h4>SCImago Journal Rank 2025</h4><p>SJR, quartile et h-index, calculés par SCImago à partir de Scopus (Elsevier). <a href="https://www.scimagojr.com/" target="_blank" rel="noopener">scimagojr.com</a></p></div>
+    <div class="src"><h4>OpenAlex</h4><p>Éditeur, citations, nombre d'articles par année, pays des auteurs, accès ouvert, APC, statut DOAJ et articles utilisés pour la recherche par résumé. Données libres (CC0). Priem, Piwowar et Orr (2022), <i>OpenAlex: A fully-open index of scholarly works, authors, venues, institutions, and concepts</i>, arXiv:2205.01833. <a href="https://openalex.org/" target="_blank" rel="noopener">openalex.org</a></p></div>
+    <div class="src"><h4>Frais de soumission</h4><p>Compilation publique et collaborative des frais de soumission (consultée en avril 2026), complétée par les pages officielles de l'American Finance Association (Journal of Finance) et de la Society for Financial Studies (Review of Financial Studies), consultées en novembre 2026.</p></div>
+    <div class="src"><h4>Liens externes</h4><p>SciRev, Clarivate Master Journal List et les outils de recherche des éditeurs sont proposés en lien seulement : leur contenu n'est pas copié dans l'atlas.</p></div>
+  </div>
+  <h3>Méthodes</h3>
+  <ul>
+    <li><b>Score de prestige</b> : sert seulement à trier. Il retient le meilleur rang FNEGE, AJG ou ABDC, ajoute un quart des deux autres et un bonus FT50. Ce n'est pas un classement officiel.</li>
+    <li><b>Recherche par résumé</b> : pondération TF-IDF des mots (Salton et Buckley, 1988) et similarité cosinus entre votre texte, le profil de chaque revue et environ 100 de ses articles les plus cités depuis 2021.</li>
+    <li><b>Volume et croissance</b> : nombre d'articles indexés par OpenAlex chaque année ; aucun pourcentage n'est calculé sur moins de 20 articles.</li>
+  </ul>
+  <h3>Avertissement</h3>
+  <p>Les informations sont fournies à titre indicatif et peuvent contenir des erreurs ou être devenues obsolètes. Vérifiez toujours le classement, les frais et les conditions sur le site officiel de la revue et de l'organisme concerné avant de soumettre. Atlas Journaux n'est affilié à aucune des organisations citées.</p>
+  <h3>Vos données</h3>
+  <p>Vos favoris, notes et suivis de soumission restent privés : ils sont gardés uniquement dans votre navigateur, sur votre appareil, et personne d'autre ne peut les lire, pas même l'auteur du site. Le bouton « Affiner avec Claude » envoie votre titre et votre résumé à Claude pour l'analyse ; n'utilisez pas ce bouton pour un texte confidentiel.</p>
+  <h3>Conception</h3>
+  <p>Aymen Ammari, INSEEC Business School, Bordeaux. Les signalements d'erreurs sont les bienvenus.</p>
+</div>
+<div data-lang="en" hidden>
+  <h2>Sources and credits</h2>
+  <p>Atlas Journaux brings together, for 3,204 journals, rankings and indicators published by other organisations. Each piece of data remains the property of its source. Data last updated: 23 November 2026.</p>
+  <h3>Rankings</h3>
+  <div class="srcgrid">
+    <div class="src"><h4>FNEGE 2025</h4><p>Ranking of scientific journals in management, Fondation nationale pour l'enseignement de la gestion des entreprises (FNEGE), 2019, 2022 and 2025 editions. Reproduced with FNEGE's agreement.</p></div>
+    <div class="src"><h4>AJG / ABS 2024</h4><p>Academic Journal Guide 2024, © Chartered Association of Business Schools, with the 2018 and 2021 editions. Reproduced with the Chartered ABS's agreement. <a href="https://charteredabs.org/academic-journal-guide" target="_blank" rel="noopener">Official site</a></p></div>
+    <div class="src"><h4>ABDC 2025</h4><p>Journal Quality List 2025 (May 2026 version) and 2022 list, Australian Business Deans Council. <a href="https://abdc.edu.au/abdc-journal-quality-list/" target="_blank" rel="noopener">Official site</a></p></div>
+    <div class="src"><h4>FT50</h4><p>The 50 journals used by the Financial Times for its research rank, list revised in April 2026.</p></div>
+  </div>
+  <h3>Indicators</h3>
+  <div class="srcgrid">
+    <div class="src"><h4>SCImago Journal Rank 2025</h4><p>SJR, quartile and h-index, computed by SCImago from Scopus (Elsevier). <a href="https://www.scimagojr.com/" target="_blank" rel="noopener">scimagojr.com</a></p></div>
+    <div class="src"><h4>OpenAlex</h4><p>Publisher, citations, articles per year, author countries, open access, APC, DOAJ status and the articles used for abstract-based search. Open data (CC0). Priem, Piwowar and Orr (2022), <i>OpenAlex: A fully-open index of scholarly works, authors, venues, institutions, and concepts</i>, arXiv:2205.01833. <a href="https://openalex.org/" target="_blank" rel="noopener">openalex.org</a></p></div>
+    <div class="src"><h4>Submission fees</h4><p>Public collaborative compilation of submission fees (checked April 2026), supplemented by the official pages of the American Finance Association (Journal of Finance) and the Society for Financial Studies (Review of Financial Studies), checked November 2026.</p></div>
+    <div class="src"><h4>External links</h4><p>SciRev, Clarivate Master Journal List and publishers' journal finders are offered as links only: their content is not copied into the atlas.</p></div>
+  </div>
+  <h3>Methods</h3>
+  <ul>
+    <li><b>Prestige score</b>: used only for sorting. It takes the best FNEGE, AJG or ABDC rank, adds a quarter of the other two and an FT50 bonus. It is not an official ranking.</li>
+    <li><b>Abstract-based search</b>: TF-IDF term weighting (Salton and Buckley, 1988) and cosine similarity between your text, each journal's profile and about 100 of its most-cited articles since 2021.</li>
+    <li><b>Volume and growth</b>: number of articles indexed by OpenAlex each year; no percentage is computed on fewer than 20 articles.</li>
+  </ul>
+  <h3>Disclaimer</h3>
+  <p>Information is provided for guidance only and may contain errors or be out of date. Always check the ranking, fees and conditions on the official site of the journal and of the organisation concerned before submitting. Atlas Journaux is not affiliated with any of the organisations cited.</p>
+  <h3>Your data</h3>
+  <p>Your favourites, notes and submission tracking stay private: they are kept only in your browser, on your device, and nobody else can read them, not even the site's author. The "Refine with Claude" button sends your title and abstract to Claude for analysis; do not use it for a confidential text.</p>
+  <h3>Design</h3>
+  <p>Aymen Ammari, INSEEC Business School, Bordeaux. Error reports are welcome.</p>
+</div>
+<div data-lang="es" hidden>
+  <h2>Fuentes y créditos</h2>
+  <p>Atlas Journaux reúne, para 3 204 revistas, clasificaciones e indicadores publicados por otras organizaciones. Cada dato sigue siendo propiedad de su fuente. Última actualización de los datos: 23 de noviembre de 2026.</p>
+  <h3>Clasificaciones</h3>
+  <div class="srcgrid">
+    <div class="src"><h4>FNEGE 2025</h4><p>Clasificación de revistas científicas en ciencias de gestión, Fondation nationale pour l'enseignement de la gestion des entreprises (FNEGE), ediciones 2019, 2022 y 2025. Reproducida con el acuerdo de la FNEGE.</p></div>
+    <div class="src"><h4>AJG / ABS 2024</h4><p>Academic Journal Guide 2024, © Chartered Association of Business Schools, con las ediciones 2018 y 2021. Reproducida con el acuerdo de la Chartered ABS. <a href="https://charteredabs.org/academic-journal-guide" target="_blank" rel="noopener">Sitio oficial</a></p></div>
+    <div class="src"><h4>ABDC 2025</h4><p>Journal Quality List 2025 (versión de mayo de 2026) y lista 2022, Australian Business Deans Council. <a href="https://abdc.edu.au/abdc-journal-quality-list/" target="_blank" rel="noopener">Sitio oficial</a></p></div>
+    <div class="src"><h4>FT50</h4><p>Las 50 revistas que usa el Financial Times para su clasificación de investigación, lista revisada en abril de 2026.</p></div>
+  </div>
+  <h3>Indicadores</h3>
+  <div class="srcgrid">
+    <div class="src"><h4>SCImago Journal Rank 2025</h4><p>SJR, cuartil e índice h, calculados por SCImago a partir de Scopus (Elsevier). <a href="https://www.scimagojr.com/" target="_blank" rel="noopener">scimagojr.com</a></p></div>
+    <div class="src"><h4>OpenAlex</h4><p>Editorial, citas, artículos por año, países de los autores, acceso abierto, APC, estado DOAJ y artículos usados para la búsqueda por resumen. Datos abiertos (CC0). Priem, Piwowar y Orr (2022), <i>OpenAlex: A fully-open index of scholarly works, authors, venues, institutions, and concepts</i>, arXiv:2205.01833. <a href="https://openalex.org/" target="_blank" rel="noopener">openalex.org</a></p></div>
+    <div class="src"><h4>Tasas de envío</h4><p>Recopilación pública y colaborativa de tasas de envío (consultada en abril de 2026), completada con las páginas oficiales de la American Finance Association (Journal of Finance) y de la Society for Financial Studies (Review of Financial Studies), consultadas en noviembre de 2026.</p></div>
+    <div class="src"><h4>Enlaces externos</h4><p>SciRev, Clarivate Master Journal List y los buscadores de las editoriales se ofrecen solo como enlaces: su contenido no se copia en el atlas.</p></div>
+  </div>
+  <h3>Métodos</h3>
+  <ul>
+    <li><b>Puntuación de prestigio</b>: solo sirve para ordenar. Toma el mejor rango FNEGE, AJG o ABDC, añade un cuarto de los otros dos y una bonificación FT50. No es una clasificación oficial.</li>
+    <li><b>Búsqueda por resumen</b>: ponderación TF-IDF de las palabras (Salton y Buckley, 1988) y similitud del coseno entre su texto, el perfil de cada revista y unos 100 de sus artículos más citados desde 2021.</li>
+    <li><b>Volumen y crecimiento</b>: número de artículos indexados por OpenAlex cada año; no se calcula ningún porcentaje con menos de 20 artículos.</li>
+  </ul>
+  <h3>Aviso</h3>
+  <p>La información se ofrece a título indicativo y puede contener errores o estar desactualizada. Verifique siempre la clasificación, las tasas y las condiciones en el sitio oficial de la revista y del organismo correspondiente antes de enviar. Atlas Journaux no está afiliado a ninguna de las organizaciones citadas.</p>
+  <h3>Sus datos</h3>
+  <p>Sus favoritos, notas y seguimientos de envío son privados: se guardan solo en su navegador, en su dispositivo, y nadie más puede leerlos, ni siquiera el autor del sitio. El botón «Afinar con Claude» envía su título y su resumen a Claude para el análisis; no lo use con un texto confidencial.</p>
+  <h3>Diseño</h3>
+  <p>Aymen Ammari, INSEEC Business School, Burdeos. Se agradecen los avisos de errores.</p>
+</div>
+  </div>
+</section>
+
+<!-- ================= GUIDE ================= -->
+<section class="view" id="v-guide">
+  <div class="panel prose noi18n">
+<div data-lang="fr">
+    <h2>Mode d'emploi</h2>
+    <h3>Ce que contient chaque fiche</h3>
+    <ul>
+      <li><b>Classements</b> : FNEGE 2025 (avec évolution depuis 2019 et 2022, mention francophone), AJG/ABS 2024 (et 2021, 2018), ABDC 2025 (et 2022), FT50 (liste révisée en avril 2026 ; les trois titres retirés sont signalés).</li>
+      <li><b>Scopus</b> : un journal est marqué « Scopus » s'il a un SJR dans la dernière année SCImago. Le quartile affiché est recalculé par catégorie à partir des valeurs SJR (meilleur quartile du journal), il peut différer de quelques rangs du quartile officiel de SCImago.</li>
+      <li><b>Accès et coût</b> (OpenAlex) : abonnement/hybride, accès ouvert avec frais de publication (APC) ou accès ouvert sans frais (« diamant »), présence dans le DOAJ, montant de l'APC en dollars.</li>
+      <li><b>Activité et influence</b> : citations moyennes à 2 ans (proche d'un facteur d'impact), h-index, nombre d'articles par an, année de création.</li>
+      <li><b>Frais de soumission</b> : 91 revues (surtout finance, économie, comptabilité). Source : pages officielles pour le Journal of Finance et la Review of Financial Studies ; pour les autres, une compilation publique (« submission-fees-public », consultée en avril 2026) qui renvoie à chaque page éditeur. Vérifiez toujours avant de soumettre : les montants changent, et beaucoup de revues remboursent en cas de rejet rapide.</li>
+      <li><b>Auteurs et activité</b> (OpenAlex, articles depuis 2021) : pays des auteurs, part d'articles avec un auteur en France, croissance du volume publié sur 3 ans, part en accès ouvert, articles rétractés.</li>
+      <li><b>Délais et taux d'acceptation</b> : aucune base publique ne les donne pour toutes les revues. Les éditeurs les affichent sur la page de chaque revue (Elsevier « Journal insights », Springer « Submission to first decision », Taylor &amp; Francis « Speed/acceptance »). Recopiez-les dans la fiche : ils sont gardés et partagés. Votre propre suivi de soumission calcule vos délais réels.</li>
+      <li><b>Thématiques</b> : à défaut des « aims & scope » rédigés par les éditeurs (non disponibles en masse), chaque fiche montre les thèmes OpenAlex les plus fréquents et les mots-clés propres au journal, calculés sur ses articles récents. Le lien « site du journal » mène aux aims & scope officiels.</li>
+    </ul>
+    <h3>Le score de prestige (tri)</h3>
+    <p>Il sert seulement à trier. Points : FNEGE 1* = 5, 1 = 4, 2 = 3, 3 = 2, 4 = 1 ; AJG 4* = 5, 4 = 4, 3 = 3, 2 = 2, 1 = 1 ; ABDC A* = 4, A = 3, B = 2, C = 1 ; FT50 = +2 ; le meilleur des trois classements compte en entier, les autres pour un quart.</p>
+    <h3>L'algorithme « Trouver mon journal »</h3>
+    <ol>
+      <li>Votre titre, résumé et mots-clés sont découpés en mots, ramenés à leur racine (ex. « disclosures » → « disclosur »), puis complétés par les paires de mots voisins (ex. « climat_disclosur »).</li>
+      <li>Chaque terme est pondéré par sa rareté (TF-IDF) : un terme présent dans peu de journaux pèse plus qu'un terme banal.</li>
+      <li>Ce vecteur est comparé (similarité cosinus) au profil de chaque journal, construit sur environ 100 de ses articles les plus cités publiés depuis 2021, et à 12 articles de référence par journal.</li>
+      <li>Score de pertinence = 55 % profil du journal + 45 % moyenne des 3 articles les plus proches. Le curseur mélange ensuite pertinence et prestige.</li>
+      <li>« Affiner avec Claude » envoie votre résumé et les 15 premiers journaux à Claude, qui les reclasse selon le sens (et non plus seulement les mots) et justifie chaque choix.</li>
+    </ol>
+    <p class="note">Limites : la comparaison repose sur les mots (le bouton Claude ajoute le sens) ; un journal très récent ou peu présent dans OpenAlex peut être sous-estimé ; vérifiez toujours les aims & scope et les derniers numéros avant de soumettre.</p>
+  <h3>Corrections apportées aux données (novembre 2026)</h3>
+<ul>
+<li><b>ISSN erronés dans le fichier FNEGE 2025</b>, corrigés : Appetite, Systems Research and Behavioral Science, Current Sociology, IEEE Transactions on Human-Machine Systems. IEEE Transactions on Systems, Man, and Cybernetics: Systems figure deux fois dans le fichier (rangs 3 et 2) : le rang 3 est retenu. Trois revues apparaissent en double sous deux graphies (Business Ethics, the Environment &amp; Responsibility ; Data Base for Advances in Information Systems ; The Learning Organization) : une seule fiche est gardée.</li>
+<li><b>Revues renommées reliées à leur fiche OpenAlex actuelle</b> : Latin American Journal of Economics, Management &amp; Prospective, Asia-Pacific Sustainable Development Journal, Career Development and Transition for Exceptional Individuals, Computer Law &amp; Security Review, Environment and Planning B et C, IISE Transactions, IUP Journal of Accounting Research &amp; Audit Practices, Journal of Management History, Journal of Statistics and Data Science Education, Schmalenbach Journal of Business Research.</li>
+<li><b>Anciens et nouveaux noms fusionnés</b> : Environment and Planning C (ex-Government and Policy), IISE Transactions (ex-IIE Transactions), Schmalenbach Journal of Business Research (ex-Schmalenbach Business Review), M@n@gement.</li>
+<li><b>Revues distinctes séparées</b> : Evolutionary Computation et IEEE Transactions on Evolutionary Computation ; Eurasian Economic Review et Eurasian Business Review ; IISE Transactions et sa revue d'ergonomie.</li>
+<li><b>Vérification des 99 écarts de nom avec OpenAlex</b> : 92 sont la même revue sous un nom abrégé, une autre langue (portugais, espagnol, italien, allemand, roumain, coréen, bulgare, arabe) ou un ancien nom (ex. Journal of Management Education, anciennement Organizational Behavior Teaching Review) ; les autres ont été corrigés ci-dessus.</li>
+<li><b>Garde-fous</b> : pas de pourcentage calculé sur moins de 20 articles ; croissance affichée seulement si l'année de référence compte au moins 20 articles ; un avertissement signale les revues sans aucun article indexé par OpenAlex depuis 2024 (compté année par année).</li>
+</ul><h3>Autres outils pour choisir une revue</h3>
+<p class="note">Ces outils complètent l'atlas ; aucun ne réunit à la fois les classements français et anglais, les frais et la recherche par résumé.</p>
+<ul>
+<li><a href="https://harzing.com/resources/journal-quality-list" target="_blank" rel="noopener">Journal Quality List (Anne-Wil Harzing)</a> : 11 classements pour plus de 840 revues de gestion et d'économie, dont des listes absentes de l'atlas (HCERES 2021, CNRS 2020, VHB 2024, EJL 2024, liste danoise, META). 72e et dernière édition (mars 2026), en PDF, réservée à un usage personnel : l'atlas n'en reprend pas le contenu.</li>
+<li><a href="https://scirev.org/" target="_blank" rel="noopener">SciRev</a> : expériences de relecture déclarées par des chercheurs (durée du 1er tour, durée totale, délai de rejet immédiat, qualité des rapports). Chaque fiche de l'atlas propose un lien de recherche vers SciRev.</li>
+<li>Outils des éditeurs (titre et résumé, revues de l'éditeur seulement) : <a href="https://journalfinder.elsevier.com/" target="_blank" rel="noopener">Elsevier Journal Finder</a>, <a href="https://journalsuggester.springer.com/" target="_blank" rel="noopener">Springer Nature Journal Suggester</a>, <a href="https://journalfinder.wiley.com/search?type=match" target="_blank" rel="noopener">Wiley Journal Finder</a>, <a href="https://authorservices.taylorandfrancis.com/publishing-your-research/choosing-a-journal/journal-suggester/" target="_blank" rel="noopener">Taylor &amp; Francis Journal Suggester</a>.</li>
+<li><a href="https://mjl.clarivate.com/home?mm=" target="_blank" rel="noopener">Clarivate Manuscript Matcher</a> : plusieurs éditeurs, revues de Web of Science seulement, avec facteur d'impact.</li>
+<li>Services commerciaux (payants) annonçant facteur d'impact, APC et délais, par exemple Researcher.Life Journal Finder ; ils ne couvrent pas FNEGE ni les listes françaises.</li>
+</ul></div>
+<div data-lang="en" hidden><h2>User guide</h2>
+<h3>What each card contains</h3>
+<ul>
+<li><b>Rankings</b>: FNEGE 2025 (with changes since 2019 and 2022, French-language flag), AJG/ABS 2024 (and 2021, 2018), ABDC 2025 (and 2022), FT50 (list revised in April 2026; the three removed titles are flagged).</li>
+<li><b>Scopus</b>: a journal is marked "Scopus" if it has an SJR in the latest SCImago year. The quartile shown is recomputed by category from SJR values (the journal's best quartile) and may differ slightly from SCImago's official quartile.</li>
+<li><b>Access and cost</b> (OpenAlex): subscription/hybrid, open access with article processing charges (APC) or fee-free open access ("diamond"), DOAJ listing, APC amount in dollars.</li>
+<li><b>Activity and influence</b>: 2-year mean citations (close to an impact factor), h-index, articles per year, founding year.</li>
+<li><b>Submission fees</b>: 91 journals (mainly finance, economics, accounting). Source: official pages for the Journal of Finance and the Review of Financial Studies; for the others, a public compilation ("submission-fees-public", checked in April 2026) linking to each publisher page. Always check before submitting.</li>
+<li><b>Authors and output</b> (OpenAlex, articles since 2021): authors' countries, share of articles with an author in France, 3-year growth in output, open access share, retracted articles.</li>
+<li><b>Turnaround and acceptance rates</b>: no public database covers all journals. Publishers show them on each journal page (Elsevier "Journal insights", Springer "Submission to first decision", Taylor &amp; Francis "Speed/acceptance"). Copy them into the card: they are saved and shared. Your own submission log computes your real turnaround times.</li>
+<li><b>Topics</b>: since publishers' aims &amp; scope are not available in bulk, each card shows the most frequent OpenAlex topics and journal-specific keywords computed from recent articles. The "journal website" link leads to the official aims &amp; scope.</li>
+</ul>
+<h3>Prestige score (sorting)</h3>
+<p>Used for sorting only. Points: FNEGE 1* = 5, 1 = 4, 2 = 3, 3 = 2, 4 = 1; AJG 4* = 5, 4 = 4, 3 = 3, 2 = 2, 1 = 1; ABDC A* = 4, A = 3, B = 2, C = 1; FT50 = +2; the best of the three rankings counts in full, the others for a quarter.</p>
+<h3>The "Find my journal" algorithm</h3>
+<ol>
+<li>Your title, abstract and keywords are split into words, reduced to their stem (e.g. "disclosures" → "disclosur") and completed with pairs of neighbouring words (e.g. "climat_disclosur").</li>
+<li>Each term is weighted by its rarity (TF-IDF): a term found in few journals weighs more than a common one.</li>
+<li>This vector is compared (cosine similarity) with each journal's profile, built from about 100 of its most cited articles published since 2021, and with 12 reference articles per journal.</li>
+<li>Relevance score = 55% journal profile + 45% mean of the 3 closest articles. The slider then blends relevance and prestige.</li>
+<li>"Refine with Claude" sends your abstract and the top 15 journals to Claude, which re-ranks them by meaning (not just words) and justifies each choice.</li>
+</ol>
+<p class="note">Limits: the comparison relies on words (the Claude button adds meaning); a very new journal or one poorly covered by OpenAlex may be underrated; always check the aims &amp; scope and recent issues before submitting.</p><h3>Data corrections (November 2026)</h3>
+<ul>
+<li><b>Wrong ISSNs in the FNEGE 2025 file</b>, corrected: Appetite, Systems Research and Behavioral Science, Current Sociology, IEEE Transactions on Human-Machine Systems. IEEE Transactions on Systems, Man, and Cybernetics: Systems appears twice in the file (ranks 3 and 2): rank 3 is kept. Journals listed twice under two spellings are kept as a single record.</li>
+<li><b>Renamed journals linked to their current OpenAlex record</b>: Latin American Journal of Economics, Management &amp; Prospective, Asia-Pacific Sustainable Development Journal, Career Development and Transition for Exceptional Individuals, Computer Law &amp; Security Review, Environment and Planning B and C, IISE Transactions, IUP Journal of Accounting Research &amp; Audit Practices, Journal of Management History, Journal of Statistics and Data Science Education, Schmalenbach Journal of Business Research.</li>
+<li><b>Old and new names merged</b>: Environment and Planning C (formerly Government and Policy), IISE Transactions (formerly IIE Transactions), Schmalenbach Journal of Business Research (formerly Schmalenbach Business Review), M@n@gement.</li>
+<li><b>Distinct journals separated</b>: Evolutionary Computation and IEEE Transactions on Evolutionary Computation; Eurasian Economic Review and Eurasian Business Review; IISE Transactions and its ergonomics journal.</li>
+<li><b>Check of the 99 name differences with OpenAlex</b>: 92 are the same journal under an abbreviated name, another language or a former name; the others were corrected above.</li>
+<li><b>Safeguards</b>: no percentage computed on fewer than 20 articles; growth shown only if the base year has at least 20 articles; a warning flags journals with no article indexed by OpenAlex since 2024 (counted year by year).</li>
+</ul><h3>Other tools for choosing a journal</h3>
+<p class="note">These tools complement the atlas; none combines French and English rankings, fees and abstract-based search.</p>
+<ul>
+<li><a href="https://harzing.com/resources/journal-quality-list" target="_blank" rel="noopener">Journal Quality List (Anne-Wil Harzing)</a>: 11 rankings for more than 840 business and economics journals, including lists not in the atlas (HCERES 2021, CNRS 2020, VHB 2024, EJL 2024, Danish list, META). 72nd and final edition (March 2026), PDF, for personal use only: the atlas does not reproduce its content.</li>
+<li><a href="https://scirev.org/" target="_blank" rel="noopener">SciRev</a>: review experiences reported by researchers (first-round duration, total handling time, immediate rejection time, report quality). Each journal card links to a SciRev search.</li>
+<li>Publisher tools (title and abstract, own journals only): <a href="https://journalfinder.elsevier.com/" target="_blank" rel="noopener">Elsevier Journal Finder</a>, <a href="https://journalsuggester.springer.com/" target="_blank" rel="noopener">Springer Nature Journal Suggester</a>, <a href="https://journalfinder.wiley.com/search?type=match" target="_blank" rel="noopener">Wiley Journal Finder</a>, <a href="https://authorservices.taylorandfrancis.com/publishing-your-research/choosing-a-journal/journal-suggester/" target="_blank" rel="noopener">Taylor &amp; Francis Journal Suggester</a>.</li>
+<li><a href="https://mjl.clarivate.com/home?mm=" target="_blank" rel="noopener">Clarivate Manuscript Matcher</a>: several publishers, Web of Science journals only, with impact factor.</li>
+<li>Paid commercial services listing impact factor, APC and turnaround, e.g. Researcher.Life Journal Finder; they do not cover FNEGE or French lists.</li>
+</ul></div>
+<div data-lang="es" hidden><h2>Guía de uso</h2>
+<h3>Qué contiene cada ficha</h3>
+<ul>
+<li><b>Clasificaciones</b>: FNEGE 2025 (con su evolución desde 2019 y 2022, mención francófona), AJG/ABS 2024 (y 2021, 2018), ABDC 2025 (y 2022), FT50 (lista revisada en abril de 2026; se señalan los tres títulos retirados).</li>
+<li><b>Scopus</b>: una revista aparece como «Scopus» si tiene SJR en el último año de SCImago. El cuartil mostrado se recalcula por categoría a partir de los valores SJR (mejor cuartil de la revista) y puede diferir ligeramente del cuartil oficial de SCImago.</li>
+<li><b>Acceso y coste</b> (OpenAlex): suscripción/híbrida, acceso abierto con tasas de publicación (APC) o acceso abierto sin tasas («diamante»), presencia en DOAJ, importe del APC en dólares.</li>
+<li><b>Actividad e influencia</b>: citas medias a 2 años (cercanas a un factor de impacto), índice h, artículos por año, año de fundación.</li>
+<li><b>Tasas de envío</b>: 91 revistas (sobre todo finanzas, economía, contabilidad). Fuente: páginas oficiales del Journal of Finance y de la Review of Financial Studies; para las demás, una recopilación pública («submission-fees-public», consultada en abril de 2026) que enlaza con cada página editorial. Verifique siempre antes de enviar.</li>
+<li><b>Autores y volumen</b> (OpenAlex, artículos desde 2021): países de los autores, proporción de artículos con un autor en Francia, crecimiento del volumen en 3 años, proporción en acceso abierto, artículos retractados.</li>
+<li><b>Plazos y tasas de aceptación</b>: ninguna base pública los ofrece para todas las revistas. Las editoriales los muestran en la página de cada revista (Elsevier «Journal insights», Springer «Submission to first decision», Taylor &amp; Francis «Speed/acceptance»). Cópielos en la ficha: se guardan y se comparten. Su propio seguimiento de envío calcula sus plazos reales.</li>
+<li><b>Temas</b>: como el aims &amp; scope de las editoriales no está disponible de forma masiva, cada ficha muestra los temas OpenAlex más frecuentes y las palabras clave propias de la revista, calculados con sus artículos recientes. El enlace «web de la revista» lleva al aims &amp; scope oficial.</li>
+</ul>
+<h3>Puntuación de prestigio (orden)</h3>
+<p>Sirve solo para ordenar. Puntos: FNEGE 1* = 5, 1 = 4, 2 = 3, 3 = 2, 4 = 1; AJG 4* = 5, 4 = 4, 3 = 3, 2 = 2, 1 = 1; ABDC A* = 4, A = 3, B = 2, C = 1; FT50 = +2; la mejor de las tres clasificaciones cuenta entera, las demás un cuarto.</p>
+<h3>El algoritmo «Encontrar mi revista»</h3>
+<ol>
+<li>Su título, resumen y palabras clave se dividen en palabras, se reducen a su raíz (p. ej. «disclosures» → «disclosur») y se completan con pares de palabras vecinas (p. ej. «climat_disclosur»).</li>
+<li>Cada término se pondera según su rareza (TF-IDF): un término presente en pocas revistas pesa más que uno corriente.</li>
+<li>Este vector se compara (similitud del coseno) con el perfil de cada revista, construido con unos 100 de sus artículos más citados publicados desde 2021, y con 12 artículos de referencia por revista.</li>
+<li>Puntuación de pertinencia = 55 % perfil de la revista + 45 % media de los 3 artículos más cercanos. El control deslizante mezcla después pertinencia y prestigio.</li>
+<li>«Afinar con Claude» envía su resumen y las 15 primeras revistas a Claude, que las reordena según el sentido (no solo las palabras) y justifica cada elección.</li>
+</ol>
+<p class="note">Límites: la comparación se basa en palabras (el botón de Claude añade el sentido); una revista muy reciente o poco presente en OpenAlex puede quedar infravalorada; verifique siempre el aims &amp; scope y los últimos números antes de enviar.</p><h3>Correcciones de los datos (noviembre de 2026)</h3>
+<ul>
+<li><b>ISSN erróneos en el archivo FNEGE 2025</b>, corregidos: Appetite, Systems Research and Behavioral Science, Current Sociology, IEEE Transactions on Human-Machine Systems. IEEE Transactions on Systems, Man, and Cybernetics: Systems aparece dos veces en el archivo (rangos 3 y 2): se conserva el rango 3. Las revistas listadas dos veces con dos grafías se conservan como una sola ficha.</li>
+<li><b>Revistas renombradas enlazadas con su ficha OpenAlex actual</b>: Latin American Journal of Economics, Management &amp; Prospective, Asia-Pacific Sustainable Development Journal, Career Development and Transition for Exceptional Individuals, Computer Law &amp; Security Review, Environment and Planning B y C, IISE Transactions, IUP Journal of Accounting Research &amp; Audit Practices, Journal of Management History, Journal of Statistics and Data Science Education, Schmalenbach Journal of Business Research.</li>
+<li><b>Nombres antiguos y nuevos fusionados</b>: Environment and Planning C (antes Government and Policy), IISE Transactions (antes IIE Transactions), Schmalenbach Journal of Business Research (antes Schmalenbach Business Review), M@n@gement.</li>
+<li><b>Revistas distintas separadas</b>: Evolutionary Computation e IEEE Transactions on Evolutionary Computation; Eurasian Economic Review y Eurasian Business Review; IISE Transactions y su revista de ergonomía.</li>
+<li><b>Revisión de las 99 diferencias de nombre con OpenAlex</b>: 92 son la misma revista con un nombre abreviado, en otro idioma o con un nombre anterior; las demás se corrigieron arriba.</li>
+<li><b>Salvaguardas</b>: ningún porcentaje calculado con menos de 20 artículos; el crecimiento solo se muestra si el año base tiene al menos 20 artículos; un aviso señala las revistas sin ningún artículo indexado por OpenAlex desde 2024 (contado año por año).</li>
+</ul><h3>Otras herramientas para elegir revista</h3>
+<p class="note">Estas herramientas complementan el atlas; ninguna combina clasificaciones francesas e inglesas, tasas y búsqueda por resumen.</p>
+<ul>
+<li><a href="https://harzing.com/resources/journal-quality-list" target="_blank" rel="noopener">Journal Quality List (Anne-Wil Harzing)</a>: 11 clasificaciones para más de 840 revistas de gestión y economía, incluidas listas ausentes del atlas (HCERES 2021, CNRS 2020, VHB 2024, EJL 2024, lista danesa, META). 72.ª y última edición (marzo de 2026), en PDF, solo para uso personal: el atlas no reproduce su contenido.</li>
+<li><a href="https://scirev.org/" target="_blank" rel="noopener">SciRev</a>: experiencias de evaluación declaradas por investigadores (duración de la 1.ª ronda, duración total, plazo de rechazo inmediato, calidad de los informes). Cada ficha enlaza con una búsqueda en SciRev.</li>
+<li>Herramientas de las editoriales (título y resumen, solo sus revistas): <a href="https://journalfinder.elsevier.com/" target="_blank" rel="noopener">Elsevier Journal Finder</a>, <a href="https://journalsuggester.springer.com/" target="_blank" rel="noopener">Springer Nature Journal Suggester</a>, <a href="https://journalfinder.wiley.com/search?type=match" target="_blank" rel="noopener">Wiley Journal Finder</a>, <a href="https://authorservices.taylorandfrancis.com/publishing-your-research/choosing-a-journal/journal-suggester/" target="_blank" rel="noopener">Taylor &amp; Francis Journal Suggester</a>.</li>
+<li><a href="https://mjl.clarivate.com/home?mm=" target="_blank" rel="noopener">Clarivate Manuscript Matcher</a>: varias editoriales, solo revistas de Web of Science, con factor de impacto.</li>
+<li>Servicios comerciales de pago con factor de impacto, APC y plazos, p. ej. Researcher.Life Journal Finder; no cubren FNEGE ni las listas francesas.</li>
+</ul></div>
+  </div>
+</section>
+</main>
+<footer><span>Atlas Journaux</span><span>·</span><a href="#sources">Sources et mentions</a><span>·</span><a href="#guide">Mode d'emploi</a><span>·</span><span>Données indicatives : vérifiez toujours sur le site officiel de la revue.</span></footer>
+
+<dialog id="dlg"><div class="dlg" id="dlgc"></div></dialog>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="i18n.js"></script>
+<script>
+"use strict";
+/* ---------------- état global ---------------- */
+let DATA = null, J = [], META = {}, CORPUS = null;
+let shown = 50, favs = new Set(), notes = {}, imported = [];
+/* Identifiant stable d'une revue (ne change pas quand les données sont reconstruites) */
+let IDX = new Map();
+const KEY = i => { const j = J[i]; return j ? (j.oaid || (j.is && j.is[0]) || "t:" + j.t) : null; };
+const toStore = o => Object.fromEntries(Object.entries(o).filter(([i]) => J[i]).map(([i, v]) => [KEY(+i), v]));
+const fromStore = o => Object.fromEntries(Object.entries(o || {}).filter(([k]) => IDX.has(k)).map(([k, v]) => [IDX.get(k), v]));
+const favsFrom = a => new Set((a || []).filter(k => IDX.has(k)).map(k => IDX.get(k)));
+let db = null, uid = null, sampleFn = null;
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const toast = m => { const t = $("#toast"); t.textContent = m; t.style.display = "block"; clearTimeout(toast.h); toast.h = setTimeout(() => t.style.display = "none", 2600); };
+
+/* ---------------- libellés ---------------- */
+const FOR = {"3501":"Comptabilité, audit","3502":"Banque, finance, investissement","3503":"Systèmes d'information de gestion","3504":"Services commerciaux","3505":"RH et relations sociales","3506":"Marketing","3507":"Stratégie, management, comportement organisationnel","3508":"Tourisme","3509":"Transport, logistique, supply chain","3599":"Autres (commerce, management)","3801":"Économie appliquée","3802":"Économétrie","3803":"Théorie économique","3899":"Autres (économie)"};
+const RANKS = { fn:["1*","1","2","3","4"], ajg:["4*","4","3","2","1"], abdc:["A*","A","B","C"], q:["Q1","Q2","Q3","Q4"] };
+const OAS = ["Abonnement / hybride","Accès ouvert (APC)","Accès ouvert (frais inconnus)","Diamant (OA sans frais)"];
+const LISTS = [["ft","FT50"],["sc","Scopus"],["doaj","DOAJ"],["fr","Francophone FNEGE"]];
+const PTS = { fn:{"1*":5,"1":4,"2":3,"3":2,"4":1}, ajg:{"4*":5,"4":4,"3":3,"2":2,"1":1}, abdc:{"A*":4,"A":3,"B":2,"C":1} };
+const F = { fn:new Set(), ajg:new Set(), abdc:new Set(), q:new Set(), lists:new Set(), oa:new Set(), fee:new Set() };
+const FEEF = [["free","Gratuite"],["paid","Payante"],["known","Montant connu"]];
+let FACTS = {}, SUBS = {};
+
+function prestige(j){
+  const p = [PTS.fn[j.fn]||0, PTS.ajg[j.ajg]||0, (PTS.abdc[j.abdc]||0)*1.25].sort((a,b)=>b-a);
+  return p[0] + 0.25*(p[1]+p[2]) + (j.ft?2:0);
+}
+function badges(j){
+  const out = [];
+  if (j.ft) out.push(`<span class="b gold">FT50</span>`);
+  if (j.ftx) out.push(`<span class="b warn" title="Retiré du FT50 en avril 2026">ex-FT50</span>`);
+  if (j.fn) out.push(`<span class="b acc">FNEGE ${esc(j.fn)}</span>`);
+  if (j.ajg) out.push(`<span class="b acc">AJG ${esc(j.ajg)}</span>`);
+  if (j.abdc) out.push(`<span class="b acc">ABDC ${esc(j.abdc)}</span>`);
+  for (const x of (j.extra||[])) out.push(`<span class="b acc">${esc(x[0])} ${esc(x[1])}</span>`);
+  if (j.q) out.push(`<span class="b ${j.q==="Q1"?"good":""}">Scopus ${esc(j.q)}</span>`);
+  else if (j.sc) out.push(`<span class="b">Scopus</span>`);
+  if (j.oa) out.push(`<span class="b ${j.oa.startsWith("Diamant")?"good":j.oa.startsWith("Accès")?"warn":""}">${esc(j.oa)}${j.apc?` · ${j.apc.toLocaleString("fr-FR")} $`:""}</span>`);
+  if (j.fee===0) out.push(`<span class="b good">Soumission gratuite</span>`);
+  else if (j.fee) out.push(`<span class="b warn">Soumission ${j.fee} $</span>`);
+  const fx = FACTS[j.i]; if (fx && fx.t1) out.push(`<span class="b">1re décision ~${esc(fx.t1)} j</span>`);
+  if (j.fr) out.push(`<span class="b">Francophone</span>`);
+  return out.join("");
+}
+function rowHTML(j, extra=""){
+  const on = favs.has(j.i);
+  const tier = (j.ft||j.fn==="1*"||j.ajg==="4*"||j.abdc==="A*") ? " t-top" : (j._p>=3 ? " t-hi" : "");
+  return `<div class="row${tier}" data-i="${j.i}" tabindex="0" role="button" aria-label="${esc(j.t)}">
+    <div><h3>${esc(j.t)}</h3>
+      <div class="sub">${esc(j.pub||"Éditeur inconnu")}${j.is&&j.is.length?` · <span class="mono">${esc(j.is.join(" / "))}</span>`:""}${j.fnd?` · ${esc(j.fnd)}`:""}${j.ajgf?` · ${esc(j.ajgf)}`:""}</div>
+      <div class="badges" style="margin-top:6px">${badges(j)}</div>${extra}</div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+      <button class="star ${on?"on":""}" data-fav="${j.i}" aria-label="${on?"Retirer des":"Ajouter aux"} favoris">${on?"★":"☆"}</button>
+      ${j.cit2!=null?`<span class="note">${j.cit2.toFixed(2)} cit./art.</span>`:""}
+      ${j.sjr!=null?`<span class="note">SJR ${j.sjr}</span>`:""}
+    </div></div>`;
+}
+
+/* ---------------- catalogue ---------------- */
+function buildFilters(){
+  for (const [k, vals] of Object.entries(RANKS)) $(`[data-f="${k}"]`).innerHTML = vals.map(v=>`<button class="chip" data-k="${k}" data-v="${v}">${v}</button>`).join("");
+  $(`[data-f="lists"]`).innerHTML = LISTS.map(([k,l])=>`<button class="chip" data-k="lists" data-v="${k}">${l}</button>`).join("");
+  $(`[data-f="fee"]`).innerHTML = FEEF.map(([k,l])=>`<button class="chip" data-k="fee" data-v="${k}">${l}</button>`).join("");
+  $(`[data-f="oa"]`).innerHTML = OAS.map(v=>`<button class="chip" data-k="oa" data-v="${v}">${v}</button>`).join("");
+  const dom = [...new Set(J.map(j=>j.fnd).filter(Boolean))].sort(), fld = [...new Set(J.map(j=>j.ajgf).filter(Boolean))].sort();
+  $("#fnd").insertAdjacentHTML("beforeend", dom.map(d=>`<option>${esc(d)}</option>`).join(""));
+  $("#ajgf").insertAdjacentHTML("beforeend", fld.map(d=>`<option>${esc(d)}</option>`).join(""));
+  $("#filters").addEventListener("click", e => {
+    const c = e.target.closest(".chip"); if (!c) return;
+    const s = F[c.dataset.k]; s.has(c.dataset.v) ? s.delete(c.dataset.v) : s.add(c.dataset.v);
+    c.classList.toggle("on"); shown = 50; render();
+  });
+  for (const id of ["q","apcmax","fnd","ajgf","sort"]) $("#"+id).addEventListener("input", () => { shown = 50; render(); });
+  $("#reset").onclick = () => { for (const s of Object.values(F)) s.clear(); document.querySelectorAll("#filters .chip.on").forEach(c=>c.classList.remove("on")); for (const id of ["q","apcmax","fnd","ajgf"]) $("#"+id).value=""; render(); };
+  $("#more").onclick = () => { shown += 50; render(); };
+  $("#ftoggle").onclick = () => { const f = $("#filters"); const open = f.classList.toggle("closed") === false; $("#ftoggle").setAttribute("aria-expanded", String(open)); };
+}
+function filtered(){
+  const q = $("#q").value.trim().toLowerCase(), apc = parseFloat($("#apcmax").value), fnd = $("#fnd").value, ajgf = $("#ajgf").value;
+  return J.filter(j => {
+    if (F.fn.size && !F.fn.has(j.fn)) return false;
+    if (F.ajg.size && !F.ajg.has(j.ajg)) return false;
+    if (F.abdc.size && !F.abdc.has(j.abdc)) return false;
+    if (F.q.size && !F.q.has(j.q)) return false;
+    for (const l of F.lists) if (!j[l]) return false;
+    if (F.oa.size && !F.oa.has(j.oa)) return false;
+    if (F.fee.has("free") && j.fee !== 0) return false;
+    if (F.fee.has("paid") && !(j.fee > 0)) return false;
+    if (F.fee.has("known") && j.fee == null) return false;
+    if (!isNaN(apc) && (j.apc||0) > apc) return false;
+    if (fnd && j.fnd !== fnd) return false;
+    if (ajgf && j.ajgf !== ajgf) return false;
+    if (q) { const hay = j._hay || (j._hay = [j.t, j.pub, (j.is||[]).join(" "), (j.top||[]).map(t=>t[0]+" "+t[1]).join(" "), (j.kw||[]).join(" ")].join(" ").toLowerCase()); if (!hay.includes(q)) return false; }
+    return true;
+  });
+}
+function sorter(k){
+  const num = (f, asc) => (a,b) => { const x=a[f], y=b[f]; if (x==null&&y==null) return 0; if (x==null) return 1; if (y==null) return -1; return asc? x-y : y-x; };
+  return { prest:(a,b)=>b._p-a._p||((b.sjr||0)-(a.sjr||0)), sjr:num("sjr"), cit2:num("cit2"), h:num("h"), apc:num("apc",true), fee:num("fee",true), frp:num("frp"), gr:num("gr"), oap:num("oap"),
+    t1:(a,b)=>{ const x=+(FACTS[a.i]||{}).t1||null, y=+(FACTS[b.i]||{}).t1||null; if(!x&&!y) return 0; if(!x) return 1; if(!y) return -1; return x-y; }, t:(a,b)=>a.t.localeCompare(b.t) }[k];
+}
+function render(){
+  const r = filtered().sort(sorter($("#sort").value));
+  $("#count").textContent = `${r.length.toLocaleString("fr-FR")} journaux`;
+  const nf = Object.values(F).reduce((a,s)=>a+s.size,0) + ["q","apcmax","fnd","ajgf"].filter(id=>$("#"+id).value).length;
+  $("#ftoggle").textContent = nf ? `Filtres (${nf})` : "Filtres";
+  $("#list").innerHTML = r.slice(0, shown).map(j=>rowHTML(j)).join("") || `<p class="note">Aucun journal ne correspond à ces filtres.</p>`;
+  $("#morewrap").style.display = r.length > shown ? "" : "none";
+}
+function tiles(){
+  const n = k => J.filter(j=>j[k]).length.toLocaleString("fr-FR");
+  $("#tiles").innerHTML = [[J.length.toLocaleString("fr-FR"),"journaux"],[n("fn"),"classés FNEGE"],[n("ajg"),"classés AJG"],[n("abdc"),"classés ABDC"],[n("ft"),"FT50"],[n("sc"),"indexés Scopus"],[J.filter(j=>j.oa&&j.oa!=="Abonnement / hybride").length.toLocaleString("fr-FR"),"en accès ouvert"]]
+    .map(([v,l])=>`<div class="tile"><b>${v}</b><span>${l}</span></div>`).join("");
+}
+
+/* ---------------- fiche détaillée ---------------- */
+function finderFor(j){
+  const p = (j.pub||"").toLowerCase();
+  if (p.includes("elsevier")) return "https://journalfinder.elsevier.com/";
+  if (p.includes("springer") || p.includes("palgrave") || p.includes("nature")) return "https://journalsuggester.springer.com/";
+  if (p.includes("wiley")) return "https://journalfinder.wiley.com/search?type=match";
+  if (p.includes("taylor") || p.includes("routledge")) return "https://authorservices.taylorandfrancis.com/publishing-your-research/choosing-a-journal/journal-suggester/";
+  return null;
+}
+function openCard(i){
+  const j = J[i]; if (!j) return;
+  const kv = (l,v) => v==null||v===""?"":`<div class="kv"><span>${l}</span><b>${v}</b></div>`;
+  const evol = (a,b,c) => [c,b,a].filter(x=>x!=null).join(" → ");
+  $("#dlgc").innerHTML = `
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:start">
+      <h2>${esc(j.t)}</h2><button class="btn ghost" id="dlgx">Fermer</button></div>
+    <div class="badges">${badges(j)}</div>
+    ${j.nt?`<div class="warn-box">Correction : ${esc(j.nt)}</div>`:""}
+    ${j.noa?`<div class="warn-box">Revue non couverte par OpenAlex : pas de métriques de citations, d'auteurs ni d'articles.</div>`:""}
+    ${j.oly===0?`<div class="warn-box">OpenAlex n'indexe aucun article de cette revue depuis 2018 : citations, pays des auteurs et articles proches sont absents ou anciens.</div>`:""}
+    ${j.oly?`<div class="warn-box">OpenAlex n'indexe plus les articles de cette revue depuis ${j.oly} : citations, pays des auteurs et articles proches sont incomplets.</div>`:""}
+    <div class="grid2">
+      ${kv("FNEGE (2019 → 2022 → 2025)", j.fn||j.fn22||j.fn19 ? esc(evol(j.fn,j.fn22,j.fn19)) + (j.fnd?` · ${esc(j.fnd)}`:"") : "")}
+      ${kv("AJG / ABS (2018 → 2021 → 2024)", j.ajg ? esc(evol(j.ajg,j.ajg21,j.ajg18)) + (j.ajgf?` · ${esc(j.ajgf)}`:"") : "")}
+      ${kv("ABDC (2022 → 2025)", j.abdc ? esc(evol(j.abdc,j.abdc22,null)) + (j.for?` · ${esc(FOR[j.for]||"FoR "+j.for)}`:"") : "")}
+      ${kv("FT50", j.ft ? "Oui (liste 2026)" : j.ftx ? "Retiré en avril 2026" : "")}
+      ${kv("Scopus (SCImago)", j.sc ? `Oui${j.q?` · ${j.q}`:""}${j.sjr!=null?` · SJR ${j.sjr}`:""}${j.sjry?` (${j.sjry})`:""}` : "Non trouvé")}
+      ${kv("Accès et frais", j.oa ? esc(j.oa) + (j.apc?` · APC ${j.apc.toLocaleString("fr-FR")} $`:"") + (j.doaj?" · DOAJ":"") : "")}
+      ${kv("Citations moyennes à 2 ans", j.cit2!=null ? j.cit2.toFixed(2) : "")}
+      ${kv("h-index", j.h)}
+      ${kv("Articles l'an dernier", j.wy!=null ? j.wy : (j.noa ? "" : "0"))}
+      ${kv("Articles au total", j.nw!=null ? j.nw.toLocaleString("fr-FR") : "")}
+      ${kv("Éditeur", esc(j.pub||""))}
+      ${kv("Pays · création", [j.cc, j.y0].filter(Boolean).join(" · "))}
+      ${kv("Ancien nom", esc(j.fo||""))}
+      ${kv("ISSN", j.is ? `<span class="mono">${esc(j.is.join(" / "))}</span>` : "")}
+      ${kv("Société savante", esc((j.soc||[]).join(" ; ")))}
+      ${kv("Frais de soumission", j.fee==null ? "Inconnus (voir les instructions aux auteurs)" : j.fee===0 ? "Aucun" : `${j.fee} $`)}
+      ${kv("Articles depuis 2021", j.n21!=null ? j.n21.toLocaleString("fr-FR") : "")}
+      ${kv("Croissance du volume (3 ans)", j.gr!=null ? (j.gr>0?"+":"")+j.gr+" %" : "")}
+      ${kv("Articles en accès ouvert", j.oap!=null ? j.oap+" %" : "")}
+      ${kv("Articles avec un auteur en France", j.frp!=null ? j.frp.toLocaleString("fr-FR")+" %" : (j.n21!=null && j.n21<20 ? "Trop peu d'articles pour calculer" : ""))}
+      ${kv("Articles rétractés (total)", j.ret ? j.ret : (j.oaid ? "0" : ""))}
+    </div>
+    ${j.feed||j.feeu?`<p class="note" style="margin:0"><span>Frais :</span> <span>${esc(j.feed||"")}</span> ${j.feeu?`<a href="${esc(j.feeu)}" target="_blank" rel="noopener">Source</a>`:""} · ${j.fees==="officiel"?"page officielle consultée en novembre 2026":"compilation publique consultée en avril 2026, à vérifier avant de soumettre"}</p>`:""}
+    ${j.ctry&&j.ctry.length?`<div><b>Pays des auteurs</b> <span class="note">(part des ${j.n21.toLocaleString("fr-FR")} articles 2021+ avec au moins un auteur du pays)</span><div class="badges" style="margin-top:6px">${j.ctry.map(c=>`<span class="b">${esc(c[0])} ${c[1]} %</span>`).join("")}</div></div>`:""}
+    <div class="panel" style="padding:12px"><b>Délais et taux publiés par la revue</b>
+      <p class="note" style="margin:0">Recopiez ici les chiffres de la page « Journal insights » ou « About this journal » de l'éditeur : ils restent enregistrés et s'affichent pour tous les lecteurs de l'atlas.</p>
+      <div class="grid2" id="factform">
+        <div class="fgroup"><label for="f_t1">Jours jusqu'à la 1re décision</label><input type="number" id="f_t1" min="0"></div>
+        <div class="fgroup"><label for="f_tr">Jours jusqu'à la décision après évaluation</label><input type="number" id="f_tr" min="0"></div>
+        <div class="fgroup"><label for="f_ta">Jours soumission → acceptation</label><input type="number" id="f_ta" min="0"></div>
+        <div class="fgroup"><label for="f_tp">Jours acceptation → publication en ligne</label><input type="number" id="f_tp" min="0"></div>
+        <div class="fgroup"><label for="f_acc">Taux d'acceptation (%)</label><input type="number" id="f_acc" min="0" max="100"></div>
+        <div class="fgroup"><label for="f_desk">Taux de rejet sans évaluation (%)</label><input type="number" id="f_desk" min="0" max="100"></div>
+        <div class="fgroup"><label for="f_if">Impact factor (Clarivate)</label><input type="number" id="f_if" min="0" step="0.1"></div>
+        <div class="fgroup"><label for="f_src">Source et date</label><input type="text" id="f_src" placeholder="Page éditeur, nov. 2026"></div>
+      </div>
+      <button class="btn ghost" id="factsave">Enregistrer ces chiffres</button>
+    </div>
+    <div class="panel" style="padding:12px"><b>Mon suivi de soumission</b>
+      <p class="note" style="margin:0">Notez vos dates : l'atlas calcule vos délais réels (visibles par vous seul).</p>
+      <div class="grid2">
+        <div class="fgroup"><label for="s_sub">Soumis le</label><input type="date" id="s_sub"></div>
+        <div class="fgroup"><label for="s_dec">1re décision le</label><input type="date" id="s_dec"></div>
+        <div class="fgroup"><label for="s_res">Décision</label><select id="s_res"><option value="">—</option><option>Rejet sans évaluation</option><option>Rejet après évaluation</option><option>Révision majeure</option><option>Révision mineure</option><option>Acceptation</option></select></div>
+        <div class="fgroup"><label for="s_rev">Révision renvoyée le</label><input type="date" id="s_rev"></div>
+        <div class="fgroup"><label for="s_acc">Accepté le</label><input type="date" id="s_acc"></div>
+        <div class="fgroup"><label for="s_pub">Publié en ligne le</label><input type="date" id="s_pub"></div>
+      </div>
+      <p class="note" id="s_out" style="margin:0"></p>
+    </div>
+    ${j.top&&j.top.length?`<div><b>Thèmes les plus publiés</b><div class="badges" style="margin-top:6px">${j.top.map(t=>`<span class="b">${esc(t[0])}</span>`).join("")}</div></div>`:""}
+    ${j.kw&&j.kw.length?`<div><b>Mots-clés propres au journal</b> <span class="note">(calculés sur ses articles 2021+)</span><div class="badges" style="margin-top:6px">${j.kw.map(t=>`<span class="b">${esc(t)}</span>`).join("")}</div></div>`:""}
+    <div id="dlgart"></div>
+    <div class="fgroup"><label for="dlgnote">Mes notes sur ce journal</label><textarea id="dlgnote" placeholder="Délais, retours d'éditeurs, numéros spéciaux…">${esc(notes[i]||"")}</textarea></div>
+    <div class="badges">
+      ${j.url?`<a class="btn ghost" href="${esc(j.url)}" target="_blank" rel="noopener">Site du journal (aims & scope)</a>`:""}
+      ${j.oaid?`<a class="btn ghost" href="https://openalex.org/sources/${esc(j.oaid)}" target="_blank" rel="noopener">Fiche OpenAlex</a>`:""}
+      ${j.is&&j.is[0]?`<a class="btn ghost" href="https://www.scimagojr.com/journalsearch.php?q=${encodeURIComponent(j.is[0])}" target="_blank" rel="noopener">SCImago</a>`:""}
+      <a class="btn ghost" href="https://www.google.com/search?q=${encodeURIComponent('site:scirev.org "'+j.t+'"')}" target="_blank" rel="noopener">Expériences SciRev</a>
+      ${j.is&&j.is[0]?`<a class="btn ghost" href="https://mjl.clarivate.com/search-results?issn=${encodeURIComponent(j.is[0])}" target="_blank" rel="noopener">Web of Science (Clarivate)</a>`:""}
+      ${finderFor(j)?`<a class="btn ghost" href="${finderFor(j)}" target="_blank" rel="noopener">Outil de l'éditeur pour cibler une revue</a>`:""}
+      <button class="btn" data-fav="${i}">${favs.has(i)?"Retirer des favoris":"Ajouter aux favoris"}</button>
+    </div>`;
+  if (CORPUS && CORPUS.art[i]) $("#dlgart").innerHTML = `<b>Articles récents les plus cités</b><ul>${CORPUS.art[i].slice(0,5).map(a=>`<li>${a[1]?`<a href="https://doi.org/${esc(a[1])}" target="_blank" rel="noopener">${esc(a[0])}</a>`:esc(a[0])} <span class="note">(${a[2]}, ${a[3]} cit.)</span></li>`).join("")}</ul>`;
+  $("#dlgx").onclick = () => $("#dlg").close();
+  const fx = FACTS[i] || {};
+  for (const k of ["t1","tr","ta","tp","acc","desk","if","src"]) $("#f_"+k).value = fx[k] ?? "";
+  $("#factsave").onclick = () => saveFacts(i);
+  const sb = SUBS[i] || {};
+  for (const k of ["sub","dec","res","rev","acc","pub"]) { $("#s_"+k).value = sb[k] || ""; $("#s_"+k).onchange = () => { SUBS[i] = Object.fromEntries(["sub","dec","res","rev","acc","pub"].map(x=>[x,$("#s_"+x).value])); subOut(i); saveMine(); }; }
+  subOut(i);
+  $("#dlgnote").onchange = e => { notes[i] = e.target.value; saveMine(); };
+  $("#dlg").showModal();
+}
+
+/* ---------------- délais publiés (partagés) et suivi personnel ---------------- */
+const days = (a,b) => (a && b) ? Math.round((new Date(b) - new Date(a)) / 864e5) : null;
+function subOut(i){
+  const s = SUBS[i] || {}; const parts = [];
+  const d1 = days(s.sub, s.dec), d2 = days(s.sub, s.acc), d3 = days(s.acc, s.pub), d4 = days(s.dec, s.rev);
+  if (d1!=null) parts.push(`1re décision en ${d1} jours`);
+  if (d4!=null) parts.push(`révision renvoyée ${d4} jours après la décision`);
+  if (d2!=null) parts.push(`acceptation en ${d2} jours (${(d2/30.4).toFixed(1)} mois)`);
+  if (d3!=null) parts.push(`publication en ligne ${d3} jours après acceptation`);
+  $("#s_out").textContent = parts.length ? parts.join(" · ") : "Aucune date saisie.";
+}
+async function saveFacts(i){
+  const v = { date: new Date().toISOString().slice(0,10) };
+  for (const k of ["t1","tr","ta","tp","acc","desk","if","src"]) { const x = $("#f_"+k).value.trim(); if (x) v[k] = x; }
+  v.key = KEY(i); FACTS[i] = v;
+  try { localStorage.setItem("aj-facts2", JSON.stringify(toStore(FACTS))); } catch(e){}
+  let msg = "Chiffres enregistrés dans ce navigateur.";
+  if (db) try { await db.collection("facts").doc("k" + KEY(i).replace(/[^A-Za-z0-9]/g, "_")).set(v); msg = "Chiffres enregistrés pour tous les lecteurs."; } catch(e){ msg = "Enregistrés dans ce navigateur seulement (seul le propriétaire peut les partager)."; }
+  toast(msg); render();
+}
+async function loadFacts(){
+  try { FACTS = fromStore(JSON.parse(localStorage.getItem("aj-facts2")||"{}")); } catch(e){ FACTS = {}; }
+  if (db) try {
+    const snap = await db.collection("facts").get();
+    const docs = snap && (snap.docs || snap);
+    if (Array.isArray(docs)) for (const d of docs) { const v = d.data ? d.data() : d; if (v && v.key && IDX.has(v.key)) FACTS[IDX.get(v.key)] = v; }
+  } catch(e){}
+}
+
+/* ---------------- favoris et notes (par personne) ---------------- */
+async function loadMine(){
+  try { const s = JSON.parse(localStorage.getItem("aj-mine")||"{}"); if (s.v === 2) { favs = favsFrom(s.favs); notes = fromStore(s.notes); SUBS = fromStore(s.subs); } } catch(e){}
+  if (db && uid) try {
+    const d = await db.collection("data/users/"+uid).doc("mine").get();
+    const v = d && (d.data ? d.data() : d);
+    if (v && v.v === 2) { favs = favsFrom(v.favs); notes = fromStore(v.notes); SUBS = fromStore(v.subs); }
+  } catch(e){}
+}
+async function saveMine(){
+  const v = { v:2, favs:[...favs].map(KEY), notes: toStore(notes), subs: toStore(SUBS) };
+  try { localStorage.setItem("aj-mine", JSON.stringify(v)); } catch(e){}
+  if (db && uid) try { await db.collection("data/users/"+uid).doc("mine").set(v); } catch(e){}
+}
+function toggleFav(i){
+  i = +i; favs.has(i) ? favs.delete(i) : favs.add(i); saveMine();
+  document.querySelectorAll(`[data-fav="${i}"]`).forEach(b => { const on = favs.has(i); if (b.classList.contains("star")) { b.classList.toggle("on", on); b.textContent = on?"★":"☆"; } else b.textContent = on?"Retirer des favoris":"Ajouter aux favoris"; });
+  if (location.hash === "#favoris") renderFavs();
+}
+function renderFavs(){
+  const r = [...favs].map(i=>J[i]).filter(Boolean).sort((a,b)=>b._p-a._p);
+  $("#favnote").textContent = r.length ? `${r.length} journal(aux) suivi(s). Les notes s'ouvrent dans chaque fiche.` : "Cliquez sur ☆ à côté d'un journal pour le suivre ici.";
+  $("#favlist").innerHTML = r.map(j=>rowHTML(j, notes[j.i]?`<p class="note" style="margin:6px 0 0">Note : ${esc(notes[j.i])}</p>`:"")).join("");
+  const subs = Object.entries(SUBS).filter(([i,s])=>s && s.sub && J[i]);
+  $("#subtable").innerHTML = subs.length ? `<table><thead><tr><th>Revue</th><th>Soumis</th><th>1re décision</th><th>Décision</th><th>Jours</th><th>Acceptation (jours)</th></tr></thead><tbody>${subs.map(([i,s])=>`<tr><td>${esc(J[i].t)}</td><td>${esc(s.sub)}</td><td>${esc(s.dec||"en attente")}</td><td>${esc(s.res||"")}</td><td>${days(s.sub, s.dec||new Date().toISOString().slice(0,10))}${s.dec?"":" (en cours)"}</td><td>${days(s.sub,s.acc)??""}</td></tr>`).join("")}</tbody></table>` : `<p class="note">Aucune soumission suivie : ouvrez la fiche d'une revue et remplissez « Mon suivi de soumission ».</p>`;
+}
+
+/* ---------------- algorithme de ciblage ---------------- */
+const STOP = new Set(`a about above after again against all also am an and any are as at be because been before being below between both but by can could did do does doing down during each few for from further had has have having he her here hers herself him himself his how i if in into is it its itself just me more most my myself no nor not now of off on once only or other our ours ourselves out over own same she should so some such than that the their theirs them themselves then there these they this those through to too under until up very was we were what when where which while who whom why will with would you your yours yourself yourselves using use used based study paper article research results result find findings show shows suggest suggests provide provides evidence effect effects analysis data model approach also however may new two one first within among across whether thus therefore furthermore moreover via toward towards per paper's examine examines investigate investigates literature implications findings purpose design methodology originality value practical theoretical contribution contributions extant prior current recent www http https doi org et al`.split(/\s+/));
+const SUF = [["ational","ate"],["ization","ize"],["isation","ize"],["fulness","ful"],["ousness","ous"],["iveness","ive"],["ities","ity"],["ments","ment"],["ings",""],["ing",""],["ies","y"],["sses","ss"],["ed",""],["es","e"],["s",""]];
+function stem(w){
+  for (const [s,r] of SUF) if (w.endsWith(s) && w.length - s.length >= 3) { w = w.slice(0, w.length - s.length) + r; break; }
+  if (!w.endsWith("ss") && w.endsWith("e") && w.length > 4) w = w.slice(0,-1);
+  return w;
+}
+const SURF = new Map();
+function terms(text, keepSurface){
+  const toks = (String(text||"").toLowerCase().replace(/-/g," ").match(/[a-z][a-z-]+/g)||[]).filter(t => t.length > 2 && !STOP.has(t));
+  const st = toks.map(stem); const out = st.slice();
+  if (keepSurface) st.forEach((x,k) => { if (!SURF.has(x)) SURF.set(x, toks[k]); });
+  for (let k=0; k<st.length-1; k++) out.push(st[k]+"_"+st[k+1]);
+  return out;
+}
+let VID = null;
+function queryVec(text){
+  SURF.clear();
+  const c = new Map(); for (const t of terms(text, true)) c.set(t, (c.get(t)||0)+1);
+  const v = new Map(); let n2 = 0;
+  for (const [t,n] of c) { const id = VID.get(t); if (id==null) continue; const w = (1+Math.log(n))*CORPUS.idf[id]; v.set(id, w); n2 += w*w; }
+  const nrm = Math.sqrt(n2)||1; for (const [k,w] of v) v.set(k, w/nrm);
+  return v;
+}
+const dot = (q, sparse) => { let s = 0; for (const [id,x] of sparse) { const y = q.get(id); if (y) s += x*y; } return s; };
+async function loadCorpus(){
+  if (CORPUS) return;
+  $("#cstatus").innerHTML = `<p class="note">Chargement du corpus d'articles…</p>`;
+  const r = await fetch("data/corpus.json"); CORPUS = await r.json();
+  VID = new Map(CORPUS.vocab.map((t,i)=>[t,i]));
+}
+const KEEP = [["fn","Classé FNEGE"],["ajg3","AJG 3 et plus"],["abdcA","ABDC A ou A*"],["sc","Scopus"],["q1","Scopus Q1"],["ft","FT50"],["free","Sans APC obligatoire"]];
+const CK = new Set();
+function keepOk(j){
+  for (const k of CK){
+    if (k==="fn" && !j.fn) return false;
+    if (k==="ajg3" && !["3","4","4*"].includes(j.ajg)) return false;
+    if (k==="abdcA" && !["A","A*"].includes(j.abdc)) return false;
+    if (k==="sc" && !j.sc) return false;
+    if (k==="q1" && j.q!=="Q1") return false;
+    if (k==="ft" && !j.ft) return false;
+    if (k==="free" && j.oa==="Accès ouvert (APC)") return false;
+  }
+  const apc = parseFloat($("#capc").value); if (!isNaN(apc) && (j.apc||0) > apc && j.oa==="Accès ouvert (APC)") return false;
+  return true;
+}
+let LAST = null;
+async function runMatch(){
+  const text = [$("#ct").value, $("#ct").value, $("#ca").value, $("#ck").value, $("#ck").value].join(" ");
+  if (text.trim().length < 20) { toast("Écrivez au moins un titre et un résumé."); return; }
+  try { await loadCorpus(); } catch(e){ $("#cstatus").innerHTML = `<p class="note">Le corpus n'a pas pu être chargé : rechargez la page puis réessayez.</p>`; return; }
+  const FRW = new Set(["les","des","une","dans","pour","sur","avec","entre","nous","leur","leurs","est","sont","cette","qui","que","par","aux","du","entreprises","effet","résultats"]);
+  const ENW = new Set(["the","of","and","in","we","our","this","with","for","on","firms","that","are","is","results","effect"]);
+  const words = text.toLowerCase().match(/[a-zàâçéèêëîïôûùüÿœ]+/g) || [];
+  const nFR = words.filter(w=>FRW.has(w)).length, nEN = words.filter(w=>ENW.has(w)).length;
+  if (nFR > nEN && nFR >= 3) { $("#cstatus").innerHTML = `<div class="warn-box">Votre résumé semble écrit en français. Les revues sont comparées à des articles en anglais : écrivez le titre, le résumé et les mots-clés en anglais pour obtenir des résultats fiables.</div>`; $("#cout").innerHTML = ""; return; }
+  const q = queryVec(text);
+  if (!q.size) { $("#cstatus").innerHTML = `<p class="note">Aucun mot reconnu : écrivez le résumé en anglais.</p>`; return; }
+  const wP = (+$("#cw").value)/100;
+  const qTerms = new Map([...q].sort((a,b)=>b[1]-a[1]).slice(0,40));
+  const res = [], arts = [];
+  for (const [i, prof] of Object.entries(CORPUS.prof)){
+    const j = J[i]; if (!j || !keepOk(j)) continue;
+    const sp = dot(q, prof);
+    const as = (CORPUS.art[i]||[]).map(a => ({ s: dot(q, a[4]), a, i:+i })).sort((x,y)=>y.s-x.s);
+    const top3 = as.slice(0,3).reduce((s,x)=>s+x.s,0)/3;
+    const rel = 0.55*sp + 0.45*top3;
+    for (const x of as.slice(0,2)) arts.push(x);
+    const shared = prof.filter(([id])=>qTerms.has(id)).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([id])=>CORPUS.vocab[id].split("_").map(x=>SURF.get(x)||x).join(" "));
+    res.push({ i:+i, rel, best: as.slice(0,2), shared });
+  }
+  const maxRel = Math.max(...res.map(r=>r.rel), 1e-9), maxP = Math.max(...J.map(j=>j._p), 1);
+  for (const r of res) { r.relN = r.rel/maxRel; r.score = (1-wP)*r.relN + wP*(J[r.i]._p/maxP); }
+  res.sort((a,b)=>b.score-a.score);
+  arts.sort((a,b)=>b.s-a.s);
+  LAST = { res: res.slice(0,40), arts: arts.slice(0,20) };
+  $("#cstatus").innerHTML = `<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="note">${res.length.toLocaleString("fr-FR")} journaux comparés · ${q.size} termes reconnus dans votre texte.</span><button class="btn" id="refine" ${sampleFn?"":"hidden"}>Affiner avec Claude</button></div><div id="refineout"></div>`;
+  if ($("#refine")) $("#refine").onclick = refine;
+  renderMatch();
+}
+function renderMatch(){
+  const { res, arts } = LAST;
+  const jr = res.slice(0,25).map((r,k) => {
+    const j = J[r.i];
+    const extra = `<div style="display:flex;gap:10px;align-items:center;margin-top:8px;flex-wrap:wrap"><b>#${k+1}</b><span class="meter" title="Pertinence"><i style="width:${Math.round(r.relN*100)}%"></i></span><span class="note">pertinence ${Math.round(r.relN*100)} %</span>${r.shared.length?`<span class="note">· termes communs : ${esc(r.shared.join(", "))}</span>`:""}</div>
+      ${r.best.length?`<ul class="note" style="margin:6px 0 0;padding-left:18px">${r.best.map(x=>`<li>${x.a[1]?`<a href="https://doi.org/${esc(x.a[1])}" target="_blank" rel="noopener">${esc(x.a[0])}</a>`:esc(x.a[0])} (${x.a[2]})</li>`).join("")}</ul>`:""}`;
+    return rowHTML(j, extra);
+  }).join("");
+  const ar = arts.map(x => `<tr><td>${x.a[1]?`<a href="https://doi.org/${esc(x.a[1])}" target="_blank" rel="noopener">${esc(x.a[0])}</a>`:esc(x.a[0])}</td><td>${esc(J[x.i].t)}</td><td>${x.a[2]}</td><td>${Math.round(x.s*100)}</td></tr>`).join("");
+  $("#cout").innerHTML = `<h2 style="margin:6px 0 10px">Journaux cibles</h2><div class="list">${jr}</div>
+    <h2 style="margin:20px 0 10px">Articles les plus proches du vôtre</h2>
+    <div class="tablewrap panel"><table><thead><tr><th>Article</th><th>Journal</th><th>Année</th><th>Proximité</th></tr></thead><tbody>${ar}</tbody></table></div>`;
+}
+async function refine(){
+  if (!sampleFn || !LAST) return;
+  const btn = $("#refine"); btn.disabled = true; btn.textContent = "Claude réfléchit…";
+  const cand = LAST.res.slice(0,15).map(r => { const j = J[r.i]; return { id:r.i, journal:j.t, rankings:[j.fn&&"FNEGE "+j.fn, j.ajg&&"AJG "+j.ajg, j.abdc&&"ABDC "+j.abdc, j.ft&&"FT50", j.q&&"Scopus "+j.q].filter(Boolean).join(", "), themes:(j.top||[]).map(t=>t[0]).join("; "), keywords:(j.kw||[]).slice(0,10).join(", "), closest_articles:r.best.map(x=>x.a[0]) }; });
+  const prompt = `You help a management/finance researcher choose a journal. Here is the manuscript.\nTITLE: ${$("#ct").value}\nABSTRACT: ${$("#ca").value}\nKEYWORDS: ${$("#ck").value}\n\nCandidate journals (pre-selected by lexical similarity) as JSON:\n${JSON.stringify(cand)}\n\nRe-rank the candidates by genuine fit of the manuscript's topic, method and contribution with each journal's scope as shown by its themes, keywords and closest articles. Answer ONLY with JSON: {"ranking":[{"id":number,"fit":"high"|"medium"|"low","why":"one sentence in ${["French","English","Spanish"][LANG]}"}]} covering all candidates, best first.`;
+  try {
+    const out = await sampleFn.json(prompt, { modelTier:"default" });
+    const rk = (out && out.ranking) || [];
+    $("#refineout").innerHTML = `<h3 style="margin-top:10px">Classement affiné par Claude</h3><ol>${rk.map(x => { const j = J[x.id]; return j ? `<li><b>${esc(j.t)}</b> <span class="b ${x.fit==="high"?"good":x.fit==="low"?"bad":"warn"}">${x.fit==="high"?"très adapté":x.fit==="low"?"peu adapté":"adapté"}</span> <span class="note">${esc(x.why)}</span></li>` : ""; }).join("")}</ol><p class="note">Avis généré par Claude à partir des thèmes et articles affichés : vérifiez les aims & scope avant de soumettre.</p>`;
+  } catch(e){
+    $("#refineout").innerHTML = `<p class="note">${e && e.code==="not_granted" ? "L'accès à Claude n'a pas été autorisé pour cette page." : "Claude n'a pas pu répondre. Réessayez dans un moment."}</p>`;
+  }
+  btn.disabled = false; btn.textContent = "Affiner avec Claude";
+}
+function buildCiblage(){
+  $(`[data-c="keep"]`).innerHTML = KEEP.map(([k,l])=>`<button class="chip" data-v="${k}">${l}</button>`).join("");
+  $(`[data-c="keep"]`).addEventListener("click", e => { const c = e.target.closest(".chip"); if (!c) return; CK.has(c.dataset.v)?CK.delete(c.dataset.v):CK.add(c.dataset.v); c.classList.toggle("on"); });
+  $("#cw").oninput = e => $("#cwv").textContent = e.target.value + " %";
+  $("#go").onclick = runMatch;
+}
+
+/* ---------------- import de nouveaux classements ---------------- */
+const normT = t => String(t||"").normalize("NFKD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/&/g," and ").replace(/\(.*?\)/g," ").replace(/[^a-z0-9 ]/g," ").replace(/\b(the|and)\b/g," ").replace(/\s+/g," ").trim();
+const normI = x => { const s = String(x||"").toUpperCase().replace(/[^0-9X]/g,""); return s.length===8 ? s.slice(0,4)+"-"+s.slice(4) : null; };
+let IDX_T = null, IDX_I = null;
+function indexes(){
+  if (IDX_T) return; IDX_T = new Map(); IDX_I = new Map();
+  for (const j of J){ IDX_T.set(normT(j.t), j.i); for (const s of (j.is||[])) IDX_I.set(s, j.i); }
+}
+function applyImported(){
+  for (const j of J) { delete j.extra; }
+  for (const imp of imported){
+    if (imp.v !== 2) continue;
+    for (const [key, v] of imp.rows){
+      const i = IDX.get(key); const j = J[i]; if (!j) continue;
+      if (imp.list === "custom") { (j.extra = j.extra||[]).push([imp.name, v]); continue; }
+      if (imp.list === "ft") { j.ft = true; continue; }
+      j[imp.list] = v;
+    }
+    if (imp.list === "ft") { const keep = new Set(imp.rows.map(r=>IDX.get(r[0]))); for (const j of J) if (!keep.has(j.i)) delete j.ft; }
+  }
+  for (const j of J) j._p = prestige(j);
+  $("#uimported").innerHTML = imported.length ? imported.map(x=>`<div>${esc(x.name)} · ${x.rows.length} journaux · importé le ${esc(x.date)}</div>`).join("") : "Aucun pour l'instant.";
+}
+function parseCSV(text){
+  const first = text.split(/\r?\n/)[0] || "";
+  const sep = (first.match(/;/g)||[]).length > (first.match(/,/g)||[]).length ? ";" : (first.includes("\t") ? "\t" : ",");
+  const rows = []; let row = [], cur = "", q = false;
+  for (let i = 0; i < text.length; i++){
+    const c = text[i];
+    if (q){ if (c === '"' && text[i+1] === '"'){ cur += '"'; i++; } else if (c === '"') q = false; else cur += c; }
+    else if (c === '"') q = true;
+    else if (c === sep){ row.push(cur); cur = ""; }
+    else if (c === "\n" || c === "\r"){ if (c === "\r" && text[i+1] === "\n") i++; row.push(cur); rows.push(row); row = []; cur = ""; }
+    else cur += c;
+  }
+  if (cur || row.length){ row.push(cur); rows.push(row); }
+  return rows.filter(r => r.some(x => String(x).trim()));
+}
+function onFile(ev){
+  const f = ev.target.files[0]; if (!f) return;
+  const isCSV = /\.csv$/i.test(f.name);
+  if (!isCSV && typeof XLSX === "undefined") { $("#ulog").textContent = "La lecture des fichiers Excel n'a pas pu se charger : rechargez la page, ou enregistrez le fichier en CSV."; return; }
+  const rd = new FileReader();
+  rd.onload = () => {
+    let rows;
+    if (isCSV) rows = parseCSV(new TextDecoder("utf-8").decode(rd.result));
+    else { const wb = XLSX.read(rd.result, { type:"array" }); const ws = wb.Sheets[wb.SheetNames[0]]; rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:"" }); }
+    let h = 0; for (let k=0;k<Math.min(rows.length,20);k++){ if (rows[k].filter(x=>String(x).trim()).length >= 3) { h = k; break; } }
+    const head = rows[h].map(x=>String(x).trim());
+    const opt = head.map((c,k)=>`<option value="${k}">${esc(c||"Colonne "+(k+1))}</option>`).join("");
+    const guess = re => Math.max(0, head.findIndex(c=>re.test(c)));
+    $("#umap").innerHTML = `<div class="grid2">
+      <div class="fgroup"><label for="mt">Colonne du titre</label><select id="mt">${opt}</select></div>
+      <div class="fgroup"><label for="mi">Colonne ISSN (facultatif)</label><select id="mi"><option value="-1">Aucune</option>${opt}</select></div>
+      <div class="fgroup"><label for="mr">Colonne du rang</label><select id="mr">${opt}</select></div></div>
+      <button class="btn" id="usave">Appliquer ce classement</button>`;
+    $("#mt").value = guess(/titre|title|journal|revue/i); $("#mi").value = head.findIndex(c=>/issn/i.test(c)); $("#mr").value = guess(/rang|rank|rating|class|fnege|ajg|abdc|20\d\d/i);
+    $("#usave").onclick = () => saveImport(rows.slice(h+1));
+    $("#ulog").textContent = `${rows.length - h - 1} lignes lues. Vérifiez les colonnes puis appliquez.`;
+  };
+  rd.readAsArrayBuffer(f);
+}
+async function saveImport(body){
+  indexes();
+  const ct = +$("#mt").value, ci = +$("#mi").value, cr = +$("#mr").value, list = $("#ulist").value;
+  const name = $("#uname").value.trim() || $("#ulist").selectedOptions[0].textContent;
+  const out = []; let miss = 0;
+  for (const r of body){
+    const t = r[ct]; if (!t) continue;
+    let i = ci >= 0 ? IDX_I.get(normI(r[ci])) : undefined;
+    if (i == null) i = IDX_T.get(normT(t));
+    if (i == null) { miss++; continue; }
+    const v = String(r[cr]).replace(/^="?|"$/g,"").trim();
+    if (list !== "ft" && !v) continue;
+    out.push([KEY(i), v]);
+  }
+  const rec = { v:2, list, name, date: new Date().toISOString().slice(0,10), rows: out };
+  imported = imported.filter(x => !(x.list===list && x.name===name)).concat([rec]);
+  applyImported(); render(); tiles();
+  let saved = "enregistré dans votre navigateur seulement";
+  try { localStorage.setItem("aj-imported", JSON.stringify(imported)); } catch(e){}
+  if (db) try { await db.collection("rankings").doc(list+"-"+name.replace(/[^a-zA-Z0-9]/g,"")).set(rec); saved = "enregistré pour tous les lecteurs de la page"; } catch(e){}
+  $("#ulog").textContent = `${out.length} journaux mis à jour, ${miss} titres non trouvés dans l'atlas (${saved}).`;
+}
+async function loadImported(){
+  try { imported = JSON.parse(localStorage.getItem("aj-imported")||"[]"); } catch(e){ imported = []; }
+  if (db) try {
+    const snap = await db.collection("rankings").get();
+    const docs = snap && (snap.docs || snap);
+    if (Array.isArray(docs) && docs.length) imported = docs.map(d => d.data ? d.data() : d).filter(x=>x && x.rows);
+  } catch(e){}
+  applyImported();
+}
+
+/* ---------------- date et en-tête selon la langue ---------------- */
+function stamp(){
+  const L = (typeof LANG === "number") ? LANG : 0;
+  const loc = ["fr-FR","en-GB","es-ES"][L];
+  const d = new Date(META.built + "T12:00:00").toLocaleDateString(loc, { day:"numeric", month:"long", year:"numeric" });
+  const n = J.length.toLocaleString(loc);
+  $("#stamp").textContent = [`${n} revues · données du ${d}`, `${n} journals · data as of ${d}`, `${n} revistas · datos del ${d}`][L];
+}
+
+/* ---------------- routage ---------------- */
+function route(){
+  const v = (location.hash||"#journaux").slice(1);
+  const ok = ["journaux","ciblage","favoris","actualiser","guide","sources"].includes(v) ? v : "journaux";
+  document.querySelectorAll(".view").forEach(s => s.classList.toggle("on", s.id === "v-"+ok));
+  document.querySelectorAll("#nav a").forEach(a => a.classList.toggle("on", a.dataset.v === ok));
+  if (ok === "favoris") renderFavs();
+}
+document.addEventListener("click", e => {
+  const f = e.target.closest("[data-fav]"); if (f) { e.stopPropagation(); toggleFav(f.dataset.fav); return; }
+  if (e.target.closest("a")) return;
+  const r = e.target.closest(".row"); if (r) openCard(+r.dataset.i);
+});
+window.addEventListener("hashchange", route);
+document.addEventListener("keydown", e => {
+  if ((e.key === "Enter" || e.key === " ") && e.target.classList && e.target.classList.contains("row")) { e.preventDefault(); openCard(+e.target.dataset.i); }
+});
+
+
+/* ---------------- exemple et raccourcis ---------------- */
+const DEMO = { t:"Board gender diversity and corporate innovation: evidence from European listed firms",
+  a:"This study examines whether women on corporate boards affect firm innovation. Using a panel of European listed firms over 2010-2022, we relate board gender diversity to R&D intensity and patent output. Firms with more female directors invest more in research and obtain more patents, especially in industries with high growth opportunities. The results are robust to instrumental variables and to a difference-in-differences design based on national board quota laws. We contribute to research on corporate governance, board composition and innovation.",
+  k:"board gender diversity; innovation; corporate governance; R&D; patents" };
+document.getElementById("demo").addEventListener("click", () => { $("#ct").value = DEMO.t; $("#ca").value = DEMO.a; $("#ck").value = DEMO.k; $("#ca").focus(); });
+document.querySelectorAll("[data-quick]").forEach(b => b.addEventListener("click", () => {
+  const q = b.dataset.quick;
+  const r = document.getElementById("reset"); if (r) r.click();
+  const click = (k, v) => { const c = document.querySelector(`.chip[data-k="${k}"][data-v="${v}"]`); if (c && !c.classList.contains("on")) c.click(); };
+  if (q==="ft") click("lists","ft");
+  if (q==="fn1") { click("fn","1*"); click("fn","1"); }
+  if (q==="ajg4") { click("ajg","4*"); click("ajg","4"); }
+  if (q==="diam") { const c=[...document.querySelectorAll('.chip[data-k="oa"]')].find(x=>x.dataset.v.startsWith("Diamant")); if (c && !c.classList.contains("on")) c.click(); }
+  if (q==="fr") click("lists","fr");
+  document.getElementById("count").scrollIntoView({behavior:"smooth", block:"start"});
+}));
+
+/* ---------------- démarrage ---------------- */
+(async function(){
+  route();
+  let L0 = 0; try { L0 = +(localStorage.getItem("aj-lang")||0) || 0; } catch(e){}
+  $("#lang").value = String(L0); $("#lang").onchange = e => applyLang(+e.target.value);
+  if (L0) applyLang(L0);
+  try { DATA = await (await fetch("data/journaux.json")).json(); }
+  catch(e){ $("#stamp").textContent = "données introuvables : rechargez la page"; return; }
+  J = DATA.J; META = DATA.meta;
+  IDX = new Map(J.map((j, i) => [KEY(i), i]));
+  for (const j of J) j._p = prestige(j);
+  stamp();
+  window.addEventListener("langchange", stamp);
+  $("#srcs").innerHTML = `<table><tbody>${Object.entries(META.sources).map(([k,v])=>`<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`).join("")}</tbody></table>`;
+  buildFilters(); buildCiblage(); tiles(); render();
+  $("#ufile").addEventListener("change", onFile);
+  try { const s = JSON.parse(localStorage.getItem("aj-imported")||"[]"); if (s.length) { imported = s; applyImported(); render(); } } catch(e){}
+  IDX = new Map(J.map((j, i) => [KEY(i), i]));
+  try { const s = JSON.parse(localStorage.getItem("aj-mine")||"{}"); if (s.v === 2) { favs = favsFrom(s.favs); notes = fromStore(s.notes); SUBS = fromStore(s.subs); } } catch(e){}
+  try { const f = JSON.parse(localStorage.getItem("aj-facts2")||"{}"); FACTS = fromStore(f); } catch(e){}
+  render();
+  if (window.claude && claude.use) {
+    claude.use("sample").then(s => { sampleFn = s; const b = $("#refine"); if (b && s) b.hidden = false; }).catch(()=>{});
+    try {
+      db = await claude.use("db");
+      const u = await claude.use("user");
+      if (u) uid = await u.id();
+      if (db) { await loadImported(); await loadMine(); await loadFacts(); tiles(); render(); }
+    } catch(e){}
+  }
+})();
+</script>
+</body>
+</html>

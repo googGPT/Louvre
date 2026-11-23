@@ -1,0 +1,237 @@
+/* Traduction de l'interface : français (langue source), anglais, espagnol.
+   Principe : chaque texte affiché en français est remplacé à la volée par sa traduction ;
+   le texte d'origine est gardé en mémoire pour pouvoir revenir au français. */
+"use strict";
+const I18N_DICT = {
+"Revues francophones":["French-language journals","Revistas francófonas"],
+"Sources et mentions":["Sources and credits", "Fuentes y créditos"],
+"Trouvez la bonne revue pour votre article":["Find the right journal for your article", "Encuentre la revista adecuada para su artículo"],
+"Classements FNEGE, AJG/ABS, ABDC et FT50, indicateurs Scopus et OpenAlex, frais de soumission et accès ouvert, réunis sur une seule fiche par revue.":["FNEGE, AJG/ABS, ABDC and FT50 rankings, Scopus and OpenAlex indicators, submission fees and open access, gathered on a single card per journal.", "Clasificaciones FNEGE, AJG/ABS, ABDC y FT50, indicadores Scopus y OpenAlex, tasas de envío y acceso abierto, reunidos en una sola ficha por revista."],
+"FNEGE 1* et 1":["FNEGE 1* and 1", "FNEGE 1* y 1"],
+"AJG 4* et 4":["AJG 4* and 4", "AJG 4* y 4"],
+"Accès ouvert sans frais":["Open access, no fees", "Acceso abierto sin tasas"],
+"Trouver mon journal à partir de mon résumé →":["Find my journal from my abstract →", "Encontrar mi revista a partir de mi resumen →"],
+"Essayer avec un exemple":["Try an example", "Probar con un ejemplo"],
+"Le texte est analysé dans votre navigateur ; il n'est ni enregistré ni envoyé, sauf si vous cliquez sur « Affiner avec Claude ».":["The text is analysed in your browser; it is neither saved nor sent, unless you click “Refine with Claude”.", "El texto se analiza en su navegador; no se guarda ni se envía, salvo si pulsa «Afinar con Claude»."],
+"Données indicatives : vérifiez toujours sur le site officiel de la revue.":["Indicative data: always check on the journal's official site.", "Datos indicativos: verifique siempre en el sitio oficial de la revista."],
+"Titre de votre article (en anglais)":["Your article title (in English)", "Título de su artículo (en inglés)"],
+"Collez le résumé de votre article (en anglais)":["Paste your article's abstract (in English)", "Pegue el resumen de su artículo (en inglés)"],
+"mot-clé 1; mot-clé 2; …":["keyword 1; keyword 2; …", "palabra clave 1; palabra clave 2; …"],
+"OpenAlex n'indexe aucun article de cette revue depuis 2018 : citations, pays des auteurs et articles proches sont absents ou anciens.":["OpenAlex has indexed no article from this journal since 2018: citations, author countries and similar articles are missing or old.","OpenAlex no ha indexado ningún artículo de esta revista desde 2018: las citas, los países de los autores y los artículos similares faltan o son antiguos."],
+"120 AUD hors Australie":["AUD 120 outside Australia", "120 AUD fuera de Australia"],
+"125 € ; TVA pour auteurs UE":["€125; VAT for EU authors", "125 €; IVA para autores de la UE"],
+"275 $ remboursés si rejet sans évaluation":["$275 refunded if desk-rejected", "275 $ reembolsados si hay rechazo sin evaluación"],
+"350 € non-membre EFA / 300 € membre ; moitié remboursée si décision après 120 jours":["€350 non-EFA member / €300 member; half refunded if decision after 120 days", "350 € no miembro EFA / 300 € miembro; mitad reembolsada si la decisión llega después de 120 días"],
+"55 € ; exonéré via transfert":["€55; waived for transfers", "55 €; exento por transferencia"],
+"75 CAD + adhésion CEA":["CAD 75 + CEA membership", "75 CAD + afiliación a la CEA"],
+"75 £ + TVA 20 %":["£75 + 20% VAT", "75 £ + IVA del 20 %"],
+"75 € ; membres EALE exemptés":["€75; EALE members exempt", "75 €; miembros de EALE exentos"],
+"Abonné 150 $ ; non-abonné 200 $":["Subscriber $150; non-subscriber $200", "Suscriptor 150 $; no suscriptor 200 $"],
+"Abonné 75 $":["Subscriber $75", "Suscriptor 75 $"],
+"Abonné 85 $ ; pas de remboursement depuis 2026":["Subscriber $85; no refunds since 2026", "Suscriptor 85 $; sin reembolso desde 2026"],
+"Auteurs de pays en développement exemptés":["Authors from developing countries exempt", "Autores de países en desarrollo exentos"],
+"Barème membres ; non-membre environ 285 $ ; TVA":["Member rates; non-member about $285; VAT", "Tarifa de miembros; no miembro unos 285 $; IVA"],
+"Depuis 2019":["Since 2019", "Desde 2019"],
+"Depuis le 1er janvier 2025":["Since 1 January 2025", "Desde el 1 de enero de 2025"],
+"Exemptions possibles":["Waivers possible", "Exenciones posibles"],
+"Exonérations pour certains auteurs":["Waivers for some authors", "Exenciones para algunos autores"],
+"Exonéré pour certaines resoumissions / transferts":["Waived for some resubmissions / transfers", "Exento para algunas reenvíos / transferencias"],
+"Exonéré pour membres INFORMS et cas de difficulté":["Waived for INFORMS members and hardship cases", "Exento para miembros de INFORMS y casos de dificultad"],
+"Facturé en CHF":["Charged in CHF", "Facturado en CHF"],
+"Gratuit avec abonnement individuel de l'année":["Free with an individual subscription for the year", "Gratis con suscripción individual del año"],
+"Gratuit pour membres EHA":["Free for EHA members", "Gratis para miembros de EHA"],
+"Gratuit pour membres SoFiE":["Free for SoFiE members", "Gratis para miembros de SoFiE"],
+"Gratuit via transfert d'article":["Free via article transfer", "Gratis mediante transferencia del artículo"],
+"Gratuit via transfert d'article ; non remboursé en cas de rejet sans évaluation":["Free via article transfer; not refunded on desk rejection", "Gratis mediante transferencia del artículo; no reembolsado si hay rechazo sin evaluación"],
+"Manuscrits non sollicités ; remboursement partiel (400 $) sur certains rejets sans évaluation":["Unsolicited manuscripts; partial refund ($400) on some desk rejections", "Manuscritos no solicitados; reembolso parcial (400 $) en algunos rechazos sin evaluación"],
+"Membre 100 $ ; non-membre plus élevé":["Member $100; non-member higher", "Miembro 100 $; no miembro más alto"],
+"Membre 125 $ ; étudiant 50 $ ; non-membre plus élevé":["Member $125; student $50; non-member higher", "Miembro 125 $; estudiante 50 $; no miembro más alto"],
+"Membre AAA 250 $ ; non-membre 600 $":["AAA member $250; non-member $600", "Miembro AAA 250 $; no miembro 600 $"],
+"Membre AEA 200 $ ; non-membre 300 $":["AEA member $200; non-member $300", "Miembro AEA 200 $; no miembro 300 $"],
+"Membre FMA 250 $ ; non-membre 350 $":["FMA member $250; non-member $350", "Miembro FMA 250 $; no miembro 350 $"],
+"Membre SEA 60 $ ; non-membre 200 $":["SEA member $60; non-member $200", "Miembro SEA 60 $; no miembro 200 $"],
+"Membre SOLE 100 $ ; non-membre 175 $":["SOLE member $100; non-member $175", "Miembro SOLE 100 $; no miembro 175 $"],
+"Membre WEAI 120 $ ; non-membre 180 $":["WEAI member $120; non-member $180", "Miembro WEAI 120 $; no miembro 180 $"],
+"Membre WEAI 90 $ ; non-membre 100 $":["WEAI member $90; non-member $100", "Miembro WEAI 90 $; no miembro 100 $"],
+"Montant exact non vérifié":["Exact amount not verified", "Importe exacto no verificado"],
+"Non remboursable":["Non-refundable", "No reembolsable"],
+"Non remboursable ; TVA pour auteurs UE":["Non-refundable; VAT for EU authors", "No reembolsable; IVA para autores de la UE"],
+"Non remboursé en cas de rejet sans évaluation":["Not refunded on desk rejection", "No reembolsado si hay rechazo sin evaluación"],
+"Non vérifié":["Not verified", "No verificado"],
+"Non vérifié : confirmer auprès de la revue":["Not verified: check with the journal", "No verificado: confirmar con la revista"],
+"Non-abonné 250 $ ; abonné 125 $":["Non-subscriber $250; subscriber $125", "No suscriptor 250 $; suscriptor 125 $"],
+"Page Elsevier à vérifier":["Elsevier page to be checked", "Página de Elsevier por verificar"],
+"Paiement PayPal":["Payment by PayPal", "Pago por PayPal"],
+"Pas de frais de soumission":["No submission fee", "Sin tasa de envío"],
+"Pas de frais de soumission (140 $ = adhésion)":["No submission fee ($140 = membership)", "Sin tasa de envío (140 $ = afiliación)"],
+"Pas de frais de soumission ; APC optionnel":["No submission fee; optional APC", "Sin tasa de envío; APC opcional"],
+"Pas de frais de soumission ; APC seulement si accès ouvert":["No submission fee; APC only for open access", "Sin tasa de envío; APC solo si es acceso abierto"],
+"Pas de frais pour resoumission ou transfert":["No fee for resubmission or transfer", "Sin tasa por reenvío o transferencia"],
+"Pas de frais pour une révision":["No fee for a revision", "Sin tasa por una revisión"],
+"Pays à revenu élevé : membre AFA 400 $, non-membre 525 $ ; revenu intermédiaire 100 $ / 150 $ ; revenu faible gratuit ; remboursé si décision après 100 jours ; appel 600 $":["High-income countries: AFA member $400, non-member $525; middle income $100 / $150; low income free; refunded if decision after 100 days; appeal $600", "Países de ingreso alto: miembro AFA 400 $, no miembro 525 $; ingreso medio 100 $ / 150 $; ingreso bajo gratis; reembolsado si la decisión llega después de 100 días; apelación 600 $"],
+"Pays à revenu élevé : membre SFS 400 $, non-membre 460 $ ; revenu intermédiaire 260 $ / 320 $ ; revenu faible gratuit ; appel 860 $":["High-income countries: SFS member $400, non-member $460; middle income $260 / $320; low income free; appeal $860", "Países de ingreso alto: miembro SFS 400 $, no miembro 460 $; ingreso medio 260 $ / 320 $; ingreso bajo gratis; apelación 860 $"],
+"Réduction pour membres CAAA ; barème à vérifier":["Discount for CAAA members; rates to be checked", "Descuento para miembros de CAAA; tarifas por verificar"],
+"Réduit à 120 $ pour étudiants et certains auteurs":["Reduced to $120 for students and some authors", "Reducido a 120 $ para estudiantes y algunos autores"],
+"Sans exception":["No exceptions", "Sin excepciones"],
+"Tarif non-membre, pays à revenu élevé":["Non-member rate, high-income countries", "Tarifa de no miembro, países de ingreso alto"],
+"Variable selon le pays ; propositions de survey 250 $":["Varies by country; survey proposals $250", "Variable según el país; propuestas de survey 250 $"],
+"Wiley / EFMA":["Wiley / EFMA", "Wiley / EFMA"],
+"Étudiants 82,50 $":["Students $82.50", "Estudiantes 82,50 $"],
+"Frais :":["Fees:", "Tasas:"],
+"Ancien nom":["Former name","Nombre anterior"],
+"Accès ouvert (frais inconnus)":["Open access (fees unknown)","Acceso abierto (tasas desconocidas)"],"Filtres":["Filters","Filtros"],
+"Revue non couverte par OpenAlex : pas de métriques de citations, d'auteurs ni d'articles.":["Journal not covered by OpenAlex: no citation, author or article metrics.","Revista no cubierta por OpenAlex: sin métricas de citas, autores ni artículos."],
+"Trop peu d'articles pour calculer":["Too few articles to compute","Demasiado pocos artículos para calcular"],
+"Votre résumé semble écrit en français. Les revues sont comparées à des articles en anglais : écrivez le titre, le résumé et les mots-clés en anglais pour obtenir des résultats fiables.":["Your abstract seems to be in French. Journals are compared with English-language articles: write the title, abstract and keywords in English to get reliable results.","Su resumen parece estar en francés. Las revistas se comparan con artículos en inglés: escriba el título, el resumen y las palabras clave en inglés para obtener resultados fiables."],
+"La lecture des fichiers Excel n'a pas pu se charger : rechargez la page, ou enregistrez le fichier en CSV.":["The Excel reader could not load: reload the page, or save the file as CSV.","No se pudo cargar el lector de Excel: recargue la página o guarde el archivo en CSV."],
+"Journaux":["Journals","Revistas"],"Trouver mon journal":["Find my journal","Encontrar mi revista"],
+"Mes favoris et soumissions":["My favourites and submissions","Mis favoritos y envíos"],"Actualiser les classements":["Update rankings","Actualizar clasificaciones"],
+"Mode d'emploi":["User guide","Guía de uso"],"Recherche":["Search","Búsqueda"],"Titre, ISSN, éditeur, thème…":["Title, ISSN, publisher, topic…","Título, ISSN, editorial, tema…"],
+"Quartile Scopus (SJR)":["Scopus quartile (SJR)","Cuartil Scopus (SJR)"],"Listes":["Lists","Listas"],"Modèle économique":["Business model","Modelo económico"],
+"Frais de soumission":["Submission fee","Tasa de envío"],"APC maximum (USD)":["Maximum APC (USD)","APC máximo (USD)"],"sans limite":["no limit","sin límite"],
+"Domaine FNEGE":["FNEGE field","Área FNEGE"],"Champ AJG":["AJG field","Campo AJG"],"Tous":["All","Todos"],"Effacer les filtres":["Clear filters","Borrar filtros"],
+"Trier par":["Sort by","Ordenar por"],"Prestige (classements)":["Prestige (rankings)","Prestigio (clasificaciones)"],"Citations moyennes à 2 ans":["2-year mean citations","Citas medias a 2 años"],
+"APC croissant":["APC ascending","APC ascendente"],"Frais de soumission croissants":["Submission fee ascending","Tasa de envío ascendente"],
+"Délai de 1re décision (saisi)":["Time to 1st decision (entered)","Plazo hasta la 1.ª decisión (introducido)"],"Part d'auteurs en France":["Share of authors in France","Proporción de autores en Francia"],
+"Croissance du volume publié":["Growth in output","Crecimiento del volumen publicado"],"Part en accès ouvert":["Open access share","Proporción en acceso abierto"],"Titre A–Z":["Title A–Z","Título A–Z"],
+"Afficher 50 de plus":["Show 50 more","Mostrar 50 más"],"journaux":["journals","revistas"],"classés FNEGE":["ranked FNEGE","clasificadas FNEGE"],"classés AJG":["ranked AJG","clasificadas AJG"],
+"classés ABDC":["ranked ABDC","clasificadas ABDC"],"indexés Scopus":["indexed in Scopus","indexadas en Scopus"],"en accès ouvert":["open access","en acceso abierto"],
+"Francophone FNEGE":["French-language (FNEGE)","Francófona (FNEGE)"],"Francophone":["French-language","Francófona"],"Gratuite":["Free","Gratuita"],"Payante":["Paid","De pago"],
+"Montant connu":["Amount known","Importe conocido"],"Abonnement / hybride":["Subscription / hybrid","Suscripción / híbrida"],"Accès ouvert (APC)":["Open access (APC)","Acceso abierto (APC)"],
+"Diamant (OA sans frais)":["Diamond (fee-free OA)","Diamante (AA sin tasas)"],"Soumission gratuite":["No submission fee","Envío gratuito"],"ex-FT50":["ex-FT50","ex-FT50"],
+"Retiré du FT50 en avril 2026":["Removed from the FT50 in April 2026","Retirada del FT50 en abril de 2026"],"Éditeur inconnu":["Unknown publisher","Editorial desconocida"],
+"Ajouter aux favoris":["Add to favourites","Añadir a favoritos"],"Retirer des favoris":["Remove from favourites","Quitar de favoritos"],
+"Aucun journal ne correspond à ces filtres.":["No journal matches these filters.","Ninguna revista coincide con estos filtros."],
+"Fermer":["Close","Cerrar"],"FNEGE (2019 → 2022 → 2025)":["FNEGE (2019 → 2022 → 2025)","FNEGE (2019 → 2022 → 2025)"],"AJG / ABS (2018 → 2021 → 2024)":["AJG / ABS (2018 → 2021 → 2024)","AJG / ABS (2018 → 2021 → 2024)"],
+"ABDC (2022 → 2025)":["ABDC (2022 → 2025)","ABDC (2022 → 2025)"],"Oui (liste 2026)":["Yes (2026 list)","Sí (lista 2026)"],"Retiré en avril 2026":["Removed in April 2026","Retirada en abril de 2026"],
+"Scopus (SCImago)":["Scopus (SCImago)","Scopus (SCImago)"],"Non trouvé":["Not found","No encontrada"],"Oui":["Yes","Sí"],"Accès et frais":["Access and fees","Acceso y tasas"],
+"h-index":["h-index","índice h"],"Articles l'an dernier":["Articles last year","Artículos el año pasado"],"Articles au total":["Total articles","Artículos en total"],"Éditeur":["Publisher","Editorial"],
+"Pays · création":["Country · founded","País · fundación"],"Société savante":["Learned society","Sociedad científica"],"Inconnus (voir les instructions aux auteurs)":["Unknown (see author guidelines)","Desconocida (ver normas para autores)"],
+"Aucun":["None","Ninguna"],"Articles depuis 2021":["Articles since 2021","Artículos desde 2021"],"Croissance du volume (3 ans)":["Output growth (3 years)","Crecimiento del volumen (3 años)"],
+"Articles en accès ouvert":["Open access articles","Artículos en acceso abierto"],"Articles avec un auteur en France":["Articles with an author in France","Artículos con un autor en Francia"],
+"Articles rétractés (total)":["Retracted articles (total)","Artículos retractados (total)"],"Source":["Source","Fuente"],
+"page officielle consultée en novembre 2026":["official page checked in November 2026","página oficial consultada en noviembre de 2026"],
+"compilation publique consultée en avril 2026, à vérifier avant de soumettre":["public compilation checked in April 2026, verify before submitting","recopilación pública consultada en abril de 2026, verificar antes de enviar"],
+"Pays des auteurs":["Authors' countries","Países de los autores"],"(part des articles 2021+ avec au moins un auteur du pays)":["(share of 2021+ articles with at least one author from the country)","(proporción de artículos 2021+ con al menos un autor del país)"],
+"Thèmes les plus publiés":["Most published topics","Temas más publicados"],"Mots-clés propres au journal":["Journal-specific keywords","Palabras clave propias de la revista"],
+"(calculés sur ses articles 2021+)":["(computed from its 2021+ articles)","(calculadas a partir de sus artículos 2021+)"],"Articles récents les plus cités":["Most cited recent articles","Artículos recientes más citados"],
+"Délais et taux publiés par la revue":["Turnaround times and rates published by the journal","Plazos y tasas publicados por la revista"],
+"Recopiez ici les chiffres de la page « Journal insights » ou « About this journal » de l'éditeur : ils restent enregistrés et s'affichent pour tous les lecteurs de l'atlas.":["Copy here the figures from the publisher's \"Journal insights\" or \"About this journal\" page: they are saved and shown to every reader of the atlas.","Copie aquí las cifras de la página «Journal insights» o «About this journal» de la editorial: se guardan y se muestran a todos los lectores del atlas."],
+"Jours jusqu'à la 1re décision":["Days to 1st decision","Días hasta la 1.ª decisión"],"Jours jusqu'à la décision après évaluation":["Days to post-review decision","Días hasta la decisión tras evaluación"],
+"Jours soumission → acceptation":["Days submission → acceptance","Días envío → aceptación"],"Jours acceptation → publication en ligne":["Days acceptance → online publication","Días aceptación → publicación en línea"],
+"Taux d'acceptation (%)":["Acceptance rate (%)","Tasa de aceptación (%)"],"Taux de rejet sans évaluation (%)":["Desk rejection rate (%)","Tasa de rechazo sin evaluación (%)"],
+"Impact factor (Clarivate)":["Impact factor (Clarivate)","Factor de impacto (Clarivate)"],"Source et date":["Source and date","Fuente y fecha"],"Page éditeur, nov. 2026":["Publisher page, Nov 2026","Página de la editorial, nov. 2026"],
+"Enregistrer ces chiffres":["Save these figures","Guardar estas cifras"],"Mon suivi de soumission":["My submission log","Mi seguimiento de envío"],
+"Notez vos dates : l'atlas calcule vos délais réels (visibles par vous seul).":["Enter your dates: the atlas computes your real turnaround times (visible to you only).","Anote sus fechas: el atlas calcula sus plazos reales (visibles solo para usted)."],
+"Soumis le":["Submitted on","Enviado el"],"1re décision le":["1st decision on","1.ª decisión el"],"Décision":["Decision","Decisión"],"Rejet sans évaluation":["Desk rejection","Rechazo sin evaluación"],
+"Rejet après évaluation":["Rejection after review","Rechazo tras evaluación"],"Révision majeure":["Major revision","Revisión mayor"],"Révision mineure":["Minor revision","Revisión menor"],"Acceptation":["Acceptance","Aceptación"],
+"Révision renvoyée le":["Revision resubmitted on","Revisión reenviada el"],"Accepté le":["Accepted on","Aceptado el"],"Publié en ligne le":["Published online on","Publicado en línea el"],
+"Aucune date saisie.":["No dates entered.","Ninguna fecha introducida."],"Mes notes sur ce journal":["My notes on this journal","Mis notas sobre esta revista"],
+"Délais, retours d'éditeurs, numéros spéciaux…":["Turnaround, editor feedback, special issues…","Plazos, comentarios de editores, números especiales…"],
+"Site du journal (aims & scope)":["Journal website (aims & scope)","Web de la revista (aims & scope)"],"Fiche OpenAlex":["OpenAlex record","Ficha OpenAlex"],
+"Expériences SciRev":["SciRev experiences","Experiencias SciRev"],"Outil de l'éditeur pour cibler une revue":["Publisher's journal finder","Buscador de revistas de la editorial"],"Web of Science (Clarivate)":["Web of Science (Clarivate)","Web of Science (Clarivate)"],
+"Titre de mon article":["My article title","Título de mi artículo"],"Résumé":["Abstract","Resumen"],"Mots-clés":["Keywords","Palabras clave"],"Garder seulement":["Keep only","Conservar solo"],
+"Classé FNEGE":["FNEGE-ranked","Clasificada FNEGE"],"AJG 3 et plus":["AJG 3 and above","AJG 3 o más"],"ABDC A ou A*":["ABDC A or A*","ABDC A o A*"],"Sans APC obligatoire":["No mandatory APC","Sin APC obligatorio"],
+"Pertinence ← → prestige :":["Relevance ← → prestige:","Pertinencia ← → prestigio:"],"prestige":["prestige","prestigio"],"Trouver les journaux":["Find journals","Encontrar revistas"],
+"L'exemple pré-rempli est fictif : remplacez-le par votre titre et votre résumé (en anglais).":["The pre-filled example is fictitious: replace it with your title and abstract (in English).","El ejemplo precargado es ficticio: sustitúyalo por su título y resumen (en inglés)."],
+"Le corpus de comparaison (articles 2021 et après, environ 100 par journal) se charge à la première recherche.":["The comparison corpus (articles from 2021 on, about 100 per journal) loads on the first search.","El corpus de comparación (artículos desde 2021, unos 100 por revista) se carga en la primera búsqueda."],
+"Chargement du corpus d'articles…":["Loading the article corpus…","Cargando el corpus de artículos…"],"Affiner avec Claude":["Refine with Claude","Afinar con Claude"],"Claude réfléchit…":["Claude is thinking…","Claude está pensando…"],
+"Journaux cibles":["Target journals","Revistas objetivo"],"Articles les plus proches du vôtre":["Articles closest to yours","Artículos más cercanos al suyo"],"Article":["Article","Artículo"],"Journal":["Journal","Revista"],
+"Année":["Year","Año"],"Proximité":["Similarity","Proximidad"],"Pertinence":["Relevance","Pertinencia"],"Classement affiné par Claude":["Ranking refined by Claude","Clasificación afinada por Claude"],
+"très adapté":["very good fit","muy adecuada"],"adapté":["good fit","adecuada"],"peu adapté":["weak fit","poco adecuada"],
+"Avis généré par Claude à partir des thèmes et articles affichés : vérifiez les aims & scope avant de soumettre.":["Opinion generated by Claude from the topics and articles shown: check the aims & scope before submitting.","Opinión generada por Claude a partir de los temas y artículos mostrados: verifique el aims & scope antes de enviar."],
+"L'accès à Claude n'a pas été autorisé pour cette page.":["Access to Claude was not granted for this page.","No se autorizó el acceso a Claude para esta página."],"Claude n'a pas pu répondre. Réessayez dans un moment.":["Claude could not answer. Try again shortly.","Claude no pudo responder. Inténtelo de nuevo en un momento."],
+"Écrivez au moins un titre et un résumé.":["Enter at least a title and an abstract.","Escriba al menos un título y un resumen."],"Aucun mot reconnu : écrivez le résumé en anglais.":["No word recognised: write the abstract in English.","Ninguna palabra reconocida: escriba el resumen en inglés."],
+"Le corpus n'a pas pu être chargé : rechargez la page puis réessayez.":["The corpus could not be loaded: reload the page and try again.","No se pudo cargar el corpus: recargue la página e inténtelo de nuevo."],
+"Mes soumissions en cours":["My ongoing submissions","Mis envíos en curso"],"Mes favoris":["My favourites","Mis favoritos"],"Revue":["Journal","Revista"],"Soumis":["Submitted","Enviado"],"1re décision":["1st decision","1.ª decisión"],
+"Jours":["Days","Días"],"Acceptation (jours)":["Acceptance (days)","Aceptación (días)"],"en attente":["pending","pendiente"],
+"Aucune soumission suivie : ouvrez la fiche d'une revue et remplissez « Mon suivi de soumission ».":["No tracked submission: open a journal card and fill in \"My submission log\".","Ningún envío seguido: abra la ficha de una revista y rellene «Mi seguimiento de envío»."],
+"Cliquez sur ☆ à côté d'un journal pour le suivre ici.":["Click ☆ next to a journal to follow it here.","Haga clic en ☆ junto a una revista para seguirla aquí."],
+"Actualiser un classement":["Update a ranking","Actualizar una clasificación"],"Quel classement ?":["Which ranking?","¿Qué clasificación?"],"Autre liste (nouvelle colonne)":["Other list (new column)","Otra lista (nueva columna)"],
+"FT50 (liste de titres)":["FT50 (list of titles)","FT50 (lista de títulos)"],"Nom affiché (ex. FNEGE 2028)":["Display name (e.g. FNEGE 2028)","Nombre mostrado (p. ej. FNEGE 2028)"],"Fichier Excel ou CSV":["Excel or CSV file","Archivo Excel o CSV"],
+"Classements importés":["Imported rankings","Clasificaciones importadas"],"Aucun pour l'instant.":["None yet.","Ninguna por ahora."],"Sources de cette version":["Sources of this version","Fuentes de esta versión"],
+"Colonne du titre":["Title column","Columna del título"],"Colonne ISSN (facultatif)":["ISSN column (optional)","Columna ISSN (opcional)"],"Colonne du rang":["Rank column","Columna del rango"],"Aucune":["None","Ninguna"],
+"Appliquer ce classement":["Apply this ranking","Aplicar esta clasificación"],"Enregistrés dans ce navigateur seulement (seul le propriétaire peut les partager).":["Saved in this browser only (only the owner can share them).","Guardadas solo en este navegador (solo el propietario puede compartirlas)."],
+"Chiffres enregistrés dans ce navigateur.":["Figures saved in this browser.","Cifras guardadas en este navegador."],"Chiffres enregistrés pour tous les lecteurs.":["Figures saved for all readers.","Cifras guardadas para todos los lectores."],
+"Les classements changent : FNEGE et AJG sont révisés tous les trois ans environ (FNEGE 2019, 2022, 2025 ; AJG 2018, 2021, 2024), l'ABDC a publié sa liste 2025 et le FT50 a été révisé en avril 2026. Quand une nouvelle liste sort, importez le fichier ici : l'atlas l'applique aussitôt dans votre navigateur.":["Rankings change: FNEGE and AJG are revised about every three years (FNEGE 2019, 2022, 2025; AJG 2018, 2021, 2024), ABDC published its 2025 list and the FT50 was revised in April 2026. When a new list comes out, import the file here: the atlas applies it at once in your browser.","Las clasificaciones cambian: FNEGE y AJG se revisan aproximadamente cada tres años (FNEGE 2019, 2022, 2025; AJG 2018, 2021, 2024), ABDC publicó su lista 2025 y el FT50 se revisó en abril de 2026. Cuando salga una nueva lista, importe el archivo aquí: el atlas la aplica de inmediato en su navegador."],
+"chargement…":["loading…","cargando…"],"données introuvables : rechargez la page":["data not found: reload the page","datos no encontrados: recargue la página"],
+"2025 (fichier fourni)":["2025 (file provided)","2025 (archivo proporcionado)"],"2024 (fichier fourni)":["2024 (file provided)","2024 (archivo proporcionado)"],"2025 (liste officielle, version mai 2026)":["2025 (official list, May 2026 version)","2025 (lista oficial, versión de mayo de 2026)"],
+"liste révisée avril 2026":["list revised April 2026","lista revisada en abril de 2026"],"métriques, accès ouvert, APC, thèmes, articles 2021+":["metrics, open access, APC, topics, 2021+ articles","métricas, acceso abierto, APC, temas, artículos 2021+"],
+"Autres outils pour choisir une revue":["Other tools for choosing a journal","Otras herramientas para elegir revista"],
+"Comptabilité, audit":["Accounting, auditing","Contabilidad, auditoría"],"Banque, finance, investissement":["Banking, finance, investment","Banca, finanzas, inversión"],"Systèmes d'information de gestion":["Business information systems","Sistemas de información de gestión"],
+"Services commerciaux":["Commercial services","Servicios comerciales"],"RH et relations sociales":["HR and industrial relations","RR. HH. y relaciones laborales"],"Marketing":["Marketing","Marketing"],
+"Stratégie, management, comportement organisationnel":["Strategy, management, organisational behaviour","Estrategia, gestión, comportamiento organizacional"],"Tourisme":["Tourism","Turismo"],
+"Transport, logistique, supply chain":["Transport, logistics, supply chain","Transporte, logística, cadena de suministro"],"Autres (commerce, management)":["Other (commerce, management)","Otros (comercio, gestión)"],
+"Économie appliquée":["Applied economics","Economía aplicada"],"Économétrie":["Econometrics","Econometría"],"Théorie économique":["Economic theory","Teoría económica"],"Autres (économie)":["Other (economics)","Otros (economía)"],
+};
+const I18N_COUNTRIES = {"États-Unis":["United States","Estados Unidos"],"Chine":["China","China"],"Royaume-Uni":["United Kingdom","Reino Unido"],"France":["France","Francia"],"Allemagne":["Germany","Alemania"],
+"Australie":["Australia","Australia"],"Canada":["Canada","Canadá"],"Italie":["Italy","Italia"],"Espagne":["Spain","España"],"Pays-Bas":["Netherlands","Países Bajos"],"Inde":["India","India"],"Corée du Sud":["South Korea","Corea del Sur"],
+"Japon":["Japan","Japón"],"Brésil":["Brazil","Brasil"],"Suisse":["Switzerland","Suiza"],"Suède":["Sweden","Suecia"],"Taïwan":["Taiwan","Taiwán"],"Hong Kong":["Hong Kong","Hong Kong"],"Singapour":["Singapore","Singapur"],
+"Belgique":["Belgium","Bélgica"],"Pakistan":["Pakistan","Pakistán"],"Malaisie":["Malaysia","Malasia"],"Tunisie":["Tunisia","Túnez"],"Norvège":["Norway","Noruega"],"Danemark":["Denmark","Dinamarca"],"Finlande":["Finland","Finlandia"],
+"Portugal":["Portugal","Portugal"],"Iran":["Iran","Irán"],"Turquie":["Turkey","Turquía"],"Arabie saoudite":["Saudi Arabia","Arabia Saudí"],"Émirats arabes unis":["United Arab Emirates","Emiratos Árabes Unidos"],
+"Afrique du Sud":["South Africa","Sudáfrica"],"Nouvelle-Zélande":["New Zealand","Nueva Zelanda"],"Autriche":["Austria","Austria"],"Irlande":["Ireland","Irlanda"],"Pologne":["Poland","Polonia"],"Grèce":["Greece","Grecia"],
+"Viêt Nam":["Vietnam","Vietnam"],"Indonésie":["Indonesia","Indonesia"],"Russie":["Russia","Rusia"],"Mexique":["Mexico","México"],"Chili":["Chile","Chile"],"Colombie":["Colombia","Colombia"],"Nigeria":["Nigeria","Nigeria"],
+"Égypte":["Egypt","Egipto"],"Maroc":["Morocco","Marruecos"],"Israël":["Israel","Israel"]};
+const I18N_PATTERNS = [
+  [/^([\d\s\u202f\u00a0.,]+) journaux$/, (m,L)=>`${m[1]} ${["journals","revistas"][L]}`],
+  [/^([\d\s\u202f\u00a0.,]+) journaux · données du (.+)$/, (m,L)=>[`${m[1]} journals · data of ${m[2]}`,`${m[1]} revistas · datos del ${m[2]}`][L]],
+  [/^([\d\s\u202f\u00a0.,]+) journaux comparés · (\d+) termes reconnus dans votre texte\.$/, (m,L)=>[`${m[1]} journals compared · ${m[2]} terms recognised in your text.`,`${m[1]} revistas comparadas · ${m[2]} términos reconocidos en su texto.`][L]],
+  [/^([\d\s\u202f\u00a0.,]+) journal\(aux\) suivi\(s\)\. Les notes s'ouvrent dans chaque fiche\.$/, (m,L)=>[`${m[1]} journal(s) followed. Notes open in each card.`,`${m[1]} revista(s) seguida(s). Las notas se abren en cada ficha.`][L]],
+  [/^pertinence (\d+) %$/, (m,L)=>[`relevance ${m[1]}%`,`pertinencia ${m[1]} %`][L]],
+  [/^termes communs : (.+)$/, (m,L)=>[`shared terms: ${m[1]}`,`términos comunes: ${m[1]}`][L]],
+  [/^Soumission ([\d\s\u202f\u00a0]+) \$$/, (m,L)=>[`Submission $${m[1]}`,`Envío ${m[1]} $`][L]],
+  [/^1re décision ~(\d+) j$/, (m,L)=>[`1st decision ~${m[1]} d`,`1.ª decisión ~${m[1]} d`][L]],
+  [/^1re décision en (\d+) jours$/, (m,L)=>[`1st decision in ${m[1]} days`,`1.ª decisión en ${m[1]} días`][L]],
+  [/^révision renvoyée (\d+) jours après la décision$/, (m,L)=>[`revision resubmitted ${m[1]} days after the decision`,`revisión reenviada ${m[1]} días después de la decisión`][L]],
+  [/^acceptation en (\d+) jours \(([\d.]+) mois\)$/, (m,L)=>[`acceptance in ${m[1]} days (${m[2]} months)`,`aceptación en ${m[1]} días (${m[2]} meses)`][L]],
+  [/^publication en ligne (\d+) jours après acceptation$/, (m,L)=>[`online publication ${m[1]} days after acceptance`,`publicación en línea ${m[1]} días después de la aceptación`][L]],
+  [/^(\d+) \(en cours\)$/, (m,L)=>[`${m[1]} (ongoing)`,`${m[1]} (en curso)`][L]],
+  [/^Frais : (.*)$/, (m,L)=>[`Fees: ${m[1]}`,`Tasas: ${m[1]}`][L]],
+  [/^OpenAlex n'indexe plus les articles de cette revue depuis (\d{4}) : citations, pays des auteurs et articles proches sont incomplets\.$/, (m,L)=>[`OpenAlex has not indexed this journal's articles since ${m[1]}: citations, author countries and similar articles are incomplete.`,`OpenAlex no indexa los artículos de esta revista desde ${m[1]}: citas, países de los autores y artículos cercanos están incompletos.`][L]],
+  [/^Correction : (.*)$/, (m,L)=>[`Correction: ${m[1]}`,`Corrección: ${m[1]}`][L]],
+  [/^Filtres \((\d+)\)$/, (m,L)=>[`Filters (${m[1]})`,`Filtros (${m[1]})`][L]],
+  [/^\(part des ([\d\s\u202f\u00a0]+) articles 2021\+ avec au moins un auteur du pays\)$/, (m,L)=>[`(share of the ${m[1]} articles since 2021 with at least one author from the country)`,`(proporción de los ${m[1]} artículos desde 2021 con al menos un autor del país)`][L]],
+  [/^Note : (.*)$/, (m,L)=>[`Note: ${m[1]}`,`Nota: ${m[1]}`][L]],
+  [/^APC ([\d\s\u202f\u00a0]+) \$$/, (m,L)=>`APC ${m[1]} $`],
+  [/^(.+) (\d+) %$/, (m,L)=> I18N_COUNTRIES[m[1]] ? `${I18N_COUNTRIES[m[1]][L]} ${m[2]}%` : null],
+  [/^([\d\s\u202f\u00a0]+) lignes lues\. Vérifiez les colonnes puis appliquez\.$/, (m,L)=>[`${m[1]} rows read. Check the columns, then apply.`,`${m[1]} filas leídas. Compruebe las columnas y aplique.`][L]],
+  [/^(\d+) journaux mis à jour, (\d+) titres non trouvés dans l'atlas \((.+)\)\.$/, (m,L)=>[`${m[1]} journals updated, ${m[2]} titles not found in the atlas.`,`${m[1]} revistas actualizadas, ${m[2]} títulos no encontrados en el atlas.`][L]],
+  [/^(.+) · (\d+) journaux · importé le (.+)$/, (m,L)=>[`${m[1]} · ${m[2]} journals · imported on ${m[3]}`,`${m[1]} · ${m[2]} revistas · importada el ${m[3]}`][L]],
+];
+let LANG = 0; /* 0 = français, 1 = anglais, 2 = espagnol */
+const I18N_ORIG = new WeakMap();
+function trOne(s){
+  if (!LANG) return s;
+  const k = s.trim(); if (!k) return s;
+  const d = I18N_DICT[k]; if (d) return s.replace(k, d[LANG-1]);
+  if (k.startsWith("· ")) { const r = trOne(k.slice(2)); if (r !== k.slice(2)) return s.replace(k, "· " + r.trim()); }
+  for (const [re, fn] of I18N_PATTERNS){ const m = k.match(re); if (m){ const r = fn(m, LANG-1); if (r != null) return s.replace(k, r); } }
+  if (k.includes(" · ")) { const parts = k.split(" · "); const out = parts.map(p => trOne(p)); if (out.some((p,i)=>p!==parts[i])) return s.replace(k, out.join(" · ")); }
+  if (k.includes(" → ")) return s;
+  return s;
+}
+function trNode(n){
+  if (n.nodeType === 3){
+    const p = n.parentElement; if (!p || p.closest("script,style,textarea,.noi18n")) return;
+    let orig = I18N_ORIG.get(n);
+    if (orig === undefined || (n.nodeValue !== orig && n.nodeValue !== n.__tr)) { orig = n.nodeValue; I18N_ORIG.set(n, orig); }
+    const v = trOne(orig); n.__tr = v; if (n.nodeValue !== v) n.nodeValue = v;
+  } else if (n.nodeType === 1){
+    if (n.matches && n.matches("script,style,.noi18n")) return;
+    for (const a of ["placeholder","aria-label","title"]){
+      if (!n.hasAttribute || !n.hasAttribute(a)) continue;
+      const key = "data-o-"+a; if (!n.hasAttribute(key) || n.getAttribute(a) !== n.__tra?.[a]) n.setAttribute(key, n.getAttribute(a));
+      const v = trOne(n.getAttribute(key)); n.__tra = Object.assign(n.__tra||{}, {[a]: v}); if (n.getAttribute(a) !== v) n.setAttribute(a, v);
+    }
+    for (const c of n.childNodes) trNode(c);
+  }
+}
+function applyLang(l){
+  LANG = l; document.documentElement.lang = ["fr","en","es"][l];
+  document.querySelectorAll("[data-lang]").forEach(e => e.hidden = e.dataset.lang !== ["fr","en","es"][l]);
+  trNode(document.body);
+  try { localStorage.setItem("aj-lang", String(l)); } catch(e){}
+  window.dispatchEvent(new Event("langchange"));
+}
+const I18N_OBS = new MutationObserver(ms => { if (!LANG) { for (const m of ms) for (const n of m.addedNodes) if (n.nodeType===3) I18N_ORIG.set(n, n.nodeValue); return; } for (const m of ms){ if (m.type === "characterData") trNode(m.target); else m.addedNodes.forEach(trNode); } });
+I18N_OBS.observe(document.body, { childList:true, subtree:true, characterData:true });
