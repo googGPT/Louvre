@@ -174,6 +174,7 @@ const I18N_COUNTRIES = {"États-Unis":["United States","Estados Unidos"],"Chine"
 "Égypte":["Egypt","Egipto"],"Maroc":["Morocco","Marruecos"],"Israël":["Israel","Israel"]};
 const I18N_PATTERNS = [
   [/^([\d\s\u202f\u00a0.,]+) journaux$/, (m,L)=>`${m[1]} ${["journals","revistas"][L]}`],
+  [/^([01]) journal$/, (m,L)=>`${m[1]} ${["journal","revista"][L]}`],
   [/^([\d\s\u202f\u00a0.,]+) journaux · données du (.+)$/, (m,L)=>[`${m[1]} journals · data of ${m[2]}`,`${m[1]} revistas · datos del ${m[2]}`][L]],
   [/^([\d\s\u202f\u00a0.,]+) journaux comparés · (\d+) termes reconnus dans votre texte\.$/, (m,L)=>[`${m[1]} journals compared · ${m[2]} terms recognised in your text.`,`${m[1]} revistas comparadas · ${m[2]} términos reconocidos en su texto.`][L]],
   [/^([\d\s\u202f\u00a0.,]+) journal\(aux\) suivi\(s\)\. Les notes s'ouvrent dans chaque fiche\.$/, (m,L)=>[`${m[1]} journal(s) followed. Notes open in each card.`,`${m[1]} revista(s) seguida(s). Las notas se abren en cada ficha.`][L]],

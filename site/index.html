@@ -635,7 +635,7 @@ function sorter(k){
 }
 function render(){
   const r = filtered().sort(sorter($("#sort").value));
-  $("#count").textContent = `${r.length.toLocaleString("fr-FR")} journaux`;
+  $("#count").textContent = r.length > 1 ? `${r.length.toLocaleString("fr-FR")} journaux` : `${r.length} journal`;
   const nf = Object.values(F).reduce((a,s)=>a+s.size,0) + ["q","apcmax","fnd","ajgf"].filter(id=>$("#"+id).value).length;
   $("#ftoggle").textContent = nf ? `Filtres (${nf})` : "Filtres";
   $("#list").innerHTML = r.slice(0, shown).map(j=>rowHTML(j)).join("") || `<p class="note">Aucun journal ne correspond à ces filtres.</p>`;
