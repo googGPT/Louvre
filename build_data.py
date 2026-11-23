@@ -142,6 +142,7 @@ for k, j in enumerate(J):
         last = max([y for y, n in yrs.items() if n > 0], default=None)
         if last is None or last < LY - 1: rec['oly'] = last or 0   # plus d'articles indexés récemment
     rec = {a: b for a, b in rec.items() if b is not None}
+    if isinstance(rec.get('t'), str): rec['t'] = ' '.join(rec['t'].replace('\xa0', ' ').split())   # espaces insécables
     out.append({a: b for a, b in rec.items() if b not in (None, [], '')})
 
 sid2i = {j.get('oa'): k for k, j in enumerate(J) if j.get('oa')}

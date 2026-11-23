@@ -99,18 +99,51 @@ for r in list(wb.worksheets[0].iter_rows(values_only=True))[1:]:
     issns = [norm_issn(r[2]), norm_issn(r[3])]
     bad = set()
     idx = find(issns, r[0], bad)
+    if idx is None and norm_title(r[0]).startswith('revue canadienne des sciences de l administration'):
+        idx = by_issn.get('0825-0383')                     # même revue que Canadian Journal of Administrative Sciences (ISSN absent du fichier FNEGE)
     if idx is None: idx = add(issns, smart_case(r[0]), bad); J[idx]['tcase'] = True
     else: link(idx, issns, r[0], bad)
     if bad: J[idx]['issn_conflict'] = sorted(bad)
     J[idx].update(fnege=clean(r[4]), fnege_dom=clean(r[1]), fnege_var=clean(r[5]),
                   francophone=(clean(r[6]) == 'F'), fnege2019=clean(r[7]), fnege2022=clean(r[8]))
 
+# Titres AJG qui désignent une revue déjà présente sous un autre libellé (vérifiés à la main, nov. 2026)
+AJG_ALIAS = {
+ "Journal of Frensic Accounting Research": "Journal of Forensic Accounting Research",
+ "Journal of Governmental & Non-Profit Accounting": "Journal of Governmental & Nonprofit Accounting",
+ "Journal of the Royal Statistical Society. Series A: Statistics in Society": "Journal of the Royal Statistical Society, Series A (Statistics in Society)",
+ "Journal of the Royal Statistical Society. Series B: Statistical Methodology": "Journal of the Royal Statistical Society, Series B (Statistical Methodology)",
+ "Journal of the Royal Statistical Society. Series C: Applied Statistics": "Journal of the Royal Statistical Society, Series C (Applied Statistics)",
+ "Canadian Journal of Economics": "Canadian Journal of Economics / Revue Canadienne D'Economique",
+ "B.E. Journal of Theoretical Economics": "The BE Journal of Theoretical Economics",
+ "Canadian Journal of Agricultural Economics": "Canadian Journal of Agricultural Economics / Revue Canadienne d Agroeconomie",
+ "Resources and Energy Economics": "Resource and Energy Economics",
+ "Ekonomicheskaya Politika / Economic Policy": "Economic Policy / Ekonomicheskaya Politika",
+ "SERIEs": "SERIEs: Journal of the Spanish Economic Association",
+ "Vision": "Vision: The Journal of Business Perspectives",
+ "Industrial Relations": "Industrial Relations: a journal of economy and society",
+ "Transfer": "Transfer: European review of labour and research",
+ "Evidence-based HRM": "Evidence-based HRM (EBHRM): A Global Forum for Empirical Scholarship",
+ "MIS Quarterly: Management Information Systems": "MIS Quarterly",
+ "Journal of Engineering and Technology Management - JET-M": "Journal of Engineering and Technology Management",
+ "International Review on Public and Non-Profit Marketing": "International Review on Public and Nonprofit Marketing",
+ "Supply Chain Management": "Supply Chain Management: an international journal",
+ "Supply Chain Forum": "Supply Chain Forum: An International Journal",
+ "Group Dynamics": "Group Dynamics: theory, research and practice",
+ "Journal of Comparative Policy Analysis": "Journal of Comparative Policy Analysis: research and practice",
+ "Transportation Research, Series B: Methodological": "Transportation Research Part B: Methodological",
+ "Voluntas": "Voluntas: International Journal of Voluntary and Non-Profit Organizations",
+ "Anatolia: An International Journal of Tourism and Hospitality Research": "Anatolia",
+ "Non-Profit Management & Leadership": "Nonprofit Management and Leadership",
+}
+
 # ---------- ABS / AJG 2024 (sans ISSN : appariement par titre) ----------
 wb = openpyxl.load_workbook(BASE + '/sources/abs.xlsx', read_only=True)
 unmatched_abs = []
 for r in list(wb.worksheets[0].iter_rows(values_only=True))[1:]:
     if not r[1]: continue
-    idx = find([], r[1])
+    idx = find([], AJG_ALIAS.get(clean(r[1]), r[1]))      # titre AJG ramené au titre déjà présent si c'est la même revue
+    if clean(r[1]) == 'Management': idx = None            # revue « Management » (ETHICS-CSR-MAN) distincte de M@n@gement
     if idx is None:
         idx = add([], clean(r[1])); unmatched_abs.append(idx)
     J[idx].update(ajg=clean(r[2]), ajg2021=clean(r[3]), ajg2018=clean(r[4]), ajg_field=clean(r[0]),
