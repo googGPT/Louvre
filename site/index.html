@@ -418,9 +418,9 @@ footer a{color:var(--muted)}
       <li>Chaque terme est pondéré par sa rareté (TF-IDF) : un terme présent dans peu de journaux pèse plus qu'un terme banal.</li>
       <li>Ce poids est corrigé par la spécificité disciplinaire du terme, une adaptation de la pondération log-entropie (Dumais, 1991) calculée entre 13 disciplines plutôt qu'entre documents, avec un lissage additif. Un terme employé dans toutes les disciplines (« large language model », « panel data ») décrit plutôt une méthode et pèse jusqu'à 4 fois moins ; un terme concentré dans une ou deux disciplines décrit plutôt un sujet.</li>
       <li>Les mots du champ « Méthode » comptent 4 fois moins.</li>
-      <li>Ce vecteur est comparé (similarité cosinus) au profil de chaque journal, construit sur environ 100 de ses articles les plus cités publiés depuis 2021, et à 12 articles de référence par journal. Aucun terme ne peut fournir plus de 40 % d'une similarité.</li>
+      <li>Ce vecteur est comparé (similarité cosinus) au profil de chaque journal et à 12 articles de référence par journal. Le profil est le centroïde de Rocchio (Rocchio, 1971), c'est-à-dire la moyenne des vecteurs d'environ 100 de ses articles les plus cités publiés depuis 2021 : il retient le vocabulaire central de la revue plutôt que ses mots rares. Aucune idée ne peut fournir plus de 40 % d'une similarité, et il faut au moins deux idées en commun.</li>
       <li>Un article de référence ne compte que s'il partage au moins deux idées distinctes avec votre texte (des mots reliés par une expression, comme « large language model », forment une seule idée). Les articles très courts, souvent un titre sans résumé, sont pénalisés par une normalisation pivotée de la longueur (Singhal, Buckley et Mitra, 1996).</li>
-      <li>Score de pertinence = 70 % profil du journal + 30 % moyenne des 3 articles les plus proches. Une revue est dite « fragile » quand elle doit surtout son rang à un seul article. Le curseur mélange ensuite pertinence et prestige.</li>
+      <li>Score de pertinence = 70 % profil du journal + 30 % moyenne des 3 articles les plus proches, l'apport des articles ne pouvant dépasser celui du profil. Le profil d'une revue qui a moins de 20 articles indexés depuis 2021 compte proportionnellement moins. Une revue est dite « fragile » quand elle doit surtout son rang à un seul article. Le curseur mélange ensuite pertinence et prestige.</li>
       <li>Le filtre « Disciplines » s'appuie sur le domaine AJG, le domaine FNEGE et le code FoR de l'ABDC, ou à défaut sur le thème principal OpenAlex de la revue.</li>
       <li>« Affiner avec Claude » envoie votre résumé et les 15 premiers journaux à Claude, qui les reclasse selon le sens (et non plus seulement les mots) et justifie chaque choix.</li>
     </ol>
@@ -463,9 +463,9 @@ footer a{color:var(--muted)}
 <li>Each term is weighted by its rarity (TF-IDF): a term found in few journals weighs more than a common one.</li>
 <li>This weight is adjusted by the term's disciplinary specificity, an adaptation of log-entropy weighting (Dumais, 1991) computed across 13 disciplines rather than across documents, with additive smoothing. A term used in every discipline ("large language model", "panel data") describes a method rather than a topic and weighs up to 4 times less; a term concentrated in one or two disciplines describes a topic.</li>
 <li>Words in the "Method" field count 4 times less.</li>
-<li>This vector is compared (cosine similarity) with each journal's profile, built from about 100 of its most cited articles published since 2021, and with 12 reference articles per journal. No single term can provide more than 40% of a similarity.</li>
+<li>This vector is compared (cosine similarity) with each journal's profile and with 12 reference articles per journal. The profile is the Rocchio centroid (Rocchio, 1971), i.e. the mean of the vectors of about 100 of its most cited articles published since 2021: it captures the journal's core vocabulary rather than its rare words. No single idea can provide more than 40% of a similarity, and at least two shared ideas are required.</li>
 <li>A reference article counts only if it shares at least two distinct ideas with your text (words linked by a phrase, such as "large language model", form one idea). Very short articles, often a title without an abstract, are penalised by pivoted length normalisation (Singhal, Buckley and Mitra, 1996).</li>
-<li>Relevance score = 70% journal profile + 30% mean of the 3 closest articles. A journal is flagged "fragile" when it owes its rank mainly to a single article. The slider then blends relevance and prestige.</li>
+<li>Relevance score = 70% journal profile + 30% mean of the 3 closest articles, the articles' contribution being capped at the profile's. The profile of a journal with fewer than 20 articles indexed since 2021 counts proportionally less. A journal is flagged "fragile" when it owes its rank mainly to a single article. The slider then blends relevance and prestige.</li>
 <li>The "Disciplines" filter relies on the AJG field, the FNEGE field and the ABDC FoR code, or otherwise on the journal's main OpenAlex topic.</li>
 <li>"Refine with Claude" sends your abstract and the top 15 journals to Claude, which re-ranks them by meaning (not just words) and justifies each choice.</li>
 </ol>
@@ -507,9 +507,9 @@ footer a{color:var(--muted)}
 <li>Cada término se pondera según su rareza (TF-IDF): un término presente en pocas revistas pesa más que uno corriente.</li>
 <li>Este peso se corrige por la especificidad disciplinar del término, una adaptación de la ponderación log-entropía (Dumais, 1991) calculada entre 13 disciplinas en lugar de entre documentos, con suavizado aditivo. Un término usado en todas las disciplinas («large language model», «panel data») describe un método más que un tema y pesa hasta 4 veces menos; un término concentrado en una o dos disciplinas describe un tema.</li>
 <li>Las palabras del campo «Método» cuentan 4 veces menos.</li>
-<li>Este vector se compara (similitud del coseno) con el perfil de cada revista, construido con unos 100 de sus artículos más citados publicados desde 2021, y con 12 artículos de referencia por revista. Ningún término puede aportar más del 40 % de una similitud.</li>
+<li>Este vector se compara (similitud del coseno) con el perfil de cada revista y con 12 artículos de referencia por revista. El perfil es el centroide de Rocchio (Rocchio, 1971), es decir, la media de los vectores de unos 100 de sus artículos más citados publicados desde 2021: recoge el vocabulario central de la revista y no sus palabras raras. Ninguna idea puede aportar más del 40 % de una similitud, y se requieren al menos dos ideas en común.</li>
 <li>Un artículo de referencia solo cuenta si comparte al menos dos ideas distintas con su texto (las palabras unidas por una expresión, como «large language model», forman una sola idea). Los artículos muy cortos, a menudo un título sin resumen, se penalizan con una normalización pivotada de la longitud (Singhal, Buckley y Mitra, 1996).</li>
-<li>Puntuación de pertinencia = 70 % perfil de la revista + 30 % media de los 3 artículos más cercanos. Una revista se marca como «frágil» cuando debe su puesto sobre todo a un solo artículo. El control deslizante mezcla después pertinencia y prestigio.</li>
+<li>Puntuación de pertinencia = 70 % perfil de la revista + 30 % media de los 3 artículos más cercanos; la aportación de los artículos no puede superar la del perfil. El perfil de una revista con menos de 20 artículos indexados desde 2021 cuenta proporcionalmente menos. Una revista se marca como «frágil» cuando debe su puesto sobre todo a un solo artículo. El control deslizante mezcla después pertinencia y prestigio.</li>
 <li>El filtro «Disciplinas» se basa en el campo AJG, el campo FNEGE y el código FoR de ABDC, o en su defecto en el tema principal OpenAlex de la revista.</li>
 <li>«Afinar con Claude» envía su resumen y las 15 primeras revistas a Claude, que las reordena según el sentido (no solo las palabras) y justifica cada elección.</li>
 </ol>
@@ -872,8 +872,11 @@ function prepCorpus(){
     let H = 0; for (const v of r){ const q = v/s; H -= q*Math.log(q); }
     SPEC.set(id, 1 - H/lg);
   }
+  /* La spécificité est exprimée en rang centile (0 = terme le plus répandu entre disciplines, 1 = le plus concentré). */
+  const ord = [...SPEC.entries()].sort((x,y)=>x[1]-y[1]); ord.forEach(([id],k)=>SPEC.set(id, ord.length>1 ? k/(ord.length-1) : 1));
   let n = 0, L = 0; for (const arts of Object.values(CORPUS.art)) for (const a of arts){ n++; L += a[4].length; }
   LAVG = n ? L/n : 9;
+  const pl = Object.values(CORPUS.prof).map(p=>p.length).filter(x=>x>0); LPROF = pl.length ? Math.max(...pl) : 150;
 }
 function queryVec(text, mtext){
   SURF.clear();
@@ -891,28 +894,31 @@ function queryVec(text, mtext){
   v.M = M; return v;
 }
 const dot = (q, sparse) => { let s = 0; for (const [id,x] of sparse) { const y = q.get(id); if (y) s += x*y; } return s; };
-/* Similarité cosinus plafonnée : un seul terme ne peut pas faire plus de CAP de la similarité.
-   On compte aussi les « idées » partagées : les mots communs reliés par une expression commune
-   (ex. large + language + model) forment une seule idée. */
+/* Similarité cosinus plafonnée par idée. Les mots communs reliés par une expression commune
+   (ex. large + language + model) forment une seule « idée » ; aucune idée ne peut fournir plus de CAP
+   de la similarité, et il faut au moins MIN_IDEAS idées distinctes en commun. */
 const CAP = 0.4, MIN_IDEAS = 2, PIVOT_SLOPE = 0.2, W_PROF = 0.7;
 function capSim(q, sparse){
-  let s = 0, m = 0; const par = new Map();
+  const par = new Map(), hits = [];
   const find = x => { while (par.get(x) !== x) { par.set(x, par.get(par.get(x))); x = par.get(x); } return x; };
   for (const [id,x] of sparse){
-    const y = q.get(id); if (!y) continue; const c = x*y; s += c; if (c > m) m = c;
+    const y = q.get(id); if (!y) continue;
     const ws = CORPUS.vocab[id].split("_"); for (const w of ws) if (!par.has(w)) par.set(w, w);
     if (ws.length === 2) { const a = find(ws[0]), b = find(ws[1]); if (a !== b) par.set(a, b); }
+    hits.push([ws[0], x*y]);
   }
-  if (s > 0 && m > CAP*s) s = (s-m)/(1-CAP);
-  let ideas = 0; for (const w of par.keys()) if (find(w) === w) ideas++;
+  const byIdea = new Map(); let s = 0;
+  for (const [w,c] of hits){ const r = find(w); byIdea.set(r, (byIdea.get(r)||0) + c); s += c; }
+  const ideas = byIdea.size; if (ideas < MIN_IDEAS || s <= 0) return { s: 0, ideas };
+  const m = Math.max(...byIdea.values()); if (m > CAP*s) s = (s-m)/(1-CAP);
   return { s, ideas };
 }
-/* Article : au moins MIN_IDEAS idées distinctes en commun, puis normalisation pivotée de la longueur
-   (Singhal, Buckley et Mitra, 1996) : un texte très court (souvent un titre sans résumé) pèse moins. */
-function artSim(q, vec){
-  const { s, ideas } = capSim(q, vec); if (ideas < MIN_IDEAS || s <= 0) return 0;
-  const L = vec.length; return s * L / ((1-PIVOT_SLOPE)*LAVG + PIVOT_SLOPE*L);
-}
+/* Normalisation pivotée de la longueur (Singhal, Buckley et Mitra, 1996) : un texte court — article réduit
+   à son titre, profil d'une revue qui n'a que quelques articles indexés — pèse moins. */
+const pivot = (L, avg) => L / ((1-PIVOT_SLOPE)*avg + PIVOT_SLOPE*L);
+let LPROF = 150;
+function artSim(q, vec){ const { s } = capSim(q, vec); return s > 0 ? s * pivot(vec.length, LAVG) : 0; }
+function profSim(q, prof){ const { s } = capSim(q, prof); return s > 0 ? s * Math.min(1, pivot(prof.length, LPROF)) : 0; }
 async function loadCorpus(){
   if (CORPUS) return;
   $("#cstatus").innerHTML = `<p class="note">Chargement du corpus d'articles…</p>`;
@@ -954,12 +960,14 @@ async function runMatch(){
   for (const [i, prof] of Object.entries(CORPUS.prof)){
     const j = J[i]; if (!j || !keepOk(j)) continue;
     nComp++;
-    const sp = capSim(q, prof).s;
+    /* Profil peu fiable si la revue a moins de 20 articles indexés depuis 2021 (même seuil que les pourcentages des fiches). */
+    const sp = profSim(q, prof) * (j.n21 != null ? Math.min(1, j.n21/20) : 1);
     const as = (CORPUS.art[i]||[]).map(a => ({ s: artSim(q, a[4]), a, i:+i })).filter(x=>x.s>0).sort((x,y)=>y.s-x.s);
     const top3 = as.slice(0,3).reduce((s,x)=>s+x.s,0)/3;
-    const rel = W_PROF*sp + (1-W_PROF)*top3;
+    /* Les articles affinent le classement des revues proches par leur profil : leur apport est plafonné à celui du profil. */
+    const artPart = Math.min((1-W_PROF)*top3, W_PROF*sp), rel = W_PROF*sp + artPart;
     if (rel <= 0) continue;
-    const fragile = as.length <= 1 && (1-W_PROF)*top3 > 0.5*rel;
+    const fragile = as.length <= 1 && artPart > 0.4*rel;
     for (const x of as.slice(0,2)) arts.push(x);
     const shared = prof.filter(([id])=>q.has(id)).map(([id,x])=>[id, x*q.get(id)]).sort((a,b)=>b[1]-a[1]).slice(0,6)
       .map(([id])=>CORPUS.vocab[id].split("_").map(x=>SURF.get(x)||x).join(" ") + (q.M.has(id) ? " (méthode)" : ""));

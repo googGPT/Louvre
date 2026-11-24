@@ -47,10 +47,22 @@ for sid, r in W.items():
     doc_tf[sid] = c; df.update(c.keys())
 N = len(doc_tf)
 idf = {t: math.log((N + 1) / (n + 1)) + 1 for t, n in df.items() if n >= 4 and n <= 0.5 * N}
-profiles = {}
-for sid, c in doc_tf.items():
+# Profil = centroïde de Rocchio (Rocchio, 1971) : moyenne des vecteurs TF-IDF normalisés de chaque article.
+# Un terme employé par beaucoup d'articles du journal (son vocabulaire central) pèse plus qu'un terme rare
+# venu d'un seul article, ce qui n'était pas le cas avec la somme brute des fréquences.
+def art_vec(w):
+    c = collections.Counter(terms(w['t'] + ' ' + w['t'] + ' ' + w['a']))   # le titre compte double
     v = {t: (1 + math.log(n)) * idf[t] for t, n in c.items() if t in idf}
-    top = sorted(v.items(), key=lambda x: -x[1])[:150]
+    nrm = math.sqrt(sum(x * x for x in v.values())) or 1
+    return {t: x / nrm for t, x in v.items()}
+profiles = {}
+for sid, r in W.items():
+    arts = [w for w in r['w'] if w['t']]
+    if not arts: profiles[sid] = []; continue
+    cen = collections.Counter()
+    for w in arts:
+        cen.update(art_vec(w))
+    top = sorted(cen.items(), key=lambda x: -x[1])[:150]
     nrm = math.sqrt(sum(x * x for _, x in top)) or 1
     profiles[sid] = [(t, round(x / nrm, 3)) for t, x in top]
 
