@@ -231,6 +231,8 @@ footer a{color:var(--muted)}
       <div class="fgroup"><label for="ct">Titre de mon article</label><input type="text" id="ct" placeholder="Titre de votre article (en anglais)"></div>
       <div class="fgroup"><label for="ca">Résumé</label><textarea id="ca" placeholder="Collez le résumé de votre article (en anglais)"></textarea></div>
       <div class="fgroup"><label for="ck">Mots-clés</label><input type="text" id="ck" placeholder="mot-clé 1; mot-clé 2; …"></div>
+      <div class="fgroup"><label for="cm">Méthode (facultatif)</label><input type="text" id="cm" placeholder="ex. large language models; text analysis; difference-in-differences"><p class="note">Ces mots comptent 4 fois moins : ils décrivent votre méthode, pas votre sujet.</p></div>
+      <div class="fgroup"><span>Disciplines</span><div class="chips" data-c="disc"></div><p class="note">Aucune sélection : toutes les disciplines.</p></div>
       <div class="fgroup"><span>Garder seulement</span><div class="chips" data-c="keep"></div></div>
       <div class="fgroup"><label for="capc">APC maximum (USD)</label><input type="number" id="capc" min="0" step="500" placeholder="sans limite"></div>
       <div class="fgroup"><label for="cw">Pertinence ← → prestige : <b id="cwv">30 %</b> prestige</label><input type="range" id="cw" min="0" max="80" value="30"></div>
@@ -319,7 +321,7 @@ footer a{color:var(--muted)}
   <h3>Méthodes</h3>
   <ul>
     <li><b>Score de prestige</b> : sert seulement à trier. Il retient le meilleur rang FNEGE, AJG ou ABDC, ajoute un quart des deux autres et un bonus FT50. Ce n'est pas un classement officiel.</li>
-    <li><b>Recherche par résumé</b> : pondération TF-IDF des mots (Salton et Buckley, 1988) et similarité cosinus entre votre texte, le profil de chaque revue et environ 100 de ses articles les plus cités depuis 2021.</li>
+    <li><b>Recherche par résumé</b> : pondération TF-IDF des mots (Salton et Buckley, 1988), corrigée par la spécificité disciplinaire des termes (adaptation de la pondération log-entropie de Dumais, 1991), et similarité cosinus entre votre texte, le profil de chaque revue (environ 100 de ses articles les plus cités depuis 2021) et 12 de ses articles de référence.</li>
     <li><b>Volume et croissance</b> : nombre d'articles indexés par OpenAlex chaque année ; aucun pourcentage n'est calculé sur moins de 20 articles.</li>
   </ul>
   <h3>Avertissement</h3>
@@ -349,7 +351,7 @@ footer a{color:var(--muted)}
   <h3>Methods</h3>
   <ul>
     <li><b>Prestige score</b>: used only for sorting. It takes the best FNEGE, AJG or ABDC rank, adds a quarter of the other two and an FT50 bonus. It is not an official ranking.</li>
-    <li><b>Abstract-based search</b>: TF-IDF term weighting (Salton and Buckley, 1988) and cosine similarity between your text, each journal's profile and about 100 of its most-cited articles since 2021.</li>
+    <li><b>Abstract-based search</b>: TF-IDF term weighting (Salton and Buckley, 1988), adjusted for the disciplinary specificity of terms (an adaptation of Dumais's 1991 log-entropy weighting), and cosine similarity between your text, each journal's profile (about 100 of its most-cited articles since 2021) and 12 of its reference articles.</li>
     <li><b>Volume and growth</b>: number of articles indexed by OpenAlex each year; no percentage is computed on fewer than 20 articles.</li>
   </ul>
   <h3>Disclaimer</h3>
@@ -379,7 +381,7 @@ footer a{color:var(--muted)}
   <h3>Métodos</h3>
   <ul>
     <li><b>Puntuación de prestigio</b>: solo sirve para ordenar. Toma el mejor rango FNEGE, AJG o ABDC, añade un cuarto de los otros dos y una bonificación FT50. No es una clasificación oficial.</li>
-    <li><b>Búsqueda por resumen</b>: ponderación TF-IDF de las palabras (Salton y Buckley, 1988) y similitud del coseno entre su texto, el perfil de cada revista y unos 100 de sus artículos más citados desde 2021.</li>
+    <li><b>Búsqueda por resumen</b>: ponderación TF-IDF de las palabras (Salton y Buckley, 1988), corregida por la especificidad disciplinar de los términos (adaptación de la ponderación log-entropía de Dumais, 1991), y similitud del coseno entre su texto, el perfil de cada revista (unos 100 de sus artículos más citados desde 2021) y 12 de sus artículos de referencia.</li>
     <li><b>Volumen y crecimiento</b>: número de artículos indexados por OpenAlex cada año; no se calcula ningún porcentaje con menos de 20 artículos.</li>
   </ul>
   <h3>Aviso</h3>
@@ -414,8 +416,12 @@ footer a{color:var(--muted)}
     <ol>
       <li>Votre titre, résumé et mots-clés sont découpés en mots, ramenés à leur racine (ex. « disclosures » → « disclosur »), puis complétés par les paires de mots voisins (ex. « climat_disclosur »).</li>
       <li>Chaque terme est pondéré par sa rareté (TF-IDF) : un terme présent dans peu de journaux pèse plus qu'un terme banal.</li>
-      <li>Ce vecteur est comparé (similarité cosinus) au profil de chaque journal, construit sur environ 100 de ses articles les plus cités publiés depuis 2021, et à 12 articles de référence par journal.</li>
-      <li>Score de pertinence = 55 % profil du journal + 45 % moyenne des 3 articles les plus proches. Le curseur mélange ensuite pertinence et prestige.</li>
+      <li>Ce poids est corrigé par la spécificité disciplinaire du terme, une adaptation de la pondération log-entropie (Dumais, 1991) calculée entre 13 disciplines plutôt qu'entre documents, avec un lissage additif. Un terme employé dans toutes les disciplines (« large language model », « panel data ») décrit plutôt une méthode et pèse jusqu'à 4 fois moins ; un terme concentré dans une ou deux disciplines décrit plutôt un sujet.</li>
+      <li>Les mots du champ « Méthode » comptent 4 fois moins.</li>
+      <li>Ce vecteur est comparé (similarité cosinus) au profil de chaque journal, construit sur environ 100 de ses articles les plus cités publiés depuis 2021, et à 12 articles de référence par journal. Aucun terme ne peut fournir plus de 40 % d'une similarité.</li>
+      <li>Un article de référence ne compte que s'il partage au moins deux idées distinctes avec votre texte (des mots reliés par une expression, comme « large language model », forment une seule idée). Les articles très courts, souvent un titre sans résumé, sont pénalisés par une normalisation pivotée de la longueur (Singhal, Buckley et Mitra, 1996).</li>
+      <li>Score de pertinence = 70 % profil du journal + 30 % moyenne des 3 articles les plus proches. Une revue est dite « fragile » quand elle doit surtout son rang à un seul article. Le curseur mélange ensuite pertinence et prestige.</li>
+      <li>Le filtre « Disciplines » s'appuie sur le domaine AJG, le domaine FNEGE et le code FoR de l'ABDC, ou à défaut sur le thème principal OpenAlex de la revue.</li>
       <li>« Affiner avec Claude » envoie votre résumé et les 15 premiers journaux à Claude, qui les reclasse selon le sens (et non plus seulement les mots) et justifie chaque choix.</li>
     </ol>
     <p class="note">Limites : la comparaison repose sur les mots (le bouton Claude ajoute le sens) ; un journal très récent ou peu présent dans OpenAlex peut être sous-estimé ; vérifiez toujours les aims & scope et les derniers numéros avant de soumettre.</p>
@@ -455,8 +461,12 @@ footer a{color:var(--muted)}
 <ol>
 <li>Your title, abstract and keywords are split into words, reduced to their stem (e.g. "disclosures" → "disclosur") and completed with pairs of neighbouring words (e.g. "climat_disclosur").</li>
 <li>Each term is weighted by its rarity (TF-IDF): a term found in few journals weighs more than a common one.</li>
-<li>This vector is compared (cosine similarity) with each journal's profile, built from about 100 of its most cited articles published since 2021, and with 12 reference articles per journal.</li>
-<li>Relevance score = 55% journal profile + 45% mean of the 3 closest articles. The slider then blends relevance and prestige.</li>
+<li>This weight is adjusted by the term's disciplinary specificity, an adaptation of log-entropy weighting (Dumais, 1991) computed across 13 disciplines rather than across documents, with additive smoothing. A term used in every discipline ("large language model", "panel data") describes a method rather than a topic and weighs up to 4 times less; a term concentrated in one or two disciplines describes a topic.</li>
+<li>Words in the "Method" field count 4 times less.</li>
+<li>This vector is compared (cosine similarity) with each journal's profile, built from about 100 of its most cited articles published since 2021, and with 12 reference articles per journal. No single term can provide more than 40% of a similarity.</li>
+<li>A reference article counts only if it shares at least two distinct ideas with your text (words linked by a phrase, such as "large language model", form one idea). Very short articles, often a title without an abstract, are penalised by pivoted length normalisation (Singhal, Buckley and Mitra, 1996).</li>
+<li>Relevance score = 70% journal profile + 30% mean of the 3 closest articles. A journal is flagged "fragile" when it owes its rank mainly to a single article. The slider then blends relevance and prestige.</li>
+<li>The "Disciplines" filter relies on the AJG field, the FNEGE field and the ABDC FoR code, or otherwise on the journal's main OpenAlex topic.</li>
 <li>"Refine with Claude" sends your abstract and the top 15 journals to Claude, which re-ranks them by meaning (not just words) and justifies each choice.</li>
 </ol>
 <p class="note">Limits: the comparison relies on words (the Claude button adds meaning); a very new journal or one poorly covered by OpenAlex may be underrated; always check the aims &amp; scope and recent issues before submitting.</p><h3>Data corrections (November 2026)</h3>
@@ -495,8 +505,12 @@ footer a{color:var(--muted)}
 <ol>
 <li>Su título, resumen y palabras clave se dividen en palabras, se reducen a su raíz (p. ej. «disclosures» → «disclosur») y se completan con pares de palabras vecinas (p. ej. «climat_disclosur»).</li>
 <li>Cada término se pondera según su rareza (TF-IDF): un término presente en pocas revistas pesa más que uno corriente.</li>
-<li>Este vector se compara (similitud del coseno) con el perfil de cada revista, construido con unos 100 de sus artículos más citados publicados desde 2021, y con 12 artículos de referencia por revista.</li>
-<li>Puntuación de pertinencia = 55 % perfil de la revista + 45 % media de los 3 artículos más cercanos. El control deslizante mezcla después pertinencia y prestigio.</li>
+<li>Este peso se corrige por la especificidad disciplinar del término, una adaptación de la ponderación log-entropía (Dumais, 1991) calculada entre 13 disciplinas en lugar de entre documentos, con suavizado aditivo. Un término usado en todas las disciplinas («large language model», «panel data») describe un método más que un tema y pesa hasta 4 veces menos; un término concentrado en una o dos disciplinas describe un tema.</li>
+<li>Las palabras del campo «Método» cuentan 4 veces menos.</li>
+<li>Este vector se compara (similitud del coseno) con el perfil de cada revista, construido con unos 100 de sus artículos más citados publicados desde 2021, y con 12 artículos de referencia por revista. Ningún término puede aportar más del 40 % de una similitud.</li>
+<li>Un artículo de referencia solo cuenta si comparte al menos dos ideas distintas con su texto (las palabras unidas por una expresión, como «large language model», forman una sola idea). Los artículos muy cortos, a menudo un título sin resumen, se penalizan con una normalización pivotada de la longitud (Singhal, Buckley y Mitra, 1996).</li>
+<li>Puntuación de pertinencia = 70 % perfil de la revista + 30 % media de los 3 artículos más cercanos. Una revista se marca como «frágil» cuando debe su puesto sobre todo a un solo artículo. El control deslizante mezcla después pertinencia y prestigio.</li>
+<li>El filtro «Disciplinas» se basa en el campo AJG, el campo FNEGE y el código FoR de ABDC, o en su defecto en el tema principal OpenAlex de la revista.</li>
 <li>«Afinar con Claude» envía su resumen y las 15 primeras revistas a Claude, que las reordena según el sentido (no solo las palabras) y justifica cada elección.</li>
 </ol>
 <p class="note">Límites: la comparación se basa en palabras (el botón de Claude añade el sentido); una revista muy reciente o poco presente en OpenAlex puede quedar infravalorada; verifique siempre el aims &amp; scope y los últimos números antes de enviar.</p><h3>Correcciones de los datos (noviembre de 2026)</h3>
@@ -817,23 +831,97 @@ function terms(text, keepSurface){
   return out;
 }
 let VID = null;
-function queryVec(text){
+/* Disciplines : chaque revue est rattachée à une ou plusieurs disciplines à partir du domaine AJG,
+   du domaine FNEGE et du code FoR de l'ABDC ; à défaut, du sous-domaine OpenAlex de son thème principal. */
+const DISC = [["FIN","Finance"],["ACC","Comptabilité, audit, contrôle"],["ECO","Économie"],["STR","Stratégie et management"],["RSE","Éthique, RSE, environnement"],["ORG","RH et comportement organisationnel"],["MKT","Marketing"],["SI","Systèmes d'information et innovation"],["OPS","Opérations, logistique, recherche opérationnelle"],["ENT","Entrepreneuriat et international"],["PUB","Secteur public, santé, éducation"],["SEC","Secteurs, tourisme, droit"],["SOC","Psychologie et sciences sociales"],["AUT","Autres disciplines"]];
+const D_AJG = {FINANCE:["FIN"],ACCOUNT:["ACC"],ECON:["ECO"],"BUS HIST & ECON HIST":["ECO"],STRAT:["STR"],"ETHICS-CSR-MAN":["STR","RSE"],"REGIONAL STUDIES, PLANNING AND ENVIRONMENT":["RSE"],"ORG STUD":["ORG"],"HRM&EMP":["ORG"],"PSYCH (WOP-OB)":["ORG"],MKT:["MKT"],"INFO MAN":["SI"],INNOV:["SI"],"OPS&TECH":["OPS"],"OR&MANSCI":["OPS"],"ENT-SBM":["ENT"],"IB&AREA":["ENT"],"PUB SEC":["PUB"],"MDEV&EDU":["PUB"],SECTOR:["SEC"],"PSYCH (GENERAL)":["SOC"],"SOC SCI":["SOC"]};
+const D_FN = {FIN:["FIN"],ACC:["ACC"],"GEN MAN":["STR"],STRAT:["STR"],MIS:["SI"],INNOV:["SI"],MKG:["MKT"],HRM:["ORG"],"ORG STUD":["ORG"],"PUB MAN":["PUB"],HLTH:["PUB"],EDUC:["PUB"],"BUS SOC":["RSE"],LOG:["OPS"],INT:["ENT"],SECTOR:["SEC"],"BUS HIST":["ECO"]};
+const D_FOR = {"3501":["ACC"],"3502":["FIN"],"3503":["STR"],"3504":["SEC"],"3505":["ORG"],"3506":["MKT"],"3507":["STR"],"3508":["SEC"],"3509":["OPS"],"3599":["STR"],"3801":["ECO"],"3802":["ECO"],"3803":["ECO"],"3899":["ECO"],"4609":["SI"],"4801":["SEC"],"4905":["AUT"]};
+const D_OA = [[/financ/i,"FIN"],[/accounting/i,"ACC"],[/econom/i,"ECO"],[/organizational behavior|human resource/i,"ORG"],[/strategy|business and international|general business|management science/i,"STR"],[/marketing/i,"MKT"],[/information|innovation|technology|artificial|computer/i,"SI"],[/operations|industrial|logistic|transport/i,"OPS"],[/public|health|education|pediatric|nursing|medic/i,"PUB"],[/tourism|law/i,"SEC"],[/planetary|environment|energy|renewable|geograph|ecolog/i,"RSE"],[/sociolog|psycholog|gender|decision sciences|political|social|anthropolog|philosoph/i,"SOC"]];
+function discOf(j){
+  if (j._d) return j._d;
+  const d = new Set([...(D_AJG[j.ajgf]||[]), ...(D_FN[j.fnd]||[]), ...(D_FOR[j.for]||[])]);
+  if (!d.size && j.top && j.top[0]) { const sf = j.top[0][1] || ""; const hit = D_OA.find(([re]) => re.test(sf)); d.add(hit ? hit[1] : "AUT"); }
+  if (!d.size) d.add("AUT");
+  return (j._d = d);
+}
+/* Spécificité disciplinaire d'un terme : adaptation de la pondération log-entropie (Dumais, 1991),
+   calculée sur la répartition du terme entre disciplines plutôt qu'entre documents.
+   Pour chaque discipline, on prend la part de ses revues dont le profil contient le terme ; ces parts sont
+   lissées (lissage additif de Laplace, ALPHA revues fictives réparties comme les revues réelles) pour qu'un
+   terme vu dans une seule revue ne passe pas pour très spécifique.
+   Un terme présent partout (ex. « large language model », « panel data ») décrit plutôt une méthode
+   et perd du poids ; un terme concentré dans une ou deux disciplines décrit plutôt un sujet. */
+let SPEC = null, LAVG = 9;
+const W_SPEC_MIN = 0.25, W_METHOD = 0.25, W_NOSPEC = 0.6, ALPHA = 2;
+function prepCorpus(){
+  const keys = DISC.map(d=>d[0]).filter(k=>k!=="AUT"), gi = new Map(keys.map((k,x)=>[k,x])), G = keys.length;
+  const mass = new Float64Array(G), tm = new Map();
+  for (const [i, prof] of Object.entries(CORPUS.prof)){
+    const j = J[i]; if (!j) continue;
+    const ds = [...discOf(j)].filter(d=>gi.has(d)); if (!ds.length) continue;
+    for (const d of ds){
+      const g = gi.get(d); mass[g] += 1/ds.length;
+      for (const [id] of prof){ let a = tm.get(id); if (!a){ a = new Float64Array(G); tm.set(id,a); } a[g] += 1/ds.length; }
+    }
+  }
+  const tot = mass.reduce((x,y)=>x+y,0), lg = Math.log(G); SPEC = new Map();
+  for (const [id,a] of tm){
+    const r = []; let s = 0;
+    for (let g=0; g<G; g++){ if (!mass[g]) continue; const v = (a[g] + ALPHA*mass[g]/tot)/mass[g]; r.push(v); s += v; }
+    let H = 0; for (const v of r){ const q = v/s; H -= q*Math.log(q); }
+    SPEC.set(id, 1 - H/lg);
+  }
+  let n = 0, L = 0; for (const arts of Object.values(CORPUS.art)) for (const a of arts){ n++; L += a[4].length; }
+  LAVG = n ? L/n : 9;
+}
+function queryVec(text, mtext){
   SURF.clear();
-  const c = new Map(); for (const t of terms(text, true)) c.set(t, (c.get(t)||0)+1);
-  const v = new Map(); let n2 = 0;
-  for (const [t,n] of c) { const id = VID.get(t); if (id==null) continue; const w = (1+Math.log(n))*CORPUS.idf[id]; v.set(id, w); n2 += w*w; }
+  const mset = new Set(terms(mtext||"", false)), mun = new Set([...mset].filter(t=>!t.includes("_")));
+  const isM = t => mset.has(t) || (t.includes("_") && t.split("_").every(x=>mun.has(x)));
+  const c = new Map(); for (const t of terms(text + " " + (mtext||""), true)) c.set(t, (c.get(t)||0)+1);
+  const v = new Map(), M = new Set(); let n2 = 0;
+  for (const [t,n] of c){
+    const id = VID.get(t); if (id==null) continue;
+    let w = (1+Math.log(n))*CORPUS.idf[id]*(SPEC.has(id) ? W_SPEC_MIN + (1-W_SPEC_MIN)*SPEC.get(id) : W_NOSPEC);
+    if (isM(t)) { w *= W_METHOD; M.add(id); }
+    v.set(id, w); n2 += w*w;
+  }
   const nrm = Math.sqrt(n2)||1; for (const [k,w] of v) v.set(k, w/nrm);
-  return v;
+  v.M = M; return v;
 }
 const dot = (q, sparse) => { let s = 0; for (const [id,x] of sparse) { const y = q.get(id); if (y) s += x*y; } return s; };
+/* Similarité cosinus plafonnée : un seul terme ne peut pas faire plus de CAP de la similarité.
+   On compte aussi les « idées » partagées : les mots communs reliés par une expression commune
+   (ex. large + language + model) forment une seule idée. */
+const CAP = 0.4, MIN_IDEAS = 2, PIVOT_SLOPE = 0.2, W_PROF = 0.7;
+function capSim(q, sparse){
+  let s = 0, m = 0; const par = new Map();
+  const find = x => { while (par.get(x) !== x) { par.set(x, par.get(par.get(x))); x = par.get(x); } return x; };
+  for (const [id,x] of sparse){
+    const y = q.get(id); if (!y) continue; const c = x*y; s += c; if (c > m) m = c;
+    const ws = CORPUS.vocab[id].split("_"); for (const w of ws) if (!par.has(w)) par.set(w, w);
+    if (ws.length === 2) { const a = find(ws[0]), b = find(ws[1]); if (a !== b) par.set(a, b); }
+  }
+  if (s > 0 && m > CAP*s) s = (s-m)/(1-CAP);
+  let ideas = 0; for (const w of par.keys()) if (find(w) === w) ideas++;
+  return { s, ideas };
+}
+/* Article : au moins MIN_IDEAS idées distinctes en commun, puis normalisation pivotée de la longueur
+   (Singhal, Buckley et Mitra, 1996) : un texte très court (souvent un titre sans résumé) pèse moins. */
+function artSim(q, vec){
+  const { s, ideas } = capSim(q, vec); if (ideas < MIN_IDEAS || s <= 0) return 0;
+  const L = vec.length; return s * L / ((1-PIVOT_SLOPE)*LAVG + PIVOT_SLOPE*L);
+}
 async function loadCorpus(){
   if (CORPUS) return;
   $("#cstatus").innerHTML = `<p class="note">Chargement du corpus d'articles…</p>`;
   const r = await fetch("data/corpus.json"); CORPUS = await r.json();
   VID = new Map(CORPUS.vocab.map((t,i)=>[t,i]));
+  prepCorpus();
 }
 const KEEP = [["fn","Classé FNEGE"],["ajg3","AJG 3 et plus"],["abdcA","ABDC A ou A*"],["sc","Scopus"],["q1","Scopus Q1"],["ft","FT50"],["free","Sans APC obligatoire"]];
-const CK = new Set();
+const CK = new Set(), CD = new Set();
 function keepOk(j){
   for (const k of CK){
     if (k==="fn" && !j.fn) return false;
@@ -844,12 +932,14 @@ function keepOk(j){
     if (k==="ft" && !j.ft) return false;
     if (k==="free" && j.oa==="Accès ouvert (APC)") return false;
   }
+  if (CD.size && ![...discOf(j)].some(d=>CD.has(d))) return false;
   const apc = parseFloat($("#capc").value); if (!isNaN(apc) && (j.apc||0) > apc && j.oa==="Accès ouvert (APC)") return false;
   return true;
 }
 let LAST = null;
 async function runMatch(){
   const text = [$("#ct").value, $("#ct").value, $("#ca").value, $("#ck").value, $("#ck").value].join(" ");
+  const mtext = $("#cm").value;
   if (text.trim().length < 20) { toast("Écrivez au moins un titre et un résumé."); return; }
   try { await loadCorpus(); } catch(e){ $("#cstatus").innerHTML = `<p class="note">Le corpus n'a pas pu être chargé : rechargez la page puis réessayez.</p>`; return; }
   const FRW = new Set(["les","des","une","dans","pour","sur","avec","entre","nous","leur","leurs","est","sont","cette","qui","que","par","aux","du","entreprises","effet","résultats"]);
@@ -857,40 +947,51 @@ async function runMatch(){
   const words = text.toLowerCase().match(/[a-zàâçéèêëîïôûùüÿœ]+/g) || [];
   const nFR = words.filter(w=>FRW.has(w)).length, nEN = words.filter(w=>ENW.has(w)).length;
   if (nFR > nEN && nFR >= 3) { $("#cstatus").innerHTML = `<div class="warn-box">Votre résumé semble écrit en français. Les revues sont comparées à des articles en anglais : écrivez le titre, le résumé et les mots-clés en anglais pour obtenir des résultats fiables.</div>`; $("#cout").innerHTML = ""; return; }
-  const q = queryVec(text);
+  const q = queryVec(text, mtext);
   if (!q.size) { $("#cstatus").innerHTML = `<p class="note">Aucun mot reconnu : écrivez le résumé en anglais.</p>`; return; }
   const wP = (+$("#cw").value)/100;
-  const qTerms = new Map([...q].sort((a,b)=>b[1]-a[1]).slice(0,40));
-  const res = [], arts = [];
+  const res = [], arts = []; let nComp = 0;
   for (const [i, prof] of Object.entries(CORPUS.prof)){
     const j = J[i]; if (!j || !keepOk(j)) continue;
-    const sp = dot(q, prof);
-    const as = (CORPUS.art[i]||[]).map(a => ({ s: dot(q, a[4]), a, i:+i })).sort((x,y)=>y.s-x.s);
+    nComp++;
+    const sp = capSim(q, prof).s;
+    const as = (CORPUS.art[i]||[]).map(a => ({ s: artSim(q, a[4]), a, i:+i })).filter(x=>x.s>0).sort((x,y)=>y.s-x.s);
     const top3 = as.slice(0,3).reduce((s,x)=>s+x.s,0)/3;
-    const rel = 0.55*sp + 0.45*top3;
+    const rel = W_PROF*sp + (1-W_PROF)*top3;
+    if (rel <= 0) continue;
+    const fragile = as.length <= 1 && (1-W_PROF)*top3 > 0.5*rel;
     for (const x of as.slice(0,2)) arts.push(x);
-    const shared = prof.filter(([id])=>qTerms.has(id)).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([id])=>CORPUS.vocab[id].split("_").map(x=>SURF.get(x)||x).join(" "));
-    res.push({ i:+i, rel, best: as.slice(0,2), shared });
+    const shared = prof.filter(([id])=>q.has(id)).map(([id,x])=>[id, x*q.get(id)]).sort((a,b)=>b[1]-a[1]).slice(0,6)
+      .map(([id])=>CORPUS.vocab[id].split("_").map(x=>SURF.get(x)||x).join(" ") + (q.M.has(id) ? " (méthode)" : ""));
+    res.push({ i:+i, rel, best: as.slice(0,2), shared, fragile });
   }
+  if (!res.length) { $("#cstatus").innerHTML = `<p class="note">Aucune revue ne correspond à ces filtres : retirez une discipline ou un filtre.</p>`; $("#cout").innerHTML = ""; return; }
   const maxRel = Math.max(...res.map(r=>r.rel), 1e-9), maxP = Math.max(...J.map(j=>j._p), 1);
   for (const r of res) { r.relN = r.rel/maxRel; r.score = (1-wP)*r.relN + wP*(J[r.i]._p/maxP); }
   res.sort((a,b)=>b.score-a.score);
   arts.sort((a,b)=>b.s-a.s);
   LAST = { res: res.slice(0,40), arts: arts.slice(0,20) };
-  $("#cstatus").innerHTML = `<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="note">${res.length.toLocaleString("fr-FR")} journaux comparés · ${q.size} termes reconnus dans votre texte.</span><button class="btn" id="refine" ${sampleFn?"":"hidden"}>Affiner avec Claude</button></div><div id="refineout"></div>`;
+  $("#cstatus").innerHTML = `<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="note">${nComp.toLocaleString("fr-FR")} journaux comparés · ${q.size} termes reconnus dans votre texte.</span><button class="btn" id="refine" ${sampleFn?"":"hidden"}>Affiner avec Claude</button></div><div id="refineout"></div>`;
   if ($("#refine")) $("#refine").onclick = refine;
   renderMatch();
 }
+const cell = v => v ? esc(v) : "–";
 function renderMatch(){
   const { res, arts } = LAST;
+  const top5 = res.slice(0,5).map(r => { const j = J[r.i];
+    return `<tr><td>${esc(j.t)}</td><td>${Math.round(r.relN*100)} %</td><td>${cell(j.fn)}</td><td>${cell(j.ajg)}</td><td>${cell(j.abdc)}</td><td>${cell(j.q)}</td><td>${j.oa==="Accès ouvert (APC)" && j.apc ? `APC ${Number(j.apc).toLocaleString("fr-FR")} $` : cell(j.oa)}</td><td>${r.fragile ? `<span class="b warn">fragile</span>` : `<span class="b good">solide</span>`}</td></tr>`; }).join("");
   const jr = res.slice(0,25).map((r,k) => {
     const j = J[r.i];
     const extra = `<div style="display:flex;gap:10px;align-items:center;margin-top:8px;flex-wrap:wrap"><b>#${k+1}</b><span class="meter" title="Pertinence"><i style="width:${Math.round(r.relN*100)}%"></i></span><span class="note">pertinence ${Math.round(r.relN*100)} %</span>${r.shared.length?`<span class="note">· termes communs : ${esc(r.shared.join(", "))}</span>`:""}</div>
+      ${r.fragile?`<p class="note" style="margin:6px 0 0"><span class="b warn">fragile</span> <span>Classement fragile : cette revue doit surtout son rang à un seul article proche du vôtre.</span></p>`:""}
       ${r.best.length?`<ul class="note" style="margin:6px 0 0;padding-left:18px">${r.best.map(x=>`<li>${x.a[1]?`<a href="https://doi.org/${esc(x.a[1])}" target="_blank" rel="noopener">${esc(x.a[0])}</a>`:esc(x.a[0])} (${x.a[2]})</li>`).join("")}</ul>`:""}`;
     return rowHTML(j, extra);
   }).join("");
-  const ar = arts.map(x => `<tr><td>${x.a[1]?`<a href="https://doi.org/${esc(x.a[1])}" target="_blank" rel="noopener">${esc(x.a[0])}</a>`:esc(x.a[0])}</td><td>${esc(J[x.i].t)}</td><td>${x.a[2]}</td><td>${Math.round(x.s*100)}</td></tr>`).join("");
-  $("#cout").innerHTML = `<h2 style="margin:6px 0 10px">Journaux cibles</h2><div class="list">${jr}</div>
+  const ar = arts.map(x => `<tr><td>${x.a[1]?`<a href="https://doi.org/${esc(x.a[1])}" target="_blank" rel="noopener">${esc(x.a[0])}</a>`:esc(x.a[0])}</td><td>${esc(J[x.i].t)}</td><td>${x.a[2]}</td><td>${Math.round(Math.min(1,x.s)*100)}</td></tr>`).join("");
+  $("#cout").innerHTML = `<h2 style="margin:6px 0 10px">Comparer les 5 premières revues</h2>
+    <div class="tablewrap panel"><table><thead><tr><th>Revue</th><th>Pertinence</th><th>FNEGE</th><th>AJG</th><th>ABDC</th><th>Scopus</th><th>Accès</th><th>Solidité</th></tr></thead><tbody>${top5}</tbody></table>
+    <p class="note">« Fragile » : la revue doit surtout son rang à un seul article proche du vôtre ; vérifiez ses aims & scope.</p></div>
+    <h2 style="margin:20px 0 10px">Journaux cibles</h2><div class="list">${jr}</div>
     <h2 style="margin:20px 0 10px">Articles les plus proches du vôtre</h2>
     <div class="tablewrap panel"><table><thead><tr><th>Article</th><th>Journal</th><th>Année</th><th>Proximité</th></tr></thead><tbody>${ar}</tbody></table></div>`;
 }
@@ -898,7 +999,7 @@ async function refine(){
   if (!sampleFn || !LAST) return;
   const btn = $("#refine"); btn.disabled = true; btn.textContent = "Claude réfléchit…";
   const cand = LAST.res.slice(0,15).map(r => { const j = J[r.i]; return { id:r.i, journal:j.t, rankings:[j.fn&&"FNEGE "+j.fn, j.ajg&&"AJG "+j.ajg, j.abdc&&"ABDC "+j.abdc, j.ft&&"FT50", j.q&&"Scopus "+j.q].filter(Boolean).join(", "), themes:(j.top||[]).map(t=>t[0]).join("; "), keywords:(j.kw||[]).slice(0,10).join(", "), closest_articles:r.best.map(x=>x.a[0]) }; });
-  const prompt = `You help a management/finance researcher choose a journal. Here is the manuscript.\nTITLE: ${$("#ct").value}\nABSTRACT: ${$("#ca").value}\nKEYWORDS: ${$("#ck").value}\n\nCandidate journals (pre-selected by lexical similarity) as JSON:\n${JSON.stringify(cand)}\n\nRe-rank the candidates by genuine fit of the manuscript's topic, method and contribution with each journal's scope as shown by its themes, keywords and closest articles. Answer ONLY with JSON: {"ranking":[{"id":number,"fit":"high"|"medium"|"low","why":"one sentence in ${["French","English","Spanish"][LANG]}"}]} covering all candidates, best first.`;
+  const prompt = `You help a management/finance researcher choose a journal. Here is the manuscript.\nTITLE: ${$("#ct").value}\nABSTRACT: ${$("#ca").value}\nKEYWORDS: ${$("#ck").value}\nMETHOD (how the study is done, not its topic): ${$("#cm").value||"not given"}\n\nCandidate journals (pre-selected by lexical similarity) as JSON:\n${JSON.stringify(cand)}\n\nRe-rank the candidates by genuine fit of the manuscript's topic and contribution (the method matters only secondarily: a journal that publishes the same method on unrelated topics is a poor fit) with each journal's scope as shown by its themes, keywords and closest articles. Answer ONLY with JSON: {"ranking":[{"id":number,"fit":"high"|"medium"|"low","why":"one sentence in ${["French","English","Spanish"][LANG]}"}]} covering all candidates, best first.`;
   try {
     const out = await sampleFn.json(prompt, { modelTier:"default" });
     const rk = (out && out.ranking) || [];
@@ -911,6 +1012,8 @@ async function refine(){
 function buildCiblage(){
   $(`[data-c="keep"]`).innerHTML = KEEP.map(([k,l])=>`<button class="chip" data-v="${k}">${l}</button>`).join("");
   $(`[data-c="keep"]`).addEventListener("click", e => { const c = e.target.closest(".chip"); if (!c) return; CK.has(c.dataset.v)?CK.delete(c.dataset.v):CK.add(c.dataset.v); c.classList.toggle("on"); });
+  $(`[data-c="disc"]`).innerHTML = DISC.map(([k,l])=>`<button class="chip" data-v="${k}">${l}</button>`).join("");
+  $(`[data-c="disc"]`).addEventListener("click", e => { const c = e.target.closest(".chip"); if (!c) return; CD.has(c.dataset.v)?CD.delete(c.dataset.v):CD.add(c.dataset.v); c.classList.toggle("on"); });
   $("#cw").oninput = e => $("#cwv").textContent = e.target.value + " %";
   $("#go").onclick = runMatch;
 }
