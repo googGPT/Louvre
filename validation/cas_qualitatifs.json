@@ -1,0 +1,254 @@
+[
+{
+"id": "weather",
+"t": "The Weather Ate My Earnings: Managers' Weather Excuses After Missing Analyst Forecasts",
+"a": "Do managers blame the weather when they miss analysts' earnings forecasts? Using earnings conference call transcripts of U.S. listed firms, we measure weather excuses, that is, managers' attributions of poor performance to weather conditions. We build a dictionary-based measure and a second measure classified with large language models. Managers are more likely to invoke weather after negative earnings surprises, even when local weather was not abnormal. Investors partly discount these excuses: the market reaction to weather attributions is weaker when firms' actual exposure to weather is low. Weather excuses are more frequent in firms with weaker governance and higher CEO career concerns. Our findings show that external attributions serve as impression management and self-serving attribution in corporate disclosure.",
+"k": "weather; excuses; earnings surprises; conference calls; self-serving attribution; large language models; impression management",
+"good": [
+"Accounting",
+"Accounting Review",
+"Contemporary Accounting",
+"Review of Accounting Studies",
+"Management Science",
+"Accounting, Organizations",
+"Journal of Business Ethics",
+"Abacus",
+"Financial Reporting",
+"Auditing",
+"Finance"
+],
+"bad": [
+"Harvard Business Review",
+"Marketing Science",
+"Nature Human",
+"Information Technology",
+"Software"
+]
+},
+{
+"id": "reit",
+"t": "When Green Promises Meet Resource Reality: Emissions-Reduction Targets and Downside Risk in Global Equity REITs",
+"a": "This study examines whether emissions-reduction targets reduce downside risk in real estate investment trusts. Using a global panel of equity REITs from 2010 to 2023, we find that REITs with science-based or absolute emissions targets exhibit lower crash risk and lower value-at-risk, but only when they have sufficient financial slack. Resource-constrained REITs that announce targets experience higher downside risk. The results are robust to instrumental variables and propensity score matching. We contribute to the literature on corporate climate commitments, real estate finance and tail risk.",
+"k": "REITs; climate targets; carbon emissions; downside risk; crash risk; real estate",
+"good": [
+"Real Estate",
+"Property",
+"Housing",
+"Journal of Real Estate Finance",
+"Sustainable Finance",
+"Business Strategy and the Environment",
+"Finance"
+],
+"bad": []
+},
+{
+"id": "cyber",
+"t": "Cyber Risk Environments and Firm Capital Investment",
+"a": "We examine how firm-level cybersecurity risk exposure affects corporate investment. Using a text-based measure of cyber risk from 10-K filings for U.S. firms, we show that higher cyber risk reduces capital expenditures and R&D investment. The effect is stronger for financially constrained firms and firms with high information asymmetry. Data breaches amplify the negative effect. Our findings are consistent with real options theory and precautionary motives under uncertainty.",
+"k": "cybersecurity risk; corporate investment; uncertainty; real options; data breaches; financial constraints",
+"good": [
+"Finance",
+"Corporate Finance",
+"Financial",
+"Economics",
+"Accounting"
+],
+"bad": [
+"Computers & Security",
+"Information Security"
+]
+},
+{
+"id": "poison",
+"t": "Poison Pills and Corporate Risk-Taking",
+"a": "This paper investigates how the adoption of poison pills, a prominent takeover defense, affects corporate risk-taking. Using S&P 500 firms, we find that poison pill adoption reduces stock return volatility and R&D intensity, consistent with managerial entrenchment and the quiet life hypothesis. The effect is moderated by CEO equity-based compensation and financial flexibility. Our results inform the debate on takeover defenses and shareholder rights.",
+"k": "poison pill; takeover defenses; risk-taking; managerial entrenchment; CEO compensation; corporate governance",
+"good": [
+"Corporate Finance",
+"Corporate Governance",
+"Finance",
+"Financial",
+"Business Research"
+],
+"bad": []
+},
+{
+"id": "greenwash",
+"t": "Speech Is Silver, Silence Is Green: Climate Talk and Greenwashing Accusations in European Firms",
+"a": "Does talking about climate change protect firms from greenwashing accusations or expose them? Using STOXX 600 firms and a firm-level measure of climate change exposure from earnings call transcripts, we find that firms that discuss climate more intensively are more likely to be accused of greenwashing by NGOs and the media, especially when their environmental performance is weak. This credibility gap between talk and action is larger for carbon-intensive industries. We contribute to research on environmental disclosure, legitimacy and greenwashing.",
+"k": "greenwashing; climate change exposure; environmental disclosure; legitimacy; credibility; STOXX 600",
+"good": [
+"Business Strategy and the Environment",
+"Business Ethics",
+"Corporate Social Responsibility",
+"Accounting",
+"Environment",
+"Sustainab",
+"Organization & Environment",
+"Climate"
+],
+"bad": []
+},
+{
+"id": "running",
+"t": "How Running Influencers Shape Sports Brand Image: Evidence from Nike, Asics and Kiprun",
+"a": "Social media influencers have become central to sports marketing. This study examines how running influencers on Instagram and YouTube shape consumers' perceptions of running brands. Based on a survey of 412 French runners and structural equation modeling, we show that influencer credibility and perceived authenticity increase brand image and purchase intention, while sponsored content disclosure reduces trust. The effects differ between global brands and retailer brands.",
+"k": "influencer marketing; brand image; source credibility; authenticity; purchase intention; sports marketing",
+"good": [
+"Marketing",
+"Consumer",
+"Brand",
+"Retailing",
+"Interactive",
+"Advertising",
+"Sport"
+],
+"bad": []
+},
+{
+"id": "state",
+"t": "Pathways to State Decarbonization When Climate Policy Stalls",
+"a": "When federal climate policy stalls, how do U.S. states reduce their carbon emissions? Using fuzzy-set qualitative comparative analysis on the 50 states, we identify several configurations of policy instruments, political conditions and economic structure that lead to strong decarbonization. Renewable portfolio standards combined with carbon pricing participation and low fossil-fuel dependence form one pathway, while strong administrative capacity substitutes for market instruments in another. The findings inform public administration research on policy mixes and subnational governance.",
+"k": "decarbonization; state climate policy; fsQCA; policy mix; public administration; subnational governance",
+"good": [
+"Public Administration",
+"Public Policy",
+"Policy",
+"Governance",
+"Energy Policy",
+"Environmental"
+],
+"bad": []
+},
+{
+"id": "sdg",
+"t": "Sustainability Pays, But When? SDG Engagement and the Cost of Equity Capital",
+"a": "We investigate whether firms' engagement with the United Nations Sustainable Development Goals lowers their cost of equity capital. Using an international sample of listed firms and SDG alignment scores, we find that SDG engagement reduces the implied cost of equity, but only when engagement is substantive rather than symbolic and when country-level institutions are strong. The results support stakeholder and legitimacy theories and inform investors and managers.",
+"k": "Sustainable Development Goals; cost of equity; ESG; legitimacy theory; stakeholder theory; institutions",
+"good": [
+"Business Strategy and the Environment",
+"Corporate Social Responsibility",
+"Business Research",
+"Business Ethics",
+"Finance",
+"Accounting",
+"Sustainable Development",
+"Sustainability",
+"Corporate Finance",
+"Financial"
+],
+"bad": []
+},
+{
+"id": "hrm",
+"t": "Remote Work, Job Autonomy and Employee Burnout",
+"a": "Drawing on the job demands-resources model, this study examines how remote work intensity affects employee burnout. Using a three-wave survey of 1,200 employees, we find that remote work increases job autonomy, which reduces burnout, but also increases work-family conflict, which raises burnout. Supervisor support buffers the negative pathway. The findings have implications for human resource management and the design of hybrid work.",
+"k": "remote work; burnout; job demands-resources; job autonomy; work-family conflict; human resource management",
+"good": [
+"Human Resource",
+"Organizational Behavior",
+"Occupational",
+"Applied Psychology",
+"Work",
+"Management"
+],
+"bad": []
+},
+{
+"id": "supply",
+"t": "Supplier Concentration and Supply Chain Resilience During the COVID-19 Pandemic",
+"a": "This paper studies how supplier concentration affected manufacturing firms' operational resilience during the COVID-19 pandemic. Using supplier-customer links and plant-level data, we find that firms with concentrated supplier bases suffered larger production disruptions and slower recovery, while multi-sourcing and inventory buffers mitigated the shock. We discuss implications for supply chain risk management.",
+"k": "supply chain resilience; supplier concentration; disruption; COVID-19; operations management; inventory",
+"good": [
+"Operations",
+"Supply Chain",
+"Production",
+"Logistics",
+"Purchasing"
+],
+"bad": []
+},
+{
+"id": "bank",
+"t": "Monetary Policy Tightening and Bank Lending to Small Firms",
+"a": "We study how interest rate increases by the European Central Bank transmit to bank credit for small and medium-sized enterprises. Using loan-level credit registry data, we find that banks with lower capital ratios and higher reliance on wholesale funding cut lending to small firms more sharply after monetary tightening. The bank lending channel is stronger in countries with less developed capital markets.",
+"k": "monetary policy; bank lending channel; SMEs; credit registry; bank capital; ECB",
+"good": [
+"Banking",
+"Money",
+"Monetary",
+"Financial",
+"Finance",
+"Econom"
+],
+"bad": []
+},
+{
+"id": "llmtopic",
+"t": "Can Large Language Models Predict Stock Returns from Corporate News?",
+"a": "We evaluate whether large language models such as GPT-4 can extract return-relevant information from corporate news headlines. LLM-based sentiment scores predict next-day stock returns beyond traditional dictionary methods, especially for small firms and negative news. Trading strategies based on LLM sentiment earn significant abnormal returns after transaction costs, but the predictability declines over time as adoption spreads.",
+"k": "large language models; ChatGPT; stock return predictability; textual analysis; news sentiment; asset pricing",
+"good": [
+"Finance",
+"Financial",
+"Financial Economics",
+"Portfolio",
+"Econom"
+],
+"bad": []
+},
+{
+"id": "audit",
+"t": "Key Audit Matters and Audit Quality: Evidence from the United Kingdom",
+"a": "We examine whether the disclosure of key audit matters in expanded auditor reports improves audit quality. Using UK listed companies before and after the adoption of ISA 701, we find that key audit matter disclosures are associated with lower discretionary accruals and fewer restatements, especially for Big 4 auditors and longer auditor tenure. Audit fees increase after adoption, consistent with greater audit effort.",
+"k": "key audit matters; auditor reporting; audit quality; audit fees; discretionary accruals; ISA 701",
+"good": [
+"Audit",
+"Accounting",
+"Accountancy"
+],
+"bad": []
+},
+{
+"id": "tourism",
+"t": "Overtourism and Residents' Support for Tourism Development in European Cities",
+"a": "Drawing on social exchange theory, this study investigates how perceived overtourism affects residents' support for tourism development. Survey data from residents of Barcelona, Venice and Amsterdam show that perceived crowding and housing pressure reduce support, while perceived economic benefits increase it. Trust in local government moderates these relationships.",
+"k": "overtourism; residents' attitudes; social exchange theory; tourism development; destination management",
+"good": [
+"Tourism",
+"Travel",
+"Hospitality",
+"Destination",
+"Leisure"
+],
+"bad": []
+},
+{
+"id": "entre",
+"t": "Founder Experience and Venture Capital Financing of Startups",
+"a": "Do serial entrepreneurs obtain venture capital more easily? Using data on 25,000 startups, we show that founders with prior entrepreneurial experience are more likely to raise venture capital and raise larger first rounds, even when their previous venture failed. The effect is stronger in high-technology industries and weaker for female founders.",
+"k": "entrepreneurship; venture capital; serial entrepreneurs; startups; founder human capital; gender",
+"good": [
+"Entrepreneur",
+"Venture",
+"Small Business",
+"Strategic Entrepreneurship",
+"Finance"
+],
+"bad": []
+},
+{
+"id": "trade",
+"t": "Tariffs and Firm-Level Export Diversification: Evidence from the US-China Trade War",
+"a": "We use customs transaction data to examine how Chinese exporters responded to US tariff increases during the 2018-2019 trade war. Affected firms diverted exports to third markets and diversified their product scope, while less productive firms exited the US market. Trade diversion was larger for firms with prior presence in alternative destinations.",
+"k": "trade war; tariffs; exports; trade diversion; firm heterogeneity; China",
+"good": [
+"International Economics",
+"Econom",
+"Trade",
+"World",
+"China"
+],
+"bad": []
+}
+]
