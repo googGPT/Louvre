@@ -30,3 +30,19 @@ Comparaison en Python (même découpage, sans élagage) : TF-IDF seul, Rocchio, 
 la version déployable (termes employés au moins deux fois par revue, poids sur 1 octet) perd moins de 0,5 point.
 
 Retenu contre la version du 24 nov. : vraie revue mieux classée pour 244 articles, moins bien pour 153 (test des signes, p < 0,0001).
+
+## Pistes d'amélioration testées le 25 novembre 2026 (sans gain, donc non retenues)
+
+Réglage sur les 200 articles, erreur top 10 de référence : 48,5 % (103/200 dans le top 10).
+
+| Piste | Erreur top 10 (réglage) | Décision |
+|---|---|---|
+| Titre compté 1 ou 3 fois (au lieu de 2) | 48,5 % | inchangé |
+| Mots-clés comptés 1 ou 3 fois | 48,0 % / 49,5 % | écart non significatif |
+| Expressions de deux mots pondérées ×0,5 / ×1,5 | 51,0 % / 48,5 % | non |
+| A priori sur la taille de la revue | 48,5 % / 49,5 % | non |
+| Rétroaction de pertinence aveugle (Rocchio, 1971), 5 ou 10 revues | 54,5 % / 55,0 % | non (plus d'erreurs) |
+| + 30, 50 ou 100 articles récents (2024-2025) par revue (`compare_stream.py`) | test : 48,4 / 48,0 / 50,0 % contre 47,8 % | non : meilleur 1er choix et top 25, mais pas moins d'erreurs top 10, et index plus lourd |
+
+Prochaine étape possible : une similarité sémantique (plongements de type SPECTER ; Cohan et al., 2020), qui demande un modèle
+téléchargé dans le navigateur. En attendant, le bouton « Affiner avec Claude » joue ce rôle sur les 15 premières revues.
