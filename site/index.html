@@ -848,7 +848,7 @@ function prepCorpus(){
   let n = 0, L = 0; for (const arts of Object.values(CORPUS.art)) for (const x of arts){ n++; L += x[4].length; }
   LAVG = n ? L/n : 9;
 }
-/* Index inversé construit à partir de corpus.bin : pour chaque terme, les revues qui l'emploient au moins deux fois,
+/* Index inversé construit à partir de data/corpus-index.txt (binaire en base64) : pour chaque terme, les revues qui l'emploient au moins deux fois,
    avec le poids de Rocchio (centroïde normalisé de leurs articles ; Rocchio, 1971) et le poids BM25
    (Robertson et Zaragoza, 2009). */
 let INV = null;
@@ -914,8 +914,10 @@ function artSim(q, vec){ const { s } = capSim(q, vec); return s > 0 ? s * pivot(
 async function loadCorpus(){
   if (CORPUS) return;
   $("#cstatus").innerHTML = `<p class="note">Chargement du corpus d'articles…</p>`;
-  const [r1, r2] = await Promise.all([fetch("data/corpus.json"), fetch("data/corpus.bin")]);
-  CORPUS = await r1.json(); const bin = new Uint8Array(await r2.arrayBuffer());
+  const [r1, r2] = await Promise.all([fetch("data/corpus.json"), fetch("data/corpus-index.txt")]);
+  CORPUS = await r1.json();
+  const b64 = (await r2.text()).trim(), raw = atob(b64), bin = new Uint8Array(raw.length);   /* index binaire transmis en base64 */
+  for (let k=0; k<raw.length; k++) bin[k] = raw.charCodeAt(k);
   VID = new Map(CORPUS.vocab.map((t,i)=>[t,i]));
   buildIndex(bin); prepCorpus();
 }

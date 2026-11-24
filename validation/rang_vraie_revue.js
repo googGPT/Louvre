@@ -9,7 +9,7 @@ const J = JSON.parse(fs.readFileSync("journaux.json","utf8")).J; for (const j of
 const corpusRaw = JSON.parse(fs.readFileSync("corpus.json","utf8"));
 let vals = {}; const $ = s => ({ get value(){ return vals[s]??""; }, set innerHTML(v){} });
 const toast = ()=>{}, esc = x => String(x), rowHTML = () => "", sampleFn = null, refine = null;
-const binRaw = fs.existsSync("corpus.bin") ? fs.readFileSync("corpus.bin") : Buffer.alloc(1); const fetch = async (u) => ({ json: async () => corpusRaw, arrayBuffer: async () => binRaw.buffer.slice(binRaw.byteOffset, binRaw.byteOffset + binRaw.length) });
+const idxTxt = fs.existsSync("corpus-index.txt") ? fs.readFileSync("corpus-index.txt","utf8") : (fs.existsSync("corpus.bin") ? fs.readFileSync("corpus.bin").toString("base64") : ""); const fetch = async () => ({ json: async () => corpusRaw, text: async () => idxTxt });
 let CORPUS = null;
 const OUT = process.env.OUT;
 let B2 = block; for (const [k,v] of Object.entries(JSON.parse(process.env.P||"{}"))) { const re = new RegExp("\\b"+k+" = [^,;]+"); if (!re.test(B2)) throw "param "+k; B2 = B2.replace(re, k+" = "+v); }

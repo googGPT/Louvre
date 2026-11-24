@@ -177,7 +177,7 @@ for k, j in enumerate(J):
     out.append({a: b for a, b in rec.items() if b not in (None, [], '')})
 
 sid2i = {j.get('oa'): k for k, j in enumerate(J) if j.get('oa')}
-# Fichier binaire corpus.bin : pour chaque revue, identifiants de termes (écarts codés en varint),
+# Index binaire (site/data/corpus-index.txt, en base64) : pour chaque revue, identifiants de termes (écarts codés en varint),
 # puis poids de Rocchio sur 1 octet (rapporté au maximum de la revue), puis fréquence brute sur 1 octet (plafonnée à 255).
 NJF = len(W)
 def varint(n, out):
@@ -195,7 +195,9 @@ for sid, lst in full.items():
     binbuf.extend(max(1, min(255, round(x / mx * 255))) for _, x, _ in lst)
     binbuf.extend(min(255, n) for _, _, n in lst)
     jx.append([sid2i_pre[sid], off, len(lst), round(mx, 6), dlen[sid]])
-open(BASE + '/site/data/corpus.bin', 'wb').write(bytes(binbuf))
+import base64
+# Écrit en base64 dans un fichier texte (.txt) : c'est un format que les deux hébergements servent tels quels.
+open(BASE + '/site/data/corpus-index.txt', 'w').write(base64.b64encode(bytes(binbuf)).decode('ascii'))
 corpus = {
     'vocab': vocab,
     'idf': [round(idf[t], 2) for t in vocab],
