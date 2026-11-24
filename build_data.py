@@ -66,7 +66,24 @@ for sid, r in W.items():
     nrm = math.sqrt(sum(x * x for _, x in top)) or 1
     profiles[sid] = [(t, round(x / nrm, 3)) for t, x in top]
 
-PV = {t for p in profiles.values() for t, _ in p}
+# ---------- Index complet pour « Trouver mon journal » (Rocchio + BM25) ----------
+# Pour chaque revue, tous les termes employés au moins deux fois dans ses ~100 articles (titre compté double) :
+# poids de Rocchio (centroïde complet) et fréquence brute pour BM25 (Robertson et Zaragoza, 2009).
+# Ce choix est celui qui a fait le moins d'erreurs sur 500 articles tests de 2026 (voir validation/).
+full = {}
+jdf = collections.Counter()                      # nombre de revues où le terme apparaît au moins une fois (idf BM25)
+dlen = {}
+for sid, r in W.items():
+    arts = [w for w in r['w'] if w['t']]
+    tf_all = collections.Counter()
+    cen = collections.Counter()
+    for w in arts:
+        c = collections.Counter(terms(w['t'] + ' ' + w['t'] + ' ' + w['a']))
+        tf_all.update({t: n for t, n in c.items() if t in idf})
+        cen.update(art_vec(w))
+    jdf.update(tf_all.keys()); dlen[sid] = sum(tf_all.values())
+    full[sid] = [(t, cen[t], n) for t, n in tf_all.items() if n >= 2 and cen.get(t)]
+PV = {t for p in profiles.values() for t, _ in p} | {t for f in full.values() for t, _, _ in f}
 # ---------- Articles de référence (12 par journal) avec leurs termes clés ----------
 articles = {}
 for sid, r in W.items():
@@ -83,8 +100,10 @@ for sid, r in W.items():
     articles[sid] = keep
 
 # ---------- Vocabulaire compact (indices) ----------
-vocab = sorted({t for p in profiles.values() for t, _ in p} | {t for a in articles.values() for x in a for t, _ in x['v']})
+vocab = sorted({t for f in full.values() for t, _, _ in f} | {t for a in articles.values() for x in a for t, _ in x['v']})
 vid = {t: i for i, t in enumerate(vocab)}
+vid_pre = vid
+sid2i_pre = {j.get('oa'): k for k, j in enumerate(J) if j.get('oa')}
 
 # ---------- Frais de soumission et indicateurs supplémentaires ----------
 FEES = json.load(open(BASE + '/sources/fees.json'))
@@ -158,10 +177,30 @@ for k, j in enumerate(J):
     out.append({a: b for a, b in rec.items() if b not in (None, [], '')})
 
 sid2i = {j.get('oa'): k for k, j in enumerate(J) if j.get('oa')}
+# Fichier binaire corpus.bin : pour chaque revue, identifiants de termes (écarts codés en varint),
+# puis poids de Rocchio sur 1 octet (rapporté au maximum de la revue), puis fréquence brute sur 1 octet (plafonnée à 255).
+NJF = len(W)
+def varint(n, out):
+    while True:
+        b = n & 127; n >>= 7
+        if n: out.append(b | 128)
+        else: out.append(b); return
+binbuf = bytearray(); jx = []
+for sid, lst in full.items():
+    if sid not in sid2i_pre or not lst: continue
+    lst = sorted((vid_pre[t], x, n) for t, x, n in lst if t in vid_pre)
+    mx = max(x for _, x, _ in lst)
+    off = len(binbuf); prev = 0
+    for k, _, _ in lst: varint(k - prev, binbuf); prev = k
+    binbuf.extend(max(1, min(255, round(x / mx * 255))) for _, x, _ in lst)
+    binbuf.extend(min(255, n) for _, _, n in lst)
+    jx.append([sid2i_pre[sid], off, len(lst), round(mx, 6), dlen[sid]])
+open(BASE + '/site/data/corpus.bin', 'wb').write(bytes(binbuf))
 corpus = {
     'vocab': vocab,
     'idf': [round(idf[t], 2) for t in vocab],
-    'prof': {sid2i[s]: [[vid[t], x] for t, x in p] for s, p in profiles.items() if s in sid2i},
+    'bidf': [round(math.log(1 + (NJF - jdf[t] + 0.5) / (jdf[t] + 0.5)), 3) for t in vocab],
+    'jx': jx,
     'art': {sid2i[s]: [[a['t'], a['doi'], a['y'], a['c'], [[vid[t], x] for t, x in a['v']]] for a in arts] for s, arts in articles.items() if s in sid2i},
 }
 meta = {'built': datetime.date.today().isoformat(), 'n': len(out),
@@ -170,4 +209,4 @@ meta = {'built': datetime.date.today().isoformat(), 'n': len(out),
                     'OpenAlex': 'métriques, accès ouvert, APC, thèmes, articles 2021+'}}
 json.dump({'meta': meta, 'J': out}, open(BASE + '/site/data/journaux.json', 'w'), ensure_ascii=False, separators=(',', ':'), allow_nan=False)
 json.dump(corpus, open(BASE + '/site/data/corpus.json', 'w'), ensure_ascii=False, separators=(',', ':'))
-print('journaux', len(out), '| profils', len(corpus['prof']), '| articles', sum(len(a) for a in corpus['art'].values()), '| vocab', len(vocab))
+print('journaux', len(out), '| index', len(corpus['jx']), 'revues', round(len(binbuf)/1e6,1), 'Mo', '| profils', len(profiles), '| articles', sum(len(a) for a in corpus['art'].values()), '| vocab', len(vocab))
