@@ -981,7 +981,7 @@ async function runMatch(){
   res.sort((a,b)=>b.score-a.score);
   arts.sort((a,b)=>b.s-a.s);
   LAST = { res: res.slice(0,40), arts: arts.slice(0,20) };
-  $("#cstatus").innerHTML = `<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="note">${nComp.toLocaleString("fr-FR")} journaux comparés · ${q.size} termes reconnus dans votre texte.</span><button class="btn" id="refine" ${sampleFn?"":"hidden"}>Affiner avec Claude</button></div><div id="refineout"></div>`;
+  $("#cstatus").innerHTML = `<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="note">${nComp.toLocaleString("fr-FR")} journaux comparés · ${q.size} termes reconnus dans votre texte.</span><button class="btn" id="refine">Affiner avec Claude</button></div><div id="refineout"></div>`;
   if ($("#refine")) $("#refine").onclick = refine;
   renderMatch();
 }
@@ -1005,9 +1005,22 @@ function renderMatch(){
     <h2 style="margin:20px 0 10px">Articles les plus proches du vôtre</h2>
     <div class="tablewrap panel"><table><thead><tr><th>Article</th><th>Journal</th><th>Année</th><th>Proximité</th></tr></thead><tbody>${ar}</tbody></table></div>`;
 }
+/* Accès à Claude : attend que la page Claude soit prête (jusqu'à 10 s), puis demande la capacité « sample ». */
+async function getSample(){
+  if (sampleFn) return sampleFn;
+  for (let k=0; k<20 && !(window.claude && window.claude.use); k++) await new Promise(r => setTimeout(r, 500));
+  if (!(window.claude && window.claude.use)) return null;
+  try { sampleFn = await window.claude.use("sample"); } catch(e){ sampleFn = null; }
+  return sampleFn;
+}
 async function refine(){
-  if (!sampleFn || !LAST) return;
-  const btn = $("#refine"); btn.disabled = true; btn.textContent = "Claude réfléchit…";
+  if (!LAST) return;
+  const btn = $("#refine"); btn.disabled = true; btn.textContent = "Connexion à Claude…";
+  if (!(await getSample())) {
+    $("#refineout").innerHTML = `<p class="note">« Affiner avec Claude » fonctionne seulement dans la version Claude du site (<a href="https://claude.ai/artifact/SkNR9du8en4tkeXEnxmwDE" target="_blank" rel="noopener">claude.ai/artifact/SkNR9du8en4tkeXEnxmwDE</a>), avec un compte Claude connecté.</p>`;
+    btn.disabled = false; btn.textContent = "Affiner avec Claude"; return;
+  }
+  btn.textContent = "Claude réfléchit…";
   const cand = LAST.res.slice(0,15).map(r => { const j = J[r.i]; return { id:r.i, journal:j.t, rankings:[j.fn&&"FNEGE "+j.fn, j.ajg&&"AJG "+j.ajg, j.abdc&&"ABDC "+j.abdc, j.ft&&"FT50", j.q&&"Scopus "+j.q].filter(Boolean).join(", "), themes:(j.top||[]).map(t=>t[0]).join("; "), keywords:(j.kw||[]).slice(0,10).join(", "), closest_articles:r.best.map(x=>x.a[0]) }; });
   const prompt = `You help a management/finance researcher choose a journal. Here is the manuscript.\nTITLE: ${$("#ct").value}\nABSTRACT: ${$("#ca").value}\nKEYWORDS: ${$("#ck").value}\nMETHOD (how the study is done, not its topic): ${$("#cm").value||"not given"}\n\nCandidate journals (pre-selected by lexical similarity) as JSON:\n${JSON.stringify(cand)}\n\nRe-rank the candidates by genuine fit of the manuscript's topic and contribution (the method matters only secondarily: a journal that publishes the same method on unrelated topics is a poor fit) with each journal's scope as shown by its themes, keywords and closest articles. Answer ONLY with JSON: {"ranking":[{"id":number,"fit":"high"|"medium"|"low","why":"one sentence in ${["French","English","Spanish"][LANG]}"}]} covering all candidates, best first.`;
   try {
@@ -1189,7 +1202,7 @@ document.querySelectorAll("[data-quick]").forEach(b => b.addEventListener("click
   try { const f = JSON.parse(localStorage.getItem("aj-facts2")||"{}"); FACTS = fromStore(f); } catch(e){}
   render();
   if (window.claude && claude.use) {
-    claude.use("sample").then(s => { sampleFn = s; const b = $("#refine"); if (b && s) b.hidden = false; }).catch(()=>{});
+    getSample();
     try {
       db = await claude.use("db");
       const u = await claude.use("user");
